@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --background: 140 20% 98%;
+    --foreground: 155 70% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 155 70% 10%;
+    --primary: 142 91% 27%;          /* vert du logo #068132 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 212 71% 39%;        /* bleu d'accompagnement */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 140 15% 94%;
+    --muted-foreground: 155 10% 38%;
+    --accent: 140 50% 93%;
+    --accent-foreground: 155 70% 12%;
+    --destructive: 358 85% 44%;      /* rouge du drapeau */
+    --destructive-foreground: 0 0% 100%;
+    --border: 140 12% 86%;
+    --input: 140 12% 80%;
+    --ring: 142 91% 30%;
+    --radius: 0.75rem;
+  }
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-background text-foreground antialiased; font-family: var(--font-sans); }
+  :focus-visible { outline-color: hsl(var(--ring)); }
+}
+
+@layer components {
+  .mali-stripe { background: linear-gradient(90deg, #14b53a 0 33.3%, #fcd116 33.3% 66.6%, #ce1126 66.6% 100%); }
+  .container-page { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
+  .bogolan {
+    background-image: repeating-linear-gradient(45deg, rgba(5, 45, 30, 0.035) 0 6px, transparent 6px 18px),
+      repeating-linear-gradient(-45deg, rgba(252, 209, 22, 0.05) 0 6px, transparent 6px 18px);
+  }
+}
+
+.leaflet-container { font: inherit; border-radius: 0.75rem; }
+.pp-marker { background: transparent; border: 0; }

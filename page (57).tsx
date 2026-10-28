@@ -1,0 +1,83 @@
+import Link from "next/link";
+import { AlertTriangle, Clock, Package, PackageX, ShoppingBag } from "lucide-react";
+import { requireCurrentPharmacy } from "@/lib/pharmacy";
+import { createClient } from "@/lib/supabase/server";
+import { getSettings } from "@/lib/settings";
+import { PharmacyHeader } from "@/components/pharmacy/pharmacy-header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { OrderStatus } from "@/lib/order-status";
+import { formatDateTime } from "@/lib/format";
+
+export const metadata = { title: "Tableau de bord pharmacien" };
+
+function Stat({ label, value, href, Icon, tone = "" }: { label: string; value: number; href: string; Icon: typeof Package; tone?: string }) {
+  return (
+    <Link prefetch={false} href={href} className="rounded-xl border bg-white p-4 hover:border-primary">
+      <Icon className={`size-5 ${tone || "text-brand-green"}`} aria-hidden />
+      <p className="mt-2 text-2xl font-bold">{value}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
+    </Link>
+  );
+}
+
+export default async function PharmacistDashboard() {
+  const ph = await requireCurrentPharmacy();
+  const supabase = await createClient();
+  const settings = await getSettings();
+  const [{ data: inv }, { data: orders }, { data: moves }] = await Promise.all([
+    supabase.from("pharmacy_inventory").select("quantity, reserved_quantity, is_available, low_stock_threshold, stock_updated_at").eq("pharmacy_id", ph.id),
+    supabase.from("orders").select("status").eq("pharmacy_id", ph.id),
+    supabase.from("inventory_movements").select("id, kind, quantity_delta, reserved_delta, quantity_after, created_at, pharmacy_inventory(medicine_catalog(brand_name, dosage))").eq("pharmacy_id", ph.id).order("created_at", { ascending: false }).limit(8),
+  ]);
+  const staleBefore = Date.now() - settings.stock_stale_hours * 3600_000;
+  const rows = inv ?? [];
+  const available = rows.filter((r) => r.is_available && r.quantity - r.reserved_quantity > 0).length;
+  const low = rows.filter((r) => r.is_available && r.quantity - r.reserved_quantity <= r.low_stock_threshold).length;
+  const stale = rows.filter((r) => new Date(r.stock_updated_at).getTime() < staleBefore).length;
+  const count = (s: OrderStatus[]) => (orders ?? []).filter((o) => s.includes(o.status as OrderStatus)).length;
+  const kindLabel: Record<string, string> = { adjustment: "Ajustement", import: "Import", reservation: "Réservation", release: "Libération", sale: "Vente", return: "Retour", expiry: "Péremption", correction: "Confirmation" };
+
+  return (
+    <>
+      <PharmacyHeader current={ph} title="Tableau de bord" />
+      <section aria-label="Stocks" className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <Stat label="Produits référencés" value={rows.length} href="/pharmacien/stocks" Icon={Package} />
+        <Stat label="Disponibles" value={available} href="/pharmacien/stocks?vue=disponibles" Icon={Package} />
+        <Stat label="Indisponibles" value={rows.length - available} href="/pharmacien/stocks?vue=indisponibles" Icon={PackageX} tone="text-slate-500" />
+        <Stat label="Stock faible" value={low} href="/pharmacien/stocks?vue=faibles" Icon={AlertTriangle} tone="text-amber-600" />
+        <Stat label={`Non actualisés depuis ${settings.stock_stale_hours} h`} value={stale} href="/pharmacien/stocks?vue=anciens" Icon={Clock} tone="text-red-600" />
+      </section>
+      {stale > 0 && (
+        <p className="mt-3 text-sm text-amber-800">
+          {stale} produit(s) affichent « Information ancienne » aux clients. <Link prefetch={false} href="/pharmacien/stocks?vue=anciens" className="font-semibold underline">Actualisez-les en un clic</Link>.
+        </p>
+      )}
+      <section aria-label="Commandes" className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat label="Demandes à confirmer" value={count(["pending_confirmation"])} href="/pharmacien/commandes?statut=pending_confirmation" Icon={ShoppingBag} tone="text-amber-600" />
+        <Stat label="Confirmées / en préparation" value={count(["confirmed", "preparing"])} href="/pharmacien/commandes?statut=en_cours" Icon={ShoppingBag} />
+        <Stat label="Prêtes / en livraison" value={count(["ready_for_pickup", "awaiting_courier", "courier_assigned", "in_delivery"])} href="/pharmacien/commandes?statut=en_cours" Icon={ShoppingBag} />
+        <Stat label="Terminées ou annulées" value={count(["completed", "delivered", "cancelled", "rejected", "expired", "delivery_failed"])} href="/pharmacien/commandes?statut=terminees" Icon={ShoppingBag} tone="text-slate-500" />
+      </section>
+      <Card className="mt-6">
+        <CardHeader><CardTitle>Derniers mouvements de stock</CardTitle></CardHeader>
+        <CardContent>
+          {!moves?.length ? <p className="text-sm text-muted-foreground">Aucun mouvement. Commencez par <Link prefetch={false} href="/pharmacien/stocks" className="text-primary underline">ajouter vos produits</Link>.</p> : (
+            <ul className="divide-y text-sm">
+              {moves.map((m) => {
+                const inv1 = Array.isArray(m.pharmacy_inventory) ? m.pharmacy_inventory[0] : m.pharmacy_inventory;
+                const cat = inv1 ? (Array.isArray(inv1.medicine_catalog) ? inv1.medicine_catalog[0] : inv1.medicine_catalog) : null;
+                return (
+                  <li key={m.id} className="flex justify-between gap-2 py-2">
+                    <span>{kindLabel[m.kind] ?? m.kind} · {cat?.brand_name} {cat?.dosage ?? ""}</span>
+                    <span className="text-muted-foreground">{formatDateTime(m.created_at)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <Link prefetch={false} href="/pharmacien/mouvements" className="mt-3 inline-block text-sm text-primary underline">Tout l&apos;historique</Link>
+        </CardContent>
+      </Card>
+    </>
+  );
+}
