@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { humanizeError } from "@/lib/errors";
 import { allow } from "@/lib/limiter";
 import { clientIp } from "@/lib/request";
-import { CLINIC_KINDS, CLINIC_SERVICES, type DirectoryFreshness } from "@/lib/directory";
+import { CLINIC_KINDS, CLINIC_SERVICES, FACILITY_KINDS, type DirectoryFreshness } from "@/lib/directory";
 import { formatDistance, formatPhone } from "@/lib/format";
 import { isSupabaseConfigured } from "@/lib/env";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,10 @@ type Row = {
   doctors_count: number; is_open: boolean | null; distance_km: number | null; confirmed_at: string; freshness: DirectoryFreshness; total_count: number;
 };
 type SP = Record<string, string | undefined>;
+type Facility = {
+  id: string; name: string; kind: string; category_label: string | null; region_name: string | null; city_label: string | null; address: string | null;
+  phone: string | null; phone2: string | null; total_count: number;
+};
 const PAGE_SIZE = 20;
 
 export default async function ClinicsPage({ searchParams }: { searchParams: Promise<SP> }) {
@@ -38,7 +42,9 @@ export default async function ClinicsPage({ searchParams }: { searchParams: Prom
   const lng = numOrNull(sp.lng);
   const page = Math.max(1, Math.min(50, Number(sp.page) || 1));
   let rows: Row[] = [];
+  let others: Facility[] = [];
   let error: string | null = null;
+  const fpage = Math.max(1, Math.min(100, Number(sp.fpage) || 1));
   if (isSupabaseConfigured()) {
     if (!(await allow(`dir:${await clientIp()}`, 60, 60_000))) {
       error = "Trop de recherches en peu de temps. Patientez une minute.";
@@ -50,9 +56,18 @@ export default async function ClinicsPage({ searchParams }: { searchParams: Prom
       });
       if (e) error = humanizeError(e);
       rows = (data as Row[]) ?? [];
+      // Fiches simples non vérifiées : seuls les filtres nom et région s'y appliquent
+      if (!sp.specialite && sp.urgences !== "1" && !sp.commune) {
+        const { data: f } = await supabase.rpc("search_facility_listings", {
+          p_query: q.length >= 2 ? q : null, p_region: uuidOrNull(sp.region), p_limit: PAGE_SIZE, p_offset: (fpage - 1) * PAGE_SIZE,
+        });
+        others = (f as Facility[]) ?? [];
+      }
     }
   }
   const total = Number(rows[0]?.total_count ?? 0);
+  const otherTotal = Number(others[0]?.total_count ?? 0);
+  const otherPages = Math.ceil(otherTotal / PAGE_SIZE);
   const pages = Math.ceil(total / PAGE_SIZE);
   const link = (patch: SP) => {
     const p = new URLSearchParams();
@@ -100,7 +115,11 @@ export default async function ClinicsPage({ searchParams }: { searchParams: Prom
       <div className="flex justify-end"><LocateButton basePath="/cliniques" /></div>
 
       {error && <Alert tone="error" title={error} />}
-      {!error && rows.length === 0 ? (
+      {!error && rows.length === 0 && others.length > 0 ? (
+        <p className="rounded-xl border border-dashed bg-white p-4 text-sm text-muted-foreground">
+          Aucun établissement vérifié ne correspond pour l&apos;instant. Voici les établissements connus, pas encore vérifiés.
+        </p>
+      ) : !error && rows.length === 0 ? (
         <div className="rounded-xl border border-dashed bg-white p-8 text-center">
           <SearchX className="mx-auto size-8 text-muted-foreground" aria-hidden />
           <p className="mt-2 font-semibold">Aucun établissement référencé ne correspond.</p>
@@ -142,6 +161,36 @@ export default async function ClinicsPage({ searchParams }: { searchParams: Prom
             </nav>
           )}
         </>
+      )}
+      {others.length > 0 && (
+        <section aria-labelledby="others-title" className="space-y-3">
+          <div>
+            <h2 id="others-title" className="text-lg font-bold">Autres établissements, pas encore vérifiés ({otherTotal})</h2>
+            <p className="text-sm text-muted-foreground">Informations non vérifiées par PharmaProxi (nom, ville, téléphone). Appelez avant de vous déplacer. Établissement concerné ? <Link prefetch={false} href="/clinique/inscription" className="font-semibold text-brand-blue underline">Inscrivez-vous</Link> pour afficher vos médecins et vos horaires.</p>
+          </div>
+          <ul className="grid gap-3 md:grid-cols-2">
+            {others.map((f) => (
+              <li key={f.id} className="flex flex-col gap-1.5 rounded-xl border bg-white p-4">
+                <p className="text-base font-bold text-brand-deep">{f.name}</p>
+                <p className="text-xs text-muted-foreground">{FACILITY_KINDS[f.kind] ?? f.kind}{f.category_label && f.category_label !== FACILITY_KINDS[f.kind] ? ` · ${f.category_label}` : ""}</p>
+                <p className="flex items-start gap-1 text-sm"><MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />{[f.address, f.city_label ?? f.region_name].filter(Boolean).join(" — ") || "Ville non précisée"}</p>
+                <div className="mt-1 flex flex-wrap gap-3">
+                  {[f.phone, f.phone2].filter(Boolean).map((p) => (
+                    <a key={p} href={`tel:${p}`} className="inline-flex items-center gap-1 text-sm font-semibold text-brand-blue hover:underline"><Phone className="size-4" aria-hidden />{formatPhone(p)}</a>
+                  ))}
+                </div>
+                <Badge className="mt-1 w-fit bg-muted text-muted-foreground">Non vérifié</Badge>
+              </li>
+            ))}
+          </ul>
+          {otherPages > 1 && (
+            <nav aria-label="Pagination des autres établissements" className="flex items-center justify-center gap-2">
+              {fpage > 1 && <Link prefetch={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href={link({ fpage: String(fpage - 1) })}>Précédent</Link>}
+              <span className="text-sm">Page {fpage} / {otherPages}</span>
+              {fpage < otherPages && <Link prefetch={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href={link({ fpage: String(fpage + 1) })}>Suivant</Link>}
+            </nav>
+          )}
+        </section>
       )}
     </div>
   );

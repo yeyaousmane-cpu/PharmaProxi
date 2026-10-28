@@ -560,6 +560,118 @@ await step("administration : file de l'annuaire, justificatifs exigés, spécial
   await aCtx.close();
 });
 
+console.log("Pharmacies non inscrites");
+await step("administration : import CSV (point-virgule, Windows-1252), doublons et erreurs ligne par ligne", async () => {
+  const aCtx = await newCtx(mobile);
+  const a = await login(aCtx, "admin");
+  current = a;
+  await a.goto(`${BASE}/admin/pharmacies-non-inscrites`, NI);
+  // Fichier tel qu'Excel l'enregistre en français : « ; » et encodage Windows-1252
+  const csv = "Nom;Région;Commune;Quartier;Adresse;Téléphone;Latitude;Longitude\r\n"
+    + "Officine Étoile du Nord;Bamako;Commune 3;;Face au marché;76-32-23-41;12,655;-8,0\r\n"
+    + "OFFICINE ETOILE DU NORD;District de Bamako;Commune III;;;;;\r\n"
+    + "Officine de Massigui;Koulikoro;Massigui;Centre;;63 43 32 73;;\r\n"
+    + "Sans région;Atlantide;;;;;;\r\n";
+  const bytes = Buffer.from(csv, "latin1");
+  await a.setInputFiles("#l-file", { name: "pharmacies.csv", mimeType: "text/csv", buffer: bytes });
+  await a.getByRole("button", { name: "Importer" }).click();
+  await a.getByText(/2 fiche\(s\) importée\(s\), 1 doublon\(s\) ignoré\(s\), 1 ligne\(s\) en erreur/).waitFor({ timeout: 15000 });
+  await a.getByText(/Ligne 5 : région inconnue/).first().waitFor({ timeout: 5000 });
+  await a.reload(NI);
+  await a.getByText("Officine Étoile du Nord").first().waitFor({ timeout: 10000 });
+  assert((await a.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (admin pharmacies non inscrites)");
+  await shot(a, "15-admin-pharmacies-non-inscrites");
+  await aCtx.close();
+});
+
+await step("annuaire public : pharmacies inscrites et non inscrites, appel, carte", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/pharmacies`, NI);
+  const card = v.locator("li", { hasText: "Officine Étoile du Nord" });
+  await card.getByText("Pas encore inscrite : stocks non disponibles").waitFor({ timeout: 10000 });
+  assert((await card.locator("a[href='tel:+22376322341']").count()) === 1, "lien d'appel absent");
+  await v.getByText("Inscrite et vérifiée : stocks et réservation").first().waitFor({ timeout: 10000 });
+  await v.fill("input[name=q]", "etoile");
+  await v.getByRole("button", { name: "Rechercher" }).click();
+  await v.waitForURL(/q=etoile/);
+  await v.getByText("1 pharmacie").first().waitFor({ timeout: 10000 });
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (annuaire des pharmacies)");
+  await shot(v, "16-annuaire-pharmacies-mobile");
+  await v.goto(`${BASE}/carte`, NI);
+  await v.getByText(/autre pharmacie \(pas encore inscrite\)/).waitFor({ timeout: 10000 });
+  await c.close();
+});
+
+await step("administration : masquer puis republier une fiche", async () => {
+  const aCtx = await newCtx(mobile);
+  const a = await login(aCtx, "admin");
+  current = a;
+  await a.goto(`${BASE}/admin/pharmacies-non-inscrites?q=Massigui`, NI);
+  await a.getByRole("link", { name: /Officine de Massigui/ }).click();
+  await a.waitForURL(/\/admin\/pharmacies-non-inscrites\/[0-9a-f-]{36}/);
+  await act(a, () => a.getByRole("button", { name: "Masquer du public" }).click(), () => a.getByRole("button", { name: "Publier" }));
+  const pub = await newCtx(mobile);
+  const v = await pub.newPage();
+  await v.goto(`${BASE}/pharmacies?q=massigui`, NI);
+  await v.getByText("Aucune pharmacie trouvée avec ces critères.").waitFor({ timeout: 10000 });
+  await act(a, () => a.getByRole("button", { name: "Publier" }).click(), () => a.getByRole("button", { name: "Masquer du public" }));
+  await v.reload(NI);
+  await v.getByText("Officine de Massigui").first().waitFor({ timeout: 10000 });
+  await pub.close();
+  await aCtx.close();
+});
+
+console.log("Registres publics");
+const DATA = process.env.E2E_DATA_DIR; // fichiers réels (Tableau de l'Ordre, établissements, pharmacies partenaires)
+await step("administration : import du Tableau de l'Ordre et des établissements", async () => {
+  const aCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
+  const a = await login(aCtx, "admin");
+  current = a;
+  await a.goto(`${BASE}/admin/annuaire?vue=tableau`, NI);
+  const tableau = DATA ? `${DATA}/tableau-ordre-medecins-2025.csv` : { name: "t.csv", mimeType: "text/csv",
+    buffer: Buffer.from("N° ordre;N° d'inscription;Nom;Prénom;Spécialité;Structure;CROM\n1;2010001;TRAORE;Awa;Pédiatrie;CHU Gabriel TOURE;CROM BAMAKO\n2;2010002;BAH;Sékou;Cardiologie;Hôpital du Mali;CROM BAMAKO\n", "utf8") };
+  await a.setInputFiles("#reg-file", tableau);
+  await a.fill("#reg-year", "2025");
+  await a.getByRole("button", { name: "Importer" }).click();
+  await a.getByText(/Tableau 2025 : \d+ médecin\(s\) importé\(s\)/).waitFor({ timeout: 90000 });
+  await a.goto(`${BASE}/admin/annuaire?vue=etablissements`, NI);
+  const fac = DATA ? `${DATA}/etablissements-sante.csv` : { name: "e.csv", mimeType: "text/csv",
+    buffer: Buffer.from("nom;categorie;region;ville;telephone\nClinique Aldi;Clinique;District de Bamako;Bamako;20 21 14 34\n", "utf8") };
+  await a.setInputFiles("#fac-file", fac);
+  await a.getByRole("button", { name: "Importer" }).click();
+  await a.getByText(/établissement\(s\) importé\(s\)/).waitFor({ timeout: 20000 });
+  if (DATA) {
+    await a.goto(`${BASE}/admin/pharmacies-non-inscrites`, NI);
+    await a.setInputFiles("#l-file", `${DATA}/pharmacies-partenaires.csv`);
+    await a.getByRole("button", { name: "Importer" }).click();
+    await a.getByText(/fiche\(s\) importée\(s\)/).waitFor({ timeout: 20000 });
+  }
+  await aCtx.close();
+});
+
+await step("public : médecins du Tableau par spécialité, établissements non vérifiés", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/medecins`, NI);
+  await v.getByText(/médecins inscrits au Tableau 2025/).first().waitFor({ timeout: 10000 });
+  await v.getByRole("link", { name: "Pédiatrie", exact: true }).first().click();
+  await v.waitForURL(/specialite=/);
+  await v.getByRole("heading", { name: /Médecins inscrits au Tableau de l'Ordre \(\d+\)/ }).waitFor({ timeout: 10000 });
+  await v.getByText(/Inscrit au Tableau 2025 de l'Ordre/).first().waitFor({ timeout: 10000 });
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (médecins du Tableau)");
+  await shot(v, "17-tableau-ordre-mobile");
+  await v.goto(`${BASE}/cliniques?q=aldi`, NI);
+  await v.getByText("Clinique Aldi").first().waitFor({ timeout: 10000 });
+  await v.getByText("Non vérifié").first().waitFor({ timeout: 10000 });
+  await v.goto(`${BASE}/cliniques`, NI);
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (établissements)");
+  await shot(v, "18-etablissements-mobile");
+  await c.close();
+});
+
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {
   const all = [...consoleErrors, ...pageErrors];
   assert(all.length === 0, all.slice(0, 5).join(" | "));

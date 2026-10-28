@@ -8,6 +8,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
   const roles = session?.roles ?? [];
   const links = [
     { href: "/recherche", label: "Rechercher" },
+    { href: "/pharmacies", label: "Pharmacies" },
     { href: "/medecins", label: "Médecins" },
     { href: "/carte", label: "Carte" },
     roles.includes("pharmacist") && { href: "/pharmacien", label: "Espace pharmacien" },

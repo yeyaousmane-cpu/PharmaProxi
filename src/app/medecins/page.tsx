@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Building2, Search, SearchX, Stethoscope } from "lucide-react";
 import { DoctorCard, type DoctorRow } from "@/components/directory/doctor-card";
+import { RegisterList, type RegisterRow } from "@/components/directory/register-list";
 import { EmergencyBanner, NotDirectoryAdvice } from "@/components/directory/directory-bits";
 import { LocationPicker } from "@/components/location-picker";
 import { LocateButton } from "@/components/locate-button";
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils";
 export const metadata = { title: "Trouver un médecin spécialiste" };
 
 const PAGE_SIZE = 20;
+const REG_SIZE = 20;
 type SP = Record<string, string | undefined>;
 
 export default async function DoctorsPage({ searchParams }: { searchParams: Promise<SP> }) {
@@ -37,12 +39,29 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
   const searching = Boolean(q.length >= 2 || specialty || sp.region || sp.aujourdhui || day || sp.langue || sp.genre || lat !== null);
 
   let rows: DoctorRow[] = [];
+  let reg: RegisterRow[] = [];
+  type Summary = { year: number | null; total: number };
+  let summary = null as Summary | null;
   let error: string | null = null;
+  const rpage = Math.max(1, Math.min(200, Number(sp.rpage) || 1));
+  // Le Tableau de l'Ordre ne connaît ni jours, ni langues, ni genre : ces filtres ne s'y appliquent pas
+  const regFilters = Boolean(q.length >= 2 || specialty || sp.region);
+  if (isSupabaseConfigured() && !searching) {
+    const supabase = await createClient();
+    const { data } = await supabase.rpc("register_summary");
+    summary = data as Summary | null;
+  }
   if (searching && isSupabaseConfigured()) {
     if (!(await allow(`dir:${await clientIp()}`, 60, 60_000))) {
       error = "Trop de recherches en peu de temps. Patientez une minute.";
     } else {
       const supabase = await createClient();
+      if (regFilters) {
+        const { data: rd } = await supabase.rpc("search_doctor_register", {
+          p_query: q.length >= 2 ? q : null, p_specialty: specialty, p_region: uuidOrNull(sp.region), p_limit: REG_SIZE, p_offset: (rpage - 1) * REG_SIZE,
+        });
+        reg = (rd as RegisterRow[]) ?? [];
+      }
       const { data, error: e } = await supabase.rpc("search_doctors", {
         p_query: q.length >= 2 ? q : null, p_specialty: specialty, p_region: uuidOrNull(sp.region), p_commune: uuidOrNull(sp.commune),
         p_clinic: null, p_day: day, p_today: sp.aujourdhui === "1", p_language: sp.langue && LANGUAGES[sp.langue] ? sp.langue : null,
@@ -54,6 +73,8 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
     }
   }
   const total = Number(rows[0]?.total_count ?? 0);
+  const regTotal = Number(reg[0]?.total_count ?? 0);
+  const regPages = Math.ceil(regTotal / REG_SIZE);
   const pages = Math.ceil(total / PAGE_SIZE);
   const link = (patch: SP) => {
     const p = new URLSearchParams();
@@ -134,6 +155,12 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
       </form>
       <div className="flex justify-end"><LocateButton basePath="/medecins" /></div>
 
+      {!searching && summary?.total ? (
+        <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+          <strong>{summary.total.toLocaleString("fr-FR")} médecins</strong> inscrits au Tableau {summary.year} de l&apos;Ordre des médecins du Mali sont consultables : choisissez une spécialité ou tapez un nom.
+        </p>
+      ) : null}
+
       {!searching && (
         <section aria-labelledby="spec-title" className="space-y-4">
           <h2 id="spec-title" className="text-lg font-bold">Parcourir par spécialité</h2>
@@ -155,7 +182,12 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
 
       <section aria-live="polite" className="space-y-3">
         {error && <Alert tone="error" title={error} />}
-        {searching && !error && rows.length === 0 && (
+        {searching && !error && rows.length === 0 && reg.length > 0 && (
+          <p className="rounded-xl border border-dashed bg-white p-4 text-sm text-muted-foreground">
+            Aucun médecin de cette recherche n&apos;a encore complété sa fiche (contacts, jours de consultation). Voici les médecins correspondants inscrits au Tableau de l&apos;Ordre.
+          </p>
+        )}
+        {searching && !error && rows.length === 0 && reg.length === 0 && (
           <div className="rounded-xl border border-dashed bg-white p-8 text-center">
             <SearchX className="mx-auto size-8 text-muted-foreground" aria-hidden />
             <p className="mt-2 font-semibold">Aucun médecin référencé ne correspond{specName ? ` (${specName})` : ""}.</p>
@@ -174,6 +206,26 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
               </nav>
             )}
           </>
+        )}
+        {reg.length > 0 && (
+          <section aria-labelledby="register-title" className="space-y-3 pt-2">
+            <div>
+              <h2 id="register-title" className="text-lg font-bold">Médecins inscrits au Tableau de l&apos;Ordre ({regTotal})</h2>
+              <p className="text-sm text-muted-foreground">
+                Source officielle : Tableau {reg[0].register_year} de l&apos;Ordre des médecins du Mali. Il confirme l&apos;inscription à l&apos;Ordre, la spécialité et la structure déclarées,
+                mais ne contient ni téléphone ni jours de consultation : contactez l&apos;établissement indiqué.
+                {(day || sp.langue || sp.genre || sp.aujourdhui) ? " Les filtres jour, langue, genre et « aujourd'hui » ne s'appliquent pas à cette liste." : ""}
+              </p>
+            </div>
+            <RegisterList rows={reg} />
+            {regPages > 1 && (
+              <nav aria-label="Pagination du Tableau" className="flex items-center justify-center gap-2">
+                {rpage > 1 && <Link prefetch={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href={link({ rpage: String(rpage - 1) })}>Précédent</Link>}
+                <span className="text-sm">Page {rpage} / {regPages}</span>
+                {rpage < regPages && <Link prefetch={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href={link({ rpage: String(rpage + 1) })}>Suivant</Link>}
+              </nav>
+            )}
+          </section>
         )}
         <NotDirectoryAdvice />
       </section>

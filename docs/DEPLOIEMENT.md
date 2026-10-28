@@ -115,6 +115,17 @@ Menu **Authentication** :
 4. Dans *Administration › Paramètres*, renseignez `emergency_numbers` avec des numéros vérifiés.
 5. Vérifiez : `/medecins`, `/cliniques`, `/specialites` s'affichent ; *Administration › Annuaire* est accessible.
 
+### Passer de la v0.3.0 à la v0.3.1 (pharmacies non inscrites)
+
+1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000100_pharmacy_listings.sql`.
+2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (*Add file › Upload files*) : le programme `.github/workflows/installer.yml` le décompresse et Vercel redéploie.
+
+### Passer à la v0.4.0 (registres publics)
+
+1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000200_registers.sql` (après celle de la v0.3.1).
+2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub.
+3. Importez les données depuis l'administration : *Annuaire médical › Tableau de l'Ordre* et *› Établissements non vérifiés*, puis *Pharmacies non inscrites*.
+
 Pour une **nouvelle installation**, `installation-complete.sql` contient déjà toutes les migrations, annuaire compris.
 
 ## En cas de problème

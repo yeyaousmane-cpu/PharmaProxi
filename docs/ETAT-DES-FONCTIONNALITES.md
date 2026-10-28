@@ -44,6 +44,16 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 - Administration : files de validation, liste de contrôle en 5 points, consultation des justificatifs, fiches à confirmer, spécialités, indicateurs de l'annuaire, intégrité.
 - Rappels automatiques de confirmation (maintenance planifiée), bandeau des numéros d'urgence (renseignés par l'administration).
 
+**Annuaire des pharmacies non inscrites (v0.3.1)**
+- Fiches simples (nom, zone, adresse, téléphone, position) pour les officines qui n'ont pas encore rejoint PharmaProxi : sans stock ni prix, clairement signalées « pas encore inscrite ».
+- Page publique `/pharmacies` (pharmacies inscrites + non inscrites, recherche par nom, zone, proximité) et repères blancs sur la carte.
+- Administration : import CSV (point-virgule ou virgule, UTF-8 ou Windows-1252, numéros maliens normalisés, doublons ignorés, erreurs ligne par ligne), ajout manuel, masquage, suppression, rattachement à la pharmacie inscrite correspondante (suggestions par ressemblance du nom), journal d'audit.
+
+**Registres publics (v0.4.0)**
+- **Tableau de l'Ordre des médecins** (édition 2025 : 4 330 médecins) : recherche publique par nom, spécialité, région (conseil régional) et structure ; aucune coordonnée personnelle ; badge « Inscrit au Tableau » ; lien vers l'établissement ; pas de doublon avec les fiches vérifiées (même n° d'inscription). Import annuel par CSV depuis l'administration ; masquage durable à la demande d'un médecin.
+- 10 spécialités ajoutées pour couvrir le Tableau (santé publique, médecine d'urgence, chirurgie thoracique et cardiovasculaire…).
+- **Établissements non vérifiés** : fiches simples (type, ville, téléphones) affichées sur `/cliniques` avec le badge « Non vérifié » ; import CSV, masquage, suppression.
+
 **Commandes et livraison**
 - Demande → confirmation → réservation → retrait ou livraison → clôture ; 13 statuts ; idempotence ; concurrence ; expiration ; échecs ; incidents ; remboursements.
 - Livraison : désactivée par défaut, catégories autorisées une à une, ordonnance jamais livrée, livreurs vérifiés uniquement, collecte / remise / échec / incident.

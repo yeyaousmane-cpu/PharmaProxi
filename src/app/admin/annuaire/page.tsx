@@ -9,13 +9,14 @@ import { Input, Textarea } from "@/components/ui/input";
 import { CLINIC_KINDS, REVIEW_STATUS } from "@/lib/directory";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { FacilityAdmin, RegisterAdmin } from "./registers-admin";
 
 export const metadata = { title: "Annuaire médical — administration" };
 const one = <T,>(v: T | T[] | null | undefined) => (Array.isArray(v) ? v[0] : v) ?? null;
-const VIEWS = [["medecins", "Médecins"], ["cliniques", "Cliniques"], ["anciennes", "Fiches à confirmer"], ["specialites", "Spécialités"]] as const;
+const VIEWS = [["medecins", "Médecins"], ["cliniques", "Cliniques"], ["tableau", "Tableau de l'Ordre"], ["etablissements", "Établissements non vérifiés"], ["anciennes", "Fiches à confirmer"], ["specialites", "Spécialités"]] as const;
 const STATUSES = ["pending", "verified", "rejected", "suspended"];
 
-export default async function AdminDirectory({ searchParams }: { searchParams: Promise<{ vue?: string; statut?: string }> }) {
+export default async function AdminDirectory({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
   const view = VIEWS.some(([k]) => k === sp.vue) ? sp.vue! : "medecins";
   const statut = STATUSES.includes(sp.statut ?? "") ? sp.statut! : "pending";
@@ -64,6 +65,10 @@ export default async function AdminDirectory({ searchParams }: { searchParams: P
             </li>))}</ul>)}
         </CardContent></Card>
     );
+  } else if (view === "tableau") {
+    body = <RegisterAdmin sp={sp} />;
+  } else if (view === "etablissements") {
+    body = <FacilityAdmin sp={sp} />;
   } else if (view === "anciennes") {
     const limit = new Date(Date.now() - settings.directory_fresh_days * 86_400_000).toISOString();
     const [{ data: docs }, { data: clis }] = await Promise.all([

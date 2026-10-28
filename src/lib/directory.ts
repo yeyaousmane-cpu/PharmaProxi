@@ -12,6 +12,12 @@ export const CLINIC_KINDS: Record<string, string> = {
   clinique: "Clinique", cabinet: "Cabinet médical", centre_medical: "Centre médical", hopital: "Hôpital",
 };
 
+/** Types des établissements non vérifiés (fiches d'annuaire simples). */
+export const FACILITY_KINDS: Record<string, string> = {
+  clinique: "Clinique", cabinet: "Cabinet médical", cabinet_dentaire: "Cabinet dentaire", centre_sante: "Centre de santé",
+  csref: "Centre de santé de référence", hopital: "Hôpital", imagerie: "Imagerie médicale", laboratoire: "Laboratoire d'analyses",
+};
+
 export const CLINIC_SERVICES: Record<string, string> = {
   laboratoire: "Laboratoire d'analyses", imagerie: "Imagerie médicale", maternite: "Maternité", hospitalisation: "Hospitalisation",
   bloc_operatoire: "Bloc opératoire", pharmacie_interne: "Pharmacie interne",

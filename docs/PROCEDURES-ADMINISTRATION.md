@@ -54,6 +54,28 @@ Toutes les décisions ci-dessous sont enregistrées dans le **journal d'audit** 
 - Un collaborateur retiré perd immédiatement l'accès ; son rôle pharmacien est retiré s'il n'appartient plus à aucune pharmacie.
 - Changement de propriétaire (départ du titulaire) : *Administration › Pharmacies › fiche › Transférer la titularité*. Le nouveau titulaire doit avoir un compte ; vérifiez d'abord ses justificatifs, saisissez son e-mail et un motif. L'ancien propriétaire reste collaborateur (le nouveau peut le retirer). L'opération est journalisée.
 
+## Pharmacies non inscrites
+
+- *Administration › Pharmacies non inscrites* : fiches d'annuaire des officines pas encore inscrites (nom, zone, téléphone, position), **sans stock ni prix**.
+- **N'importez que des données dont vous avez le droit de vous servir** (relevé terrain, liste officielle de l'Ordre ou de la DPM, partenaire ayant donné son accord écrit) et indiquez la source. Ne publiez jamais le nom du pharmacien responsable.
+- Import : téléchargez le modèle, remplissez-le dans Excel, *Enregistrer sous › CSV UTF-8*, puis importez. Les doublons sont ignorés ; chaque ligne en erreur est indiquée.
+- Quand l'officine s'inscrit et que vous la validez, ouvrez sa fiche non inscrite et cliquez sur **Rattacher** : la fiche d'annuaire disparaît au profit de la vraie fiche.
+- Un signalement (numéro faux, pharmacie fermée) : corrigez la fiche, ou masquez-la.
+
+## Tableau de l'Ordre des médecins
+
+- *Annuaire médical › Tableau de l'Ordre* : importez chaque année le Tableau publié par l'Ordre (CSV : ordre ; inscription ; nom ; prenom ; specialite ; structure ; crom), en cochant « Remplacer l'édition existante ».
+- Le Tableau ne contient aucune coordonnée : ne jamais y ajouter de téléphone ou d'adresse personnelle.
+- Un médecin demande à ne pas figurer sur PharmaProxi : recherchez-le et cliquez sur **Masquer** ; ce choix est conservé lors des imports suivants.
+- Un médecin qui complète sa fiche (contacts, plannings) et est vérifié remplace automatiquement son entrée du Tableau dans les résultats (même numéro d'inscription).
+
+## Établissements non vérifiés
+
+- *Annuaire médical › Établissements non vérifiés* : import CSV (nom ; type ; categorie ; region ; ville ; adresse ; telephone ; telephone2 ; source).
+- Types : clinique, cabinet, cabinet_dentaire, centre_sante, csref, hopital, imagerie, laboratoire (déduit du nom si la colonne est vide).
+- N'importez que des données dont vous avez le droit de vous servir (liste officielle du ministère, accord du détenteur de la liste) et indiquez la source.
+- Quand l'établissement s'inscrit et est vérifié, masquez ou supprimez sa fiche non vérifiée.
+
 ## Annuaire médical
 
 ### Validation d'un médecin
