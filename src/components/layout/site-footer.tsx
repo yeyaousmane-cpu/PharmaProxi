@@ -25,6 +25,12 @@ export function SiteFooter() {
           <Link prefetch={false} href="/fonctionnement" className="hover:underline">Comment ça marche ?</Link>
         </nav>
       </div>
+      <div className="border-t">
+        <p className="container-page py-4 text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} PharmaProxi · Projet porté et édité par{" "}
+          <span className="font-semibold text-brand-deep">Yéya Ousmane Touré</span>
+        </p>
+      </div>
       <div className="mali-stripe h-1" aria-hidden />
     </footer>
   );
