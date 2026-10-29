@@ -1027,6 +1027,39 @@ await step("contact : un visiteur écrit, l'administration reçoit et traite le 
   await aCtx.close();
 });
 
+await step("annonces : e-mail de bienvenue à l'inscription, annonce à tous (compte + e-mail), bienvenue jamais en double", async () => {
+  const { readdirSync, readFileSync: rf } = await import("node:fs");
+  const MAILDIR = process.env.E2E_MAIL_DIR;
+  const mails = () => (MAILDIR ? readdirSync(MAILDIR).map((f) => rf(`${MAILDIR}/${f}`, "utf8")) : []);
+  if (MAILDIR) {
+    const welcome = mails().find((m) => m.includes(newEmail) && /Bienvenue sur PharmaProxi/.test(m));
+    assert(welcome, "e-mail de bienvenue non envoyé à l'inscription");
+  }
+  const aCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
+  const a = await login(aCtx, "admin");
+  current = a;
+  a.on("dialog", (dlg) => dlg.accept());
+  await a.goto(`${BASE}/admin/annonces?modele=bienvenue`, NI);
+  await a.getByRole("button", { name: "Envoyer l'annonce" }).click();
+  await a.getByText(/Annonce envoyée : 0 notification\(s\)/).first().waitFor({ timeout: 30000 }); // déjà reçue à l'inscription
+  if (MAILDIR) assert(!mails().filter((m) => m.includes(newEmail) && /Bienvenue sur PharmaProxi/.test(m)).slice(1).length, "bienvenue envoyée deux fois par e-mail");
+  await a.goto(`${BASE}/admin/annonces?modele=libre`, NI);
+  await a.fill("#an-title", "Nouveau : pharmacies de garde");
+  await a.fill("#an-body", "Retrouvez désormais les pharmacies de garde de votre commune.");
+  await a.fill("#an-link", "/garde");
+  await a.getByRole("button", { name: "Envoyer l'annonce" }).click();
+  await a.getByText(/Annonce envoyée : [1-9]\d* notification\(s\)/).first().waitFor({ timeout: 30000 });
+  if (MAILDIR) {
+    await a.getByText(/E-mails : [1-9]\d* envoyé\(s\)/).first().waitFor({ timeout: 5000 });
+    const m = mails().find((x) => x.includes(newEmail) && x.includes("Nouveau : pharmacies de garde"));
+    assert(m && m.includes("/garde"), "e-mail d'annonce non reçu");
+    assert(!mails().some((x) => /^X-RCPT: .*pharmaproxi\.invalid/m.test(x)), "un compte de démonstration a reçu un e-mail");
+  }
+  await a.locator("li", { hasText: "Nouveau : pharmacies de garde" }).getByText(/1 e-mail\(s\)|notification/).first().waitFor({ timeout: 10000 }); // historique
+  await shot(a, "30-annonces-admin");
+  await aCtx.close();
+});
+
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {
   const all = [...consoleErrors, ...pageErrors];
   assert(all.length === 0, all.slice(0, 5).join(" | "));

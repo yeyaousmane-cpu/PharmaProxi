@@ -27,9 +27,9 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
       <div className="mali-stripe h-1" aria-hidden />
       <div className="container-page flex h-14 items-center gap-4 sm:h-16">
         <Logo />
-        <nav aria-label="Navigation principale" className="ml-4 hidden items-center gap-1 md:flex">
+        <nav aria-label="Navigation principale" className="ml-2 hidden min-w-0 items-center gap-0.5 xl:flex">
           {links.map((l) => (
-            <Link prefetch={false} key={l.href} href={l.href} className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Link prefetch={false} key={l.href} href={l.href} className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
               {l.label}
             </Link>
           ))}
@@ -60,9 +60,9 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
         </div>
       </div>
       {links.length > 3 && (
-        <nav aria-label="Espaces" className="container-page flex gap-1 overflow-x-auto pb-2 md:hidden">
-          {links.slice(3).map((l) => (
-            <Link prefetch={false} key={l.href} href={l.href} className="shrink-0 rounded-full border bg-white px-3 py-1 text-xs font-medium">
+        <nav aria-label="Espaces" className="container-page flex gap-1 overflow-x-auto pb-2 xl:hidden">
+          {links.map((l, i) => (
+            <Link prefetch={false} key={l.href} href={l.href} className={`shrink-0 rounded-full border bg-white px-3 py-1 text-xs font-medium ${i < 3 ? "hidden md:inline-block" : ""}`}>
               {l.label}
             </Link>
           ))}

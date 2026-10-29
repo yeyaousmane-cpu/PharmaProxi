@@ -120,6 +120,14 @@ Menu **Authentication** :
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000100_pharmacy_listings.sql`.
 2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (*Add file › Upload files*) : le programme `.github/workflows/installer.yml` le décompresse et Vercel redéploie.
 
+### Envoi d'e-mails (annonces, bienvenue)
+
+Le site envoie ses e-mails par SMTP. Avec une adresse Gmail dédiée (par ex. pharmaproxi.mali@gmail.com) :
+1. Sur le compte Google : *Sécurité › Validation en deux étapes* (activer), puis *Mots de passe des applications* › créer « PharmaProxi » : Google affiche un code de 16 lettres.
+2. Dans Vercel › *Settings › Environment Variables*, ajoutez (type **Secret**, Production) : `SMTP_USER` = l'adresse Gmail, `SMTP_PASS` = le code de 16 lettres (sans espaces), `MAIL_FROM` = `PharmaProxi <adresse Gmail>`. `SMTP_HOST` et `SMTP_PORT` sont facultatifs (smtp.gmail.com, 465).
+3. Redéployez (*Deployments › … › Redeploy*). Limite Gmail : 500 e-mails par jour ; au-delà, utilisez un service d'envoi (Brevo, Zoho…) avec les mêmes variables.
+Ne mettez jamais ces valeurs dans le code ni dans une variable `NEXT_PUBLIC_`.
+
 ### Passer à la v0.8.0 (rubrique « Prendre rendez-vous », laboratoires DPM)
 
 1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.8.0.sql` (migration `20261029000200_booking_hub.sql` + les 19 laboratoires de la liste DPM). Contrôle attendu : `true, 19, 13`.

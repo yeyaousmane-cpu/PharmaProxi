@@ -1,6 +1,6 @@
 {
   "name": "pharmaproxi",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "private": true,
   "description": "PharmaProxi — localiser les pharmacies et les médicaments disponibles au Mali",
   "scripts": {
@@ -25,6 +25,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^1.55.0",
     "next": "^16.3.8",
+    "nodemailer": "^10.2.1",
     "papaparse": "^5.7.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -37,6 +38,7 @@
     "@playwright/test": "^1.64.0",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^26.6.5",
+    "@types/nodemailer": "^8.0.2",
     "@types/papaparse": "^5.5.2",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",

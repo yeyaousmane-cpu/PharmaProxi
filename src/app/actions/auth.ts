@@ -1,4 +1,7 @@
 "use server";
+import { isMailConfigured, renderEmail, sendMail } from "@/lib/mailer";
+import { createServiceClient } from "@/lib/supabase/service";
+import { WELCOME } from "@/lib/welcome";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -44,6 +47,8 @@ export async function signUp(_: ActionState, fd: FormData): Promise<ActionState>
     },
   });
   if (error) return { error: humanizeError(error) };
+  // Adresse déjà inscrite : Supabase renvoie un utilisateur sans identité ; pas d'e-mail dans ce cas
+  if (data.user && (data.user.identities?.length ?? 0) > 0) await sendWelcomeEmail(data.user.id, parsed.data.email, parsed.data.full_name);
   if (!data.session) {
     return { ok: true, message: "Compte créé. Confirmez votre adresse grâce au lien envoyé par e-mail, puis connectez-vous." };
   }
@@ -76,4 +81,17 @@ export async function signOut() {
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/");
+}
+
+/** E-mail de bienvenue à l'inscription (si l'envoi d'e-mails est configuré) ; jamais bloquant. */
+async function sendWelcomeEmail(userId: string, email: string, name: string) {
+  if (!isMailConfigured()) return;
+  try {
+    const { html, text } = renderEmail({ title: WELCOME.title, body: WELCOME.body, link: "/", name });
+    if (await sendMail({ to: email, subject: WELCOME.title, html, text })) {
+      await createServiceClient()?.rpc("mark_welcome_emailed", { p_user: userId });
+    }
+  } catch {
+    /* l'inscription ne doit jamais échouer à cause de l'e-mail */
+  }
 }
