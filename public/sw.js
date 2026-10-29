@@ -5,7 +5,7 @@
  * être présenté comme récent. Seuls les fichiers statiques et la page hors ligne
  * sont mis en cache.
  */
-const VERSION = "pp-v1";
+const VERSION = "pp-v2";
 const STATIC = ["/offline", "/logo.webp", "/emblem.webp", "/icons/icon-192.png"];
 
 self.addEventListener("install", (e) => {

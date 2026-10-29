@@ -70,7 +70,10 @@ export default async function ManageClinic({ params, searchParams }: { params: P
           <h1 className="text-2xl font-bold text-brand-deep">{c.name}</h1>
           <Badge className={cn("mt-1", status.className)}>{status.label}</Badge>
         </div>
-        <Link prefetch={false} href={`/cliniques/${c.id}`} className={cn(buttonVariants({ variant: "outline" }))}><Eye aria-hidden /> Voir la fiche publique</Link>
+        <div className="flex flex-wrap gap-2">
+          <Link prefetch={false} href={`/clinique/${c.id}/rendez-vous`} className={cn(buttonVariants())}>Rendez-vous</Link>
+          <Link prefetch={false} href={`/cliniques/${c.id}`} className={cn(buttonVariants({ variant: "outline" }))}><Eye aria-hidden /> Voir la fiche publique</Link>
+        </div>
       </header>
       {sp.inscrite && <Alert tone="success" title="Demande enregistrée">Étape suivante : déposez vos justificatifs ci-dessous pour permettre la vérification.</Alert>}
       {toAccept.length > 0 && <Alert tone="info" title={`${toAccept.length} médecin(s) demande(nt) à être rattaché(s) à l'établissement`}>Vérifiez puis acceptez leur planning dans la section « Médecins ».</Alert>}

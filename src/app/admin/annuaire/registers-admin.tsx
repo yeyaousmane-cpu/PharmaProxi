@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { Pagination, pageRange } from "@/components/pagination";
 import { deleteFacility, importDoctorRegister, importFacilities, setFacilityPublished, setRegisterPublished } from "@/app/actions/registers";
+import { setFacilityEmergency } from "@/app/actions/services";
 import { FACILITY_KINDS } from "@/lib/directory";
 import { formatPhone } from "@/lib/format";
 
@@ -101,7 +102,7 @@ export async function FacilityAdmin({ sp }: { sp: SP }) {
   const range = pageRange(sp.page);
   const q = clean(sp.q);
   let query = supabase.from("facility_listings")
-    .select("id, name, kind, category_label, city_label, phone, phone2, source, is_published, regions(name)", { count: "exact" })
+    .select("id, name, kind, category_label, city_label, phone, phone2, source, is_published, emergency_24h, regions(name)", { count: "exact" })
     .order("search_name").range(range.from, range.to);
   if (q) query = query.ilike("name", `%${q}%`);
   const { data, count } = await query;
@@ -117,7 +118,8 @@ export async function FacilityAdmin({ sp }: { sp: SP }) {
           <CardTitle>Importer des établissements</CardTitle>
           <CardDescription>
             Fiches simples (nom, type, ville, téléphone) affichées comme « non vérifié » en attendant que l&apos;établissement s&apos;inscrive.
-            Colonnes : <strong>nom</strong> ; type ; categorie ; region ; ville ; adresse ; telephone ; telephone2 ; latitude ; longitude ; source.
+            Colonnes : <strong>nom</strong> ; type ; categorie ; region ; ville ; adresse ; telephone ; telephone2 ; latitude ; longitude ; source ;
+            publie (oui/non) ; urgences_24h (oui/non). Types : clinique, cabinet, cabinet_dentaire, centre_sante, csref, hopital, imagerie, laboratoire, urgences, ambulance.
             N&apos;importez que des données dont vous avez le droit de vous servir et indiquez la source.
           </CardDescription>
         </CardHeader>
@@ -125,6 +127,7 @@ export async function FacilityAdmin({ sp }: { sp: SP }) {
           <ActionForm action={importFacilities} className="grid gap-3 sm:grid-cols-2 sm:items-end">
             <Field label="Fichier CSV" htmlFor="fac-file"><Input id="fac-file" type="file" name="file" accept=".csv,text/csv" required /></Field>
             <Field label="Source (si la colonne est vide)" htmlFor="fac-src"><Input id="fac-src" name="source" maxLength={200} /></Field>
+            <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="unpublished" /> Importer masqué (coordonnées à confirmer avant publication)</label>
             <SubmitButton variant="secondary" pendingText="Import…" className="w-fit">Importer</SubmitButton>
           </ActionForm>
         </CardContent>
@@ -144,7 +147,7 @@ export async function FacilityAdmin({ sp }: { sp: SP }) {
               {data.map((f) => (
                 <li key={f.id} className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="min-w-0">
-                    <span className="font-medium">{f.name}</span> {!f.is_published && <Badge className="bg-muted">Masqué</Badge>}
+                    <span className="font-medium">{f.name}</span> {!f.is_published && <Badge className="bg-muted">Masqué</Badge>} {f.emergency_24h && <Badge className="border-red-200 bg-red-50 text-red-800">Urgences 24 h/24</Badge>}
                     <span className="block text-xs text-muted-foreground">
                       {[FACILITY_KINDS[f.kind] ?? f.kind, f.city_label ?? one(f.regions)?.name ?? "Ville non précisée", formatPhone(f.phone), formatPhone(f.phone2), `source : ${f.source}`].filter(Boolean).join(" · ")}
                     </span>
@@ -153,6 +156,10 @@ export async function FacilityAdmin({ sp }: { sp: SP }) {
                     <ActionForm action={setFacilityPublished}>
                       <input type="hidden" name="id" value={f.id} /><input type="hidden" name="published" value={f.is_published ? "false" : "true"} />
                       <SubmitButton size="sm" variant="outline">{f.is_published ? "Masquer" : "Publier"}</SubmitButton>
+                    </ActionForm>
+                    <ActionForm action={setFacilityEmergency}>
+                      <input type="hidden" name="id" value={f.id} /><input type="hidden" name="on" value={f.emergency_24h ? "false" : "true"} />
+                      <SubmitButton size="sm" variant="outline">{f.emergency_24h ? "Retirer urgences" : "Urgences 24 h"}</SubmitButton>
                     </ActionForm>
                     <ActionForm action={deleteFacility}>
                       <input type="hidden" name="id" value={f.id} />

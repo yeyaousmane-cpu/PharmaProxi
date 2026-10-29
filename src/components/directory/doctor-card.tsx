@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Building2, Languages, MapPin, Phone } from "lucide-react";
+import { Building2, CalendarCheck, Languages, MapPin, Phone } from "lucide-react";
+import { formatApptDay, formatApptTime } from "@/lib/appointments";
 import { Badge } from "@/components/ui/badge";
 import { AbsenceBadge, DirectoryFreshnessBadge } from "@/components/directory/directory-bits";
 import { LANGUAGES, daysSummary, type DirectoryFreshness } from "@/lib/directory";
@@ -13,7 +14,7 @@ export type DoctorRow = {
 };
 
 /** Carte de résultat de l'annuaire : présentation identique pour tous les médecins (aucune mise en avant). */
-export function DoctorCard({ d }: { d: DoctorRow }) {
+export function DoctorCard({ d, next }: { d: DoctorRow; next?: { site_id: string; slot_start: string } | null }) {
   return (
     <article className="rounded-xl border bg-white p-4 transition hover:border-brand-blue">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -52,6 +53,13 @@ export function DoctorCard({ d }: { d: DoctorRow }) {
         </ul>
       ) : (
         <p className="mt-3 text-sm text-muted-foreground">Lieux de consultation non encore publiés.</p>
+      )}
+      {next && (
+        <Link prefetch={false} href={`/medecins/${d.doctor_id}/rendez-vous?lieu=${next.site_id}`}
+          className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-900 hover:bg-emerald-100">
+          <CalendarCheck className="size-4 shrink-0" aria-hidden />
+          <span>Prochaine disponibilité : <strong>{formatApptDay(next.slot_start)} à {formatApptTime(next.slot_start)}</strong> · Prendre rendez-vous</span>
+        </Link>
       )}
       <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
         <Languages className="size-3" aria-hidden /> {d.languages.map((l) => LANGUAGES[l] ?? l).join(", ")}

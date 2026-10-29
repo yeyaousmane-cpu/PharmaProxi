@@ -13,6 +13,10 @@ export function SiteFooter() {
         </div>
         <nav aria-label="Informations" className="flex flex-col gap-2">
           <Link prefetch={false} href="/pharmacies" className="hover:underline">Annuaire des pharmacies</Link>
+          <Link prefetch={false} href="/garde" className="hover:underline">Pharmacies de garde</Link>
+          <Link prefetch={false} href="/laboratoires" className="hover:underline">Laboratoires et examens</Link>
+          <Link prefetch={false} href="/urgences" className="hover:underline">Urgences</Link>
+          <Link prefetch={false} href="/carte" className="hover:underline">Carte</Link>
           <Link prefetch={false} href="/infos/securite" className="hover:underline">Bon usage et sécurité</Link>
           <Link prefetch={false} href="/infos/confidentialite" className="hover:underline">Confidentialité</Link>
           <Link prefetch={false} href="/infos/conditions" className="hover:underline">Conditions d&apos;utilisation</Link>

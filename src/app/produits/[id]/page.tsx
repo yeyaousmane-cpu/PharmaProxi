@@ -7,6 +7,11 @@ import { LocationPicker } from "@/components/location-picker";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
+import { createAlert } from "@/app/actions/services";
+import { getSession } from "@/lib/auth";
+import Link from "next/link";
+import { BellRing } from "lucide-react";
 
 export const metadata = { title: "Produit" };
 
@@ -22,8 +27,9 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
     .maybeSingle();
   if (!m) notFound();
   const uuid = (v?: string) => (v && /^[0-9a-f-]{36}$/i.test(v) ? v : null);
-  const [geo, res] = await Promise.all([
+  const [geo, session, res] = await Promise.all([
     getGeo(),
+    getSession(),
     supabase.rpc("search_inventory", { p_query: "", p_catalog: m.merged_into ?? m.id, p_region: uuid(sp.region), p_commune: uuid(sp.commune), p_sort: "freshness", p_limit: 50 }),
   ]);
   const rows = (res.data as SearchRow[]) ?? [];
@@ -56,6 +62,27 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
           <LocationPicker geo={geo} compact names={{ region: "region", commune: "commune" }} defaults={{ region: sp.region, commune: sp.commune }} className="flex-1" />
           <Button type="submit">Filtrer</Button>
         </form>
+        {rows.filter((r) => r.freshness !== "unavailable").length === 0 && (
+          <div id="alerte" className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="flex items-center gap-2 font-semibold"><BellRing className="size-4" aria-hidden /> Introuvable pour l&apos;instant ?</p>
+              <p className="text-sm text-amber-950">
+                Recevez une notification dès qu&apos;une pharmacie vérifiée {sp.commune || sp.region ? "de cette zone " : ""}le déclare disponible (pendant 30 jours).
+                Les pharmacies voient seulement le nombre de personnes qui le recherchent, jamais votre identité.
+              </p>
+            </div>
+            {session ? (
+              <ActionForm action={createAlert} className="shrink-0">
+                <input type="hidden" name="catalog_id" value={m.merged_into ?? m.id} />
+                <input type="hidden" name="region" value={uuid(sp.region) ?? ""} />
+                <input type="hidden" name="commune" value={uuid(sp.commune) ?? ""} />
+                <SubmitButton size="sm" pendingText="Création…">M&apos;alerter</SubmitButton>
+              </ActionForm>
+            ) : (
+              <Link prefetch={false} href={`/connexion?suite=${encodeURIComponent(`/produits/${m.id}`)}`} className="shrink-0 text-sm font-semibold text-primary underline">Connectez-vous pour être alerté(e)</Link>
+            )}
+          </div>
+        )}
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">Aucune pharmacie vérifiée ne déclare ce produit dans cette zone.</p>
         ) : (

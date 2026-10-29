@@ -4942,6 +4942,1542 @@ grant execute on function public.admin_import_doctor_register(int, jsonb, boolea
 grant execute on function public.search_doctor_register(text, uuid, uuid, int, int), public.register_summary(),
   public.search_facility_listings(text, uuid, int, int) to anon, authenticated;
 
+-- >>> 20261028000300_appointments.sql
+-- ============================================================================
+-- PharmaProxi — Migration : demandes de rendez-vous avec les médecins
+-- Principe : le patient DEMANDE un rendez-vous (jour + moment de la journée) sur un
+-- lieu de consultation publié ; le médecin ou le secrétariat de l'établissement
+-- CONFIRME avec une heure précise, PROPOSE un autre moment ou REFUSE. Rien n'est
+-- garanti avant la confirmation. Aucun conseil médical, aucune téléconsultation.
+-- Le motif (facultatif) n'est visible que du patient, du médecin et du secrétariat.
+-- Heure du Mali = UTC.
+-- ============================================================================
+
+alter table public.doctor_practice_sites add column accepts_appointments boolean not null default false;
+
+create table public.appointments (
+  id uuid primary key default gen_random_uuid(),
+  site_id uuid references public.doctor_practice_sites(id) on delete set null,
+  doctor_id uuid not null references public.doctors(id) on delete cascade,
+  clinic_id uuid not null references public.clinics(id) on delete cascade,
+  patient_id uuid not null references public.profiles(id) on delete cascade,
+  patient_name text not null check (char_length(btrim(patient_name)) between 2 and 120),
+  patient_phone text not null check (public.valid_phone(patient_phone)),
+  requested_date date not null,
+  requested_period text not null default 'indifferent' check (requested_period in ('matin', 'apres_midi', 'indifferent')),
+  reason text check (char_length(coalesce(reason, '')) <= 300),
+  status text not null default 'pending'
+    check (status in ('pending', 'confirmed', 'proposed', 'declined', 'cancelled', 'expired', 'completed', 'no_show')),
+  scheduled_at timestamptz,          -- heure fixée (confirmée ou proposée)
+  response_note text check (char_length(coalesce(response_note, '')) <= 300),
+  cancelled_by text check (cancelled_by in ('patient', 'practice')),
+  decided_by uuid references public.profiles(id) on delete set null,
+  idempotency_key text check (char_length(coalesce(idempotency_key, '')) <= 80),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (status not in ('confirmed', 'proposed') or scheduled_at is not null)
+);
+create unique index appointments_idem on public.appointments (patient_id, idempotency_key) where idempotency_key is not null;
+create index appointments_patient on public.appointments (patient_id, created_at desc);
+create index appointments_doctor on public.appointments (doctor_id, status, requested_date);
+create index appointments_clinic on public.appointments (clinic_id, status, requested_date);
+create trigger appointments_touch before update on public.appointments for each row execute function public.touch_updated_at();
+
+alter table public.appointments enable row level security;
+create policy "pp_appointments_read" on public.appointments for select to authenticated using (
+  patient_id = auth.uid() or doctor_id = public.my_doctor_id() or public.is_clinic_member(clinic_id));
+revoke insert, update, delete on public.appointments from anon, authenticated;
+grant select on public.appointments to authenticated;
+
+create or replace function public.appointment_period_label(p text)
+returns text language sql immutable as $$
+  select case p when 'matin' then 'le matin' when 'apres_midi' then 'l''après-midi' else 'à tout moment' end
+$$;
+
+-- Le médecin (ou un membre de l'établissement) peut-il gérer ce rendez-vous ?
+create or replace function public.can_manage_appointment(a public.appointments)
+returns boolean language sql stable security definer set search_path = public as $$
+  select coalesce(a.doctor_id = public.my_doctor_id(), false) or coalesce(public.is_clinic_member(a.clinic_id), false)
+$$;
+
+-- Activer / désactiver les demandes en ligne sur un lieu de consultation
+create or replace function public.set_site_appointments(p_site uuid, p_on boolean)
+returns void language plpgsql security definer set search_path = public as $$
+declare s public.doctor_practice_sites;
+begin
+  select * into s from public.doctor_practice_sites where id = p_site;
+  if s.id is null then raise exception 'PP404: lieu de consultation introuvable'; end if;
+  if not (coalesce(s.doctor_id = public.my_doctor_id(), false) or coalesce(public.can_manage_clinic(s.clinic_id), false)) then
+    raise exception 'PP403: action réservée au médecin ou à l''établissement' using errcode = '42501';
+  end if;
+  update public.doctor_practice_sites set accepts_appointments = p_on where id = p_site;
+  perform public.log_audit(case when p_on then 'appointments.enable' else 'appointments.disable' end, 'practice_site', p_site::text);
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Patient : demande
+-- ---------------------------------------------------------------------------
+create or replace function public.request_appointment(
+  p_site uuid, p_date date, p_period text, p_patient_name text, p_phone text, p_reason text default null, p_key text default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  uid uuid := auth.uid();
+  s public.doctor_practice_sites; d public.doctors; c public.clinics;
+  slots jsonb; ok_day boolean := false; slot jsonb; aid uuid; dkey text; doc_user uuid;
+begin
+  if uid is null then raise exception 'PP401: connectez-vous pour demander un rendez-vous' using errcode = '42501'; end if;
+  if p_key is not null then
+    select id into aid from public.appointments where patient_id = uid and idempotency_key = p_key;
+    if aid is not null then return aid; end if;
+  end if;
+  select * into s from public.doctor_practice_sites where id = p_site;
+  if s.id is null or not s.doctor_accepted or not s.clinic_accepted then raise exception 'PP404: lieu de consultation introuvable'; end if;
+  select * into d from public.doctors where id = s.doctor_id;
+  select * into c from public.clinics where id = s.clinic_id;
+  if not public.doctor_is_public(d.id) or c.status <> 'verified' then raise exception 'PP404: ce médecin n''est pas disponible dans l''annuaire'; end if;
+  if not s.accepts_appointments then raise exception 'PP409: ce lieu ne prend pas de demandes en ligne : appelez le numéro indiqué'; end if;
+  if p_period not in ('matin', 'apres_midi', 'indifferent') then raise exception 'PP422: moment de la journée invalide'; end if;
+  if public.normalize_ml_phone(p_phone) is null then raise exception 'PP422: numéro de téléphone invalide'; end if;
+  if char_length(btrim(coalesce(p_patient_name, ''))) < 2 then raise exception 'PP422: indiquez le nom du patient'; end if;
+  if p_date is null or p_date < (now() at time zone 'UTC')::date then raise exception 'PP422: choisissez une date à venir'; end if;
+  if p_date > (now() at time zone 'UTC')::date + 60 then raise exception 'PP422: les demandes sont possibles jusqu''à 60 jours à l''avance'; end if;
+  dkey := public.day_key(p_date::timestamp at time zone 'UTC');
+  slots := s.schedule -> dkey;
+  if slots is not null and jsonb_typeof(slots) = 'array' then
+    for slot in select * from jsonb_array_elements(slots) loop
+      if p_period = 'indifferent'
+         or (p_period = 'matin' and (slot ->> 0) < '13:00')
+         or (p_period = 'apres_midi' and (slot ->> 1) > '13:00') then ok_day := true; end if;
+    end loop;
+  end if;
+  if not ok_day then raise exception 'PP422: le médecin ne consulte pas à ce moment dans cet établissement : choisissez un jour de consultation'; end if;
+  if exists (select 1 from public.doctor_absences a where a.doctor_id = d.id and p_date between a.starts_on and a.ends_on) then
+    raise exception 'PP409: le médecin a annoncé une absence ce jour-là';
+  end if;
+  if (select count(*) from public.appointments where patient_id = uid and status in ('pending', 'proposed')) >= 3 then
+    raise exception 'PP429: vous avez déjà 3 demandes en attente : attendez une réponse ou annulez-en une';
+  end if;
+  if exists (select 1 from public.appointments where patient_id = uid and doctor_id = d.id and requested_date = p_date
+             and status in ('pending', 'proposed', 'confirmed')) then
+    raise exception 'PP409: vous avez déjà une demande auprès de ce médecin pour ce jour';
+  end if;
+
+  insert into public.appointments (site_id, doctor_id, clinic_id, patient_id, patient_name, patient_phone, requested_date, requested_period, reason, idempotency_key)
+  values (s.id, d.id, c.id, uid, btrim(p_patient_name), public.normalize_ml_phone(p_phone), p_date, p_period, nullif(btrim(coalesce(p_reason, '')), ''), p_key)
+  returning id into aid;
+
+  select user_id into doc_user from public.doctors where id = d.id;
+  perform public.notify_user(doc_user, 'appointment', 'Nouvelle demande de rendez-vous',
+    format('%s souhaite vous voir le %s %s à %s.', btrim(p_patient_name), to_char(p_date, 'DD/MM/YYYY'), public.appointment_period_label(p_period), c.name),
+    null, '/medecin/rendez-vous');
+  perform public.notify_clinic(c.id, 'appointment', 'Nouvelle demande de rendez-vous',
+    format('Pour %s %s, le %s %s.', d.title, d.display_name, to_char(p_date, 'DD/MM/YYYY'), public.appointment_period_label(p_period)),
+    format('/clinique/%s/rendez-vous', c.id));
+  return aid;
+exception when check_violation then
+  raise exception 'PP422: vérifiez le nom et le numéro de téléphone';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Médecin / secrétariat : réponse
+-- p_action : 'confirm' (heure le jour demandé), 'propose' (autre moment), 'decline'
+-- ---------------------------------------------------------------------------
+create or replace function public.respond_appointment(p_id uuid, p_action text, p_at timestamptz default null, p_note text default null)
+returns void language plpgsql security definer set search_path = public as $$
+declare a public.appointments; d public.doctors;
+begin
+  select * into a from public.appointments where id = p_id for update;
+  if a.id is null or not public.can_manage_appointment(a) then raise exception 'PP404: rendez-vous introuvable'; end if;
+  if a.status not in ('pending', 'proposed') then raise exception 'PP409: cette demande a déjà reçu une réponse'; end if;
+  select * into d from public.doctors where id = a.doctor_id;
+  if p_action = 'confirm' then
+    if p_at is null then raise exception 'PP422: indiquez l''heure du rendez-vous'; end if;
+    if (p_at at time zone 'UTC')::date <> a.requested_date then raise exception 'PP422: pour un autre jour, utilisez « Proposer un autre moment »'; end if;
+    if p_at < now() then raise exception 'PP422: cette heure est déjà passée'; end if;
+    update public.appointments set status = 'confirmed', scheduled_at = p_at, response_note = nullif(btrim(coalesce(p_note, '')), ''), decided_by = auth.uid() where id = p_id;
+    perform public.notify_user(a.patient_id, 'appointment', 'Rendez-vous confirmé',
+      format('%s %s vous attend le %s à %s.%s', d.title, d.display_name, to_char(p_at at time zone 'UTC', 'DD/MM/YYYY'), to_char(p_at at time zone 'UTC', 'HH24"h"MI'),
+             coalesce(' ' || nullif(btrim(coalesce(p_note, '')), ''), '')), null, '/compte/rendez-vous');
+  elsif p_action = 'propose' then
+    if p_at is null or p_at < now() then raise exception 'PP422: proposez une date et une heure à venir'; end if;
+    update public.appointments set status = 'proposed', scheduled_at = p_at, response_note = nullif(btrim(coalesce(p_note, '')), ''), decided_by = auth.uid() where id = p_id;
+    perform public.notify_user(a.patient_id, 'appointment', 'Un autre moment vous est proposé',
+      format('%s %s propose le %s à %s. Acceptez ou refusez dans « Mes rendez-vous ».', d.title, d.display_name,
+             to_char(p_at at time zone 'UTC', 'DD/MM/YYYY'), to_char(p_at at time zone 'UTC', 'HH24"h"MI')), null, '/compte/rendez-vous');
+  elsif p_action = 'decline' then
+    if char_length(btrim(coalesce(p_note, ''))) < 3 then raise exception 'PP422: indiquez un motif au patient (ex. complet ce jour-là, appelez le secrétariat)'; end if;
+    update public.appointments set status = 'declined', response_note = btrim(p_note), decided_by = auth.uid() where id = p_id;
+    perform public.notify_user(a.patient_id, 'appointment', 'Demande de rendez-vous non retenue',
+      format('%s %s : %s', d.title, d.display_name, btrim(p_note)), null, '/compte/rendez-vous');
+  else
+    raise exception 'PP422: action inconnue';
+  end if;
+  perform public.log_audit('appointment.' || p_action, 'appointment', p_id::text);
+end $$;
+
+-- Patient : réponse à une proposition
+create or replace function public.answer_appointment_proposal(p_id uuid, p_accept boolean)
+returns void language plpgsql security definer set search_path = public as $$
+declare a public.appointments; doc_user uuid;
+begin
+  select * into a from public.appointments where id = p_id and patient_id = auth.uid() for update;
+  if a.id is null then raise exception 'PP404: rendez-vous introuvable'; end if;
+  if a.status <> 'proposed' then raise exception 'PP409: aucune proposition en attente'; end if;
+  if p_accept and a.scheduled_at < now() then raise exception 'PP409: le moment proposé est déjà passé'; end if;
+  update public.appointments set status = case when p_accept then 'confirmed' else 'cancelled' end,
+         cancelled_by = case when p_accept then null else 'patient' end where id = p_id;
+  select user_id into doc_user from public.doctors where id = a.doctor_id;
+  perform public.notify_user(doc_user, 'appointment',
+    case when p_accept then 'Proposition acceptée' else 'Proposition refusée' end,
+    format('%s, %s.', a.patient_name, to_char(a.scheduled_at at time zone 'UTC', 'DD/MM/YYYY HH24"h"MI')), null, '/medecin/rendez-vous');
+  perform public.notify_clinic(a.clinic_id, 'appointment',
+    case when p_accept then 'Proposition acceptée' else 'Proposition refusée' end,
+    format('%s, %s.', a.patient_name, to_char(a.scheduled_at at time zone 'UTC', 'DD/MM/YYYY HH24"h"MI')), format('/clinique/%s/rendez-vous', a.clinic_id));
+end $$;
+
+-- Annulation : par le patient (demande ou rendez-vous à venir) ou par le médecin / secrétariat (avec motif)
+create or replace function public.cancel_appointment(p_id uuid, p_reason text default null)
+returns void language plpgsql security definer set search_path = public as $$
+declare a public.appointments; is_patient boolean; doc_user uuid; d public.doctors;
+begin
+  select * into a from public.appointments where id = p_id for update;
+  if a.id is null then raise exception 'PP404: rendez-vous introuvable'; end if;
+  is_patient := a.patient_id = auth.uid();
+  if not is_patient and not public.can_manage_appointment(a) then raise exception 'PP404: rendez-vous introuvable'; end if;
+  if a.status not in ('pending', 'proposed', 'confirmed') then raise exception 'PP409: ce rendez-vous ne peut plus être annulé'; end if;
+  if a.status = 'confirmed' and a.scheduled_at < now() then raise exception 'PP409: l''heure du rendez-vous est passée'; end if;
+  if not is_patient and char_length(btrim(coalesce(p_reason, ''))) < 3 then raise exception 'PP422: indiquez un motif au patient'; end if;
+  update public.appointments set status = 'cancelled', cancelled_by = case when is_patient then 'patient' else 'practice' end,
+         response_note = case when is_patient then response_note else btrim(p_reason) end where id = p_id;
+  select * into d from public.doctors where id = a.doctor_id;
+  if is_patient then
+    perform public.notify_user(d.user_id, 'appointment', 'Rendez-vous annulé par le patient',
+      format('%s, %s.', a.patient_name, coalesce(to_char(a.scheduled_at at time zone 'UTC', 'DD/MM/YYYY HH24"h"MI'), to_char(a.requested_date, 'DD/MM/YYYY'))), null, '/medecin/rendez-vous');
+    perform public.notify_clinic(a.clinic_id, 'appointment', 'Rendez-vous annulé par le patient',
+      format('%s, %s.', a.patient_name, coalesce(to_char(a.scheduled_at at time zone 'UTC', 'DD/MM/YYYY HH24"h"MI'), to_char(a.requested_date, 'DD/MM/YYYY'))), format('/clinique/%s/rendez-vous', a.clinic_id));
+  else
+    perform public.notify_user(a.patient_id, 'appointment', 'Rendez-vous annulé',
+      format('%s %s : %s', d.title, d.display_name, btrim(p_reason)), null, '/compte/rendez-vous');
+  end if;
+  perform public.log_audit('appointment.cancel', 'appointment', p_id::text, jsonb_build_object('by', case when is_patient then 'patient' else 'practice' end));
+end $$;
+
+-- Après l'heure : honoré ou patient absent
+create or replace function public.close_appointment(p_id uuid, p_outcome text)
+returns void language plpgsql security definer set search_path = public as $$
+declare a public.appointments;
+begin
+  select * into a from public.appointments where id = p_id for update;
+  if a.id is null or not public.can_manage_appointment(a) then raise exception 'PP404: rendez-vous introuvable'; end if;
+  if a.status <> 'confirmed' then raise exception 'PP409: seul un rendez-vous confirmé peut être clôturé'; end if;
+  if a.scheduled_at > now() then raise exception 'PP409: le rendez-vous n''a pas encore eu lieu'; end if;
+  if p_outcome not in ('completed', 'no_show') then raise exception 'PP422: résultat inconnu'; end if;
+  update public.appointments set status = p_outcome where id = p_id;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Listes
+-- ---------------------------------------------------------------------------
+create or replace function public.my_appointments()
+returns table (id uuid, status text, requested_date date, requested_period text, scheduled_at timestamptz, response_note text,
+               patient_name text, reason text, cancelled_by text, created_at timestamptz,
+               doctor_id uuid, doctor_label text, clinic_id uuid, clinic_name text, clinic_address text, phone text)
+language sql stable security definer set search_path = public as $$
+  select a.id, a.status, a.requested_date, a.requested_period, a.scheduled_at, a.response_note, a.patient_name, a.reason, a.cancelled_by, a.created_at,
+         d.id, d.title || ' ' || d.display_name, c.id, c.name, c.address, coalesce(s.appointment_phone, c.phone)
+  from public.appointments a
+  join public.doctors d on d.id = a.doctor_id
+  join public.clinics c on c.id = a.clinic_id
+  left join public.doctor_practice_sites s on s.id = a.site_id
+  where a.patient_id = auth.uid()
+  order by (a.status in ('pending', 'proposed', 'confirmed')) desc, coalesce(a.scheduled_at, a.requested_date::timestamptz) desc
+  limit 100
+$$;
+
+-- p_clinic NULL : agenda du médecin connecté ; sinon : agenda de l'établissement (membres seulement)
+create or replace function public.practice_appointments(p_clinic uuid default null, p_view text default 'a_traiter')
+returns table (id uuid, status text, requested_date date, requested_period text, scheduled_at timestamptz, response_note text,
+               patient_name text, patient_phone text, reason text, cancelled_by text, created_at timestamptz,
+               doctor_label text, clinic_id uuid, clinic_name text)
+language plpgsql stable security definer set search_path = public as $$
+declare me uuid := public.my_doctor_id();
+begin
+  if p_clinic is null and me is null then raise exception 'PP403: espace médecin requis' using errcode = '42501'; end if;
+  if p_clinic is not null and not public.is_clinic_member(p_clinic) then raise exception 'PP403: action réservée à l''établissement' using errcode = '42501'; end if;
+  return query
+  select a.id, a.status, a.requested_date, a.requested_period, a.scheduled_at, a.response_note, a.patient_name, a.patient_phone, a.reason, a.cancelled_by, a.created_at,
+         d.title || ' ' || d.display_name, c.id, c.name
+  from public.appointments a
+  join public.doctors d on d.id = a.doctor_id
+  join public.clinics c on c.id = a.clinic_id
+  where (case when p_clinic is null then a.doctor_id = me else a.clinic_id = p_clinic end)
+    and case p_view
+          when 'a_traiter' then a.status in ('pending', 'proposed')
+          when 'a_venir' then a.status = 'confirmed' and a.scheduled_at >= date_trunc('day', now())
+          when 'a_cloturer' then a.status = 'confirmed' and a.scheduled_at < now()
+          else a.status not in ('pending', 'proposed') and not (a.status = 'confirmed' and a.scheduled_at >= date_trunc('day', now()))
+        end
+  order by case when p_view in ('a_traiter', 'a_venir', 'a_cloturer') then coalesce(a.scheduled_at, a.requested_date::timestamptz) end asc,
+           a.updated_at desc
+  limit 200;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Expiration automatique (maintenance) : demande sans réponse sous 48 h ou date passée,
+-- proposition non acceptée sous 48 h ou moment passé.
+-- ---------------------------------------------------------------------------
+create or replace function public.expire_appointments()
+returns int language plpgsql security definer set search_path = public as $$
+declare r record; n int := 0;
+begin
+  for r in
+    update public.appointments set status = 'expired'
+    where (status = 'pending' and (created_at < now() - interval '48 hours' or requested_date < (now() at time zone 'UTC')::date))
+       or (status = 'proposed' and (updated_at < now() - interval '48 hours' or scheduled_at < now()))
+    returning id, patient_id, requested_date
+  loop
+    perform public.notify_user(r.patient_id, 'appointment', 'Demande de rendez-vous expirée',
+      format('Votre demande pour le %s n''a pas été confirmée à temps. Vous pouvez en faire une nouvelle ou appeler l''établissement.', to_char(r.requested_date, 'DD/MM/YYYY')),
+      null, '/compte/rendez-vous');
+    n := n + 1;
+  end loop;
+  return n;
+end $$;
+
+create or replace function public.run_maintenance()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare expired int; rl int; logs int; notifs int; outbox int; issues int; reminders int; appts int;
+begin
+  expired := public.expire_overdue_orders();
+  appts := public.expire_appointments();
+  delete from public.rate_limit_events where at < now() - interval '1 day';
+  get diagnostics rl = row_count;
+  delete from public.search_logs where created_at < now() - interval '400 days';
+  get diagnostics logs = row_count;
+  delete from public.notifications where read_at is not null and read_at < now() - interval '180 days';
+  get diagnostics notifs = row_count;
+  delete from public.notification_outbox where status in ('sent', 'skipped') and created_at < now() - interval '90 days';
+  get diagnostics outbox = row_count;
+  reminders := public.directory_reminders();
+  select count(*) into issues from public.integrity_issues() where severity = 'critique';
+  insert into public.maintenance_runs (expired, purged, critical_issues)
+  values (expired, jsonb_build_object('rate_limits', rl, 'search_logs', logs, 'notifications', notifs, 'outbox', outbox,
+                                      'directory_reminders', reminders, 'appointments_expired', appts), issues);
+  delete from public.maintenance_runs where ran_at < now() - interval '30 days';
+  return jsonb_build_object('expired', expired, 'appointments_expired', appts, 'purged', jsonb_build_object('rate_limits', rl, 'search_logs', logs,
+    'notifications', notifs, 'outbox', outbox, 'directory_reminders', reminders), 'critical_issues', issues);
+end $$;
+revoke execute on function public.run_maintenance() from public, anon, authenticated;
+grant execute on function public.run_maintenance() to service_role;
+
+-- Statistiques (sans aucune donnée de patient)
+create or replace function public.admin_appointment_stats()
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  perform public.require_admin();
+  return jsonb_build_object(
+    'sites_open', (select count(*) from public.doctor_practice_sites where accepts_appointments),
+    'last_30_days', (select count(*) from public.appointments where created_at > now() - interval '30 days'),
+    'by_status', (select coalesce(jsonb_object_agg(status, n), '{}'::jsonb) from (
+       select status, count(*) n from public.appointments where created_at > now() - interval '30 days' group by status) x));
+end $$;
+
+revoke execute on function public.can_manage_appointment(public.appointments), public.expire_appointments() from public, anon, authenticated;
+revoke execute on function public.set_site_appointments(uuid, boolean), public.request_appointment(uuid, date, text, text, text, text, text),
+  public.respond_appointment(uuid, text, timestamptz, text), public.answer_appointment_proposal(uuid, boolean),
+  public.cancel_appointment(uuid, text), public.close_appointment(uuid, text), public.my_appointments(),
+  public.practice_appointments(uuid, text), public.admin_appointment_stats() from public, anon;
+grant execute on function public.set_site_appointments(uuid, boolean), public.request_appointment(uuid, date, text, text, text, text, text),
+  public.respond_appointment(uuid, text, timestamptz, text), public.answer_appointment_proposal(uuid, boolean),
+  public.cancel_appointment(uuid, text), public.close_appointment(uuid, text), public.my_appointments(),
+  public.practice_appointments(uuid, text), public.admin_appointment_stats() to authenticated;
+grant execute on function public.expire_appointments() to service_role;
+
+-- >>> 20261028000400_booking.sql
+-- ============================================================================
+-- PharmaProxi — Migration : réservation en ligne par créneaux (type Doctolib)
+--   • motifs de consultation (durée, consignes, public, tarif indicatif déclaré)
+--   • réservation immédiate d'un créneau libre OU demande à confirmer, au choix du lieu
+--   • délais de prévenance (réservation, annulation), informations d'accès
+--   • rendez-vous saisis par le cabinet (appel téléphonique), plages bloquées
+--   • proches (prendre rendez-vous pour un enfant, un parent)
+--   • liste d'attente : alerte quand un créneau se libère
+--   • rappel la veille, prochaine disponibilité, informations pratiques du médecin
+-- Pas de téléconsultation, pas de paiement, pas de dossier médical.
+-- Heure du Mali = UTC.
+-- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- Informations pratiques du médecin (déclarées par lui, jamais inventées)
+-- ---------------------------------------------------------------------------
+alter table public.doctors
+  add column presentation text check (char_length(coalesce(presentation, '')) <= 1500),
+  add column fee_info text check (char_length(coalesce(fee_info, '')) <= 200),
+  add column payment_methods text[] not null default '{}'
+    check (payment_methods <@ array['especes', 'orange_money', 'moov_money', 'carte', 'assurance', 'cheque']::text[]),
+  add column accepts_new_patients boolean not null default true;
+
+create or replace function public.update_doctor_practice_info(p jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+declare me uuid := public.my_doctor_id();
+begin
+  if me is null then raise exception 'PP403: espace médecin requis' using errcode = '42501'; end if;
+  update public.doctors set
+    presentation = nullif(btrim(coalesce(p ->> 'presentation', '')), ''),
+    fee_info = nullif(btrim(coalesce(p ->> 'fee_info', '')), ''),
+    payment_methods = coalesce((select array_agg(distinct x) from jsonb_array_elements_text(coalesce(p -> 'payment_methods', '[]'::jsonb)) x
+                                where x in ('especes', 'orange_money', 'moov_money', 'carte', 'assurance', 'cheque')), '{}'),
+    accepts_new_patients = coalesce((p ->> 'accepts_new_patients')::boolean, true)
+  where id = me;
+exception when check_violation then
+  raise exception 'PP422: texte trop long (présentation 1 500 caractères, tarifs 200 caractères)';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Réglages de réservation d'un lieu de consultation
+-- ---------------------------------------------------------------------------
+alter table public.doctor_practice_sites
+  add column booking_mode text not null default 'request' check (booking_mode in ('request', 'instant')),
+  add column min_notice_hours int not null default 2 check (min_notice_hours between 0 and 168),
+  add column cancel_notice_hours int not null default 2 check (cancel_notice_hours between 0 and 168),
+  add column access_info text check (char_length(coalesce(access_info, '')) <= 300);
+
+create or replace function public.can_manage_site(p_site uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.doctor_practice_sites s
+                 where s.id = p_site and (coalesce(s.doctor_id = public.my_doctor_id(), false) or coalesce(public.can_manage_clinic(s.clinic_id), false)))
+$$;
+
+create or replace function public.update_site_booking(p_site uuid, p_mode text, p_min_notice int, p_cancel_notice int, p_access_info text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.can_manage_site(p_site) then raise exception 'PP403: action réservée au médecin ou à l''établissement' using errcode = '42501'; end if;
+  if p_mode not in ('request', 'instant') then raise exception 'PP422: mode de réservation inconnu'; end if;
+  if p_mode = 'instant' and not exists (
+       select 1 from public.appointment_types t join public.doctor_practice_sites s on s.id = p_site
+       where t.doctor_id = s.doctor_id and t.is_active and (t.site_id is null or t.site_id = p_site)) then
+    raise exception 'PP422: créez d''abord au moins un motif de consultation (avec sa durée) pour proposer des créneaux';
+  end if;
+  update public.doctor_practice_sites set booking_mode = p_mode, min_notice_hours = coalesce(p_min_notice, 2),
+         cancel_notice_hours = coalesce(p_cancel_notice, 2), access_info = nullif(btrim(coalesce(p_access_info, '')), '')
+  where id = p_site;
+  perform public.log_audit('booking.settings', 'practice_site', p_site::text, jsonb_build_object('mode', p_mode));
+exception when check_violation then
+  raise exception 'PP422: délais entre 0 et 168 heures, informations d''accès 300 caractères maximum';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Motifs de consultation
+-- ---------------------------------------------------------------------------
+create table public.appointment_types (
+  id uuid primary key default gen_random_uuid(),
+  doctor_id uuid not null references public.doctors(id) on delete cascade,
+  site_id uuid references public.doctor_practice_sites(id) on delete cascade,   -- NULL : tous les lieux
+  name text not null check (char_length(btrim(name)) between 2 and 80),
+  duration_min int not null check (duration_min between 5 and 240),
+  audience text not null default 'all' check (audience in ('all', 'new', 'returning')),
+  instructions text check (char_length(coalesce(instructions, '')) <= 500),
+  fee text check (char_length(coalesce(fee, '')) <= 80),
+  sort_order int not null default 100,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create index appointment_types_doctor on public.appointment_types (doctor_id) where is_active;
+alter table public.appointment_types enable row level security;
+create policy "pp_types_public_read" on public.appointment_types for select to anon, authenticated
+  using (is_active and public.doctor_is_public(doctor_id));
+create policy "pp_types_practice_read" on public.appointment_types for select to authenticated
+  using (doctor_id = public.my_doctor_id() or (site_id is not null and public.can_manage_site(site_id)));
+revoke insert, update, delete on public.appointment_types from anon, authenticated;
+grant select on public.appointment_types to anon, authenticated;
+
+create or replace function public.save_appointment_type(p jsonb)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  tid uuid := nullif(p ->> 'id', '')::uuid; v_site uuid := nullif(p ->> 'site_id', '')::uuid;
+  v_doctor uuid; t public.appointment_types; s public.doctor_practice_sites;
+begin
+  if tid is not null then
+    select * into t from public.appointment_types where id = tid;
+    if t.id is null then raise exception 'PP404: motif introuvable'; end if;
+    v_doctor := t.doctor_id;
+  end if;
+  if v_site is not null then
+    select * into s from public.doctor_practice_sites where id = v_site;
+    if s.id is null or not public.can_manage_site(v_site) then raise exception 'PP403: lieu non autorisé' using errcode = '42501'; end if;
+    if v_doctor is not null and v_doctor <> s.doctor_id then raise exception 'PP422: lieu d''un autre médecin'; end if;
+    v_doctor := s.doctor_id;
+  end if;
+  v_doctor := coalesce(v_doctor, public.my_doctor_id());
+  if v_doctor is null then raise exception 'PP403: espace médecin requis' using errcode = '42501'; end if;
+  -- Un motif « tous lieux » n'est modifiable que par le médecin ; un motif de lieu, aussi par l'établissement
+  if not (coalesce(v_doctor = public.my_doctor_id(), false) or (v_site is not null and public.can_manage_site(v_site))
+          or (t.site_id is not null and public.can_manage_site(t.site_id))) then
+    raise exception 'PP403: action réservée au médecin' using errcode = '42501';
+  end if;
+  if tid is null then
+    insert into public.appointment_types (doctor_id, site_id, name, duration_min, audience, instructions, fee, sort_order)
+    values (v_doctor, v_site, btrim(p ->> 'name'), (p ->> 'duration_min')::int, coalesce(nullif(p ->> 'audience', ''), 'all'),
+            nullif(btrim(coalesce(p ->> 'instructions', '')), ''), nullif(btrim(coalesce(p ->> 'fee', '')), ''), coalesce((p ->> 'sort_order')::int, 100))
+    returning id into tid;
+  else
+    update public.appointment_types set name = btrim(p ->> 'name'), duration_min = (p ->> 'duration_min')::int,
+      audience = coalesce(nullif(p ->> 'audience', ''), 'all'), instructions = nullif(btrim(coalesce(p ->> 'instructions', '')), ''),
+      fee = nullif(btrim(coalesce(p ->> 'fee', '')), ''), sort_order = coalesce((p ->> 'sort_order')::int, sort_order),
+      is_active = coalesce((p ->> 'is_active')::boolean, is_active), site_id = coalesce(v_site, site_id)
+    where id = tid;
+  end if;
+  return tid;
+exception
+  when check_violation then raise exception 'PP422: nom (2 à 80 caractères) et durée (5 à 240 minutes) obligatoires';
+  when invalid_text_representation then raise exception 'PP422: durée invalide';
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Rendez-vous : colonnes de réservation
+-- ---------------------------------------------------------------------------
+alter table public.appointments
+  alter column patient_id drop not null,
+  add column type_id uuid references public.appointment_types(id) on delete set null,
+  add column ends_at timestamptz,
+  add column source text not null default 'online' check (source in ('online', 'practice')),
+  add column relative_id uuid,
+  add column reminded_at timestamptz,
+  add check (source = 'practice' or patient_id is not null);
+create index appointments_doctor_time on public.appointments (doctor_id, scheduled_at) where status in ('confirmed', 'proposed');
+
+-- ---------------------------------------------------------------------------
+-- Plages bloquées (réunion, garde, congé d'une demi-journée…)
+-- ---------------------------------------------------------------------------
+create table public.practice_blocks (
+  id uuid primary key default gen_random_uuid(),
+  doctor_id uuid not null references public.doctors(id) on delete cascade,
+  site_id uuid references public.doctor_practice_sites(id) on delete cascade,
+  starts_at timestamptz not null,
+  ends_at timestamptz not null,
+  note text check (char_length(coalesce(note, '')) <= 120),
+  created_by uuid references public.profiles(id) on delete set null,
+  created_at timestamptz not null default now(),
+  check (ends_at > starts_at and ends_at - starts_at <= interval '14 days')
+);
+create index practice_blocks_doctor on public.practice_blocks (doctor_id, starts_at);
+alter table public.practice_blocks enable row level security;
+create policy "pp_blocks_practice_read" on public.practice_blocks for select to authenticated
+  using (doctor_id = public.my_doctor_id() or (site_id is not null and public.can_manage_site(site_id)));
+revoke insert, update, delete on public.practice_blocks from anon, authenticated;
+grant select on public.practice_blocks to authenticated;
+
+create or replace function public.add_practice_block(p_site uuid, p_start timestamptz, p_end timestamptz, p_note text default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare s public.doctor_practice_sites; bid uuid;
+begin
+  select * into s from public.doctor_practice_sites where id = p_site;
+  if s.id is null or not public.can_manage_site(p_site) then raise exception 'PP403: action réservée au médecin ou à l''établissement' using errcode = '42501'; end if;
+  insert into public.practice_blocks (doctor_id, site_id, starts_at, ends_at, note, created_by)
+  values (s.doctor_id, p_site, p_start, p_end, nullif(btrim(coalesce(p_note, '')), ''), auth.uid()) returning id into bid;
+  return bid;
+exception when check_violation then
+  raise exception 'PP422: la fin doit être après le début (14 jours maximum)';
+end $$;
+
+create or replace function public.remove_practice_block(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare b public.practice_blocks;
+begin
+  select * into b from public.practice_blocks where id = p_id;
+  if b.id is null or not (coalesce(b.doctor_id = public.my_doctor_id(), false) or (b.site_id is not null and public.can_manage_site(b.site_id))) then
+    raise exception 'PP404: plage introuvable';
+  end if;
+  delete from public.practice_blocks where id = p_id;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Proches du patient
+-- ---------------------------------------------------------------------------
+create table public.patient_relatives (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  full_name text not null check (char_length(btrim(full_name)) between 2 and 120),
+  relation text not null default 'autre' check (relation in ('enfant', 'parent', 'conjoint', 'frere_soeur', 'autre')),
+  phone text check (phone is null or public.valid_phone(phone)),
+  created_at timestamptz not null default now()
+);
+create index patient_relatives_user on public.patient_relatives (user_id);
+alter table public.patient_relatives enable row level security;
+create policy "pp_relatives_own" on public.patient_relatives for select to authenticated using (user_id = auth.uid());
+revoke insert, update, delete on public.patient_relatives from anon, authenticated;
+grant select on public.patient_relatives to authenticated;
+alter table public.appointments add constraint appointments_relative_fk foreign key (relative_id) references public.patient_relatives(id) on delete set null;
+
+create or replace function public.add_relative(p_name text, p_relation text, p_phone text default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); rid uuid; v_phone text := public.normalize_ml_phone(p_phone);
+begin
+  if uid is null then raise exception 'PP401: connectez-vous' using errcode = '42501'; end if;
+  if (select count(*) from public.patient_relatives where user_id = uid) >= 10 then raise exception 'PP429: 10 proches maximum'; end if;
+  if nullif(btrim(coalesce(p_phone, '')), '') is not null and v_phone is null then raise exception 'PP422: numéro de téléphone invalide'; end if;
+  insert into public.patient_relatives (user_id, full_name, relation, phone)
+  values (uid, btrim(p_name), coalesce(nullif(p_relation, ''), 'autre'), v_phone) returning id into rid;
+  return rid;
+exception when check_violation then
+  raise exception 'PP422: nom (2 à 120 caractères) et lien de parenté obligatoires';
+end $$;
+
+create or replace function public.remove_relative(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  delete from public.patient_relatives where id = p_id and user_id = auth.uid();
+  if not found then raise exception 'PP404: proche introuvable'; end if;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Créneaux disponibles
+-- Créneaux de la durée du motif, découpés dans les plages de consultation du lieu,
+-- hors délai de prévenance, absences, plages bloquées et rendez-vous existants
+-- du médecin (tous lieux confondus). 60 jours maximum.
+-- ---------------------------------------------------------------------------
+create or replace function public.site_is_bookable(s public.doctor_practice_sites)
+returns boolean language sql stable security definer set search_path = public as $$
+  select s.doctor_accepted and s.clinic_accepted and s.accepts_appointments and s.booking_mode = 'instant'
+     and public.doctor_is_public(s.doctor_id)
+     and exists (select 1 from public.clinics c where c.id = s.clinic_id and c.status = 'verified')
+$$;
+
+create or replace function public.available_slots(p_site uuid, p_type uuid, p_from date default null, p_days int default 7)
+returns table (slot_start timestamptz, slot_end timestamptz)
+language plpgsql stable security definer set search_path = public as $$
+declare
+  s public.doctor_practice_sites; t public.appointment_types;
+  today date := (now() at time zone 'UTC')::date; d date; k text; slot jsonb;
+  st timestamptz; en timestamptz; cur timestamptz; dur interval; min_start timestamptz;
+begin
+  select * into s from public.doctor_practice_sites where id = p_site;
+  if s.id is null or not public.site_is_bookable(s) then return; end if;
+  select * into t from public.appointment_types where id = p_type and doctor_id = s.doctor_id and is_active and (site_id is null or site_id = p_site);
+  if t.id is null then return; end if;
+  dur := make_interval(mins => t.duration_min);
+  min_start := now() + make_interval(hours => s.min_notice_hours);
+  for d in select g::date from generate_series(greatest(coalesce(p_from, today), today),
+                                                 least(greatest(coalesce(p_from, today), today) + greatest(least(coalesce(p_days, 7), 31), 1) - 1, today + 60),
+                                                 interval '1 day') g loop
+    continue when exists (select 1 from public.doctor_absences a where a.doctor_id = s.doctor_id and d between a.starts_on and a.ends_on);
+    k := public.day_key(d::timestamp at time zone 'UTC');
+    for slot in select * from jsonb_array_elements(coalesce(s.schedule -> k, '[]'::jsonb)) loop
+      st := (d::timestamp + (slot ->> 0)::time) at time zone 'UTC';
+      en := (d::timestamp + case when slot ->> 1 = '24:00' then interval '24 hours' else (slot ->> 1)::time::interval end) at time zone 'UTC';
+      cur := st;
+      while cur + dur <= en loop
+        if cur >= min_start
+           and not exists (select 1 from public.appointments a
+                           where a.doctor_id = s.doctor_id and a.status in ('confirmed', 'proposed') and a.scheduled_at is not null
+                             and tstzrange(a.scheduled_at, coalesce(a.ends_at, a.scheduled_at + interval '30 minutes')) && tstzrange(cur, cur + dur))
+           and not exists (select 1 from public.practice_blocks b
+                           where b.doctor_id = s.doctor_id and tstzrange(b.starts_at, b.ends_at) && tstzrange(cur, cur + dur)) then
+          slot_start := cur; slot_end := cur + dur;
+          return next;
+        end if;
+        cur := cur + dur;
+      end loop;
+    end loop;
+  end loop;
+end $$;
+alter function public.available_slots(uuid, uuid, date, int) set statement_timeout = '5s';
+
+-- Prochaine disponibilité de chaque médecin (motif ouvert à tous ou aux nouveaux patients, 30 jours)
+create or replace function public.next_availabilities(p_doctors uuid[])
+returns table (doctor_id uuid, site_id uuid, type_id uuid, slot_start timestamptz)
+language plpgsql stable security definer set search_path = public as $$
+declare r record; best timestamptz; v_site uuid; v_type uuid; x timestamptz;
+begin
+  for r in select distinct unnest(p_doctors[1:30]) as did loop
+    best := null;
+    for v_site, v_type in
+      select s.id, t.id from public.doctor_practice_sites s
+      join public.appointment_types t on t.doctor_id = s.doctor_id and t.is_active and (t.site_id is null or t.site_id = s.id) and t.audience <> 'returning'
+      where s.doctor_id = r.did and public.site_is_bookable(s)
+    loop
+      select min(a.slot_start) into x from (select av.slot_start from public.available_slots(v_site, v_type, null, 30) av limit 1) a;
+      if x is not null and (best is null or x < best) then best := x; doctor_id := r.did; site_id := v_site; type_id := v_type; slot_start := x; end if;
+    end loop;
+    if best is not null then return next; end if;
+  end loop;
+end $$;
+alter function public.next_availabilities(uuid[]) set statement_timeout = '8s';
+
+-- ---------------------------------------------------------------------------
+-- Réservation immédiate d'un créneau
+-- ---------------------------------------------------------------------------
+create or replace function public.book_appointment(
+  p_site uuid, p_type uuid, p_start timestamptz, p_patient_name text, p_phone text,
+  p_reason text default null, p_relative uuid default null, p_key text default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare
+  uid uuid := auth.uid(); s public.doctor_practice_sites; t public.appointment_types; d public.doctors; c public.clinics;
+  aid uuid; v_name text := btrim(coalesce(p_patient_name, '')); v_phone text := public.normalize_ml_phone(p_phone); seen boolean; rel public.patient_relatives;
+begin
+  if uid is null then raise exception 'PP401: connectez-vous pour prendre rendez-vous' using errcode = '42501'; end if;
+  if p_key is not null then
+    select id into aid from public.appointments where patient_id = uid and idempotency_key = p_key;
+    if aid is not null then return aid; end if;
+  end if;
+  select * into s from public.doctor_practice_sites where id = p_site;
+  if s.id is null or not public.site_is_bookable(s) then raise exception 'PP404: la réservation en ligne n''est pas ouverte pour ce lieu'; end if;
+  select * into t from public.appointment_types where id = p_type and doctor_id = s.doctor_id and is_active and (site_id is null or site_id = p_site);
+  if t.id is null then raise exception 'PP404: motif de consultation introuvable'; end if;
+  select * into d from public.doctors where id = s.doctor_id;
+  select * into c from public.clinics where id = s.clinic_id;
+  if p_relative is not null then
+    select * into rel from public.patient_relatives where id = p_relative and user_id = uid;
+    if rel.id is null then raise exception 'PP404: proche introuvable'; end if;
+    v_name := rel.full_name;
+    v_phone := coalesce(v_phone, rel.phone);
+  end if;
+  if char_length(v_name) < 2 then raise exception 'PP422: indiquez le nom du patient'; end if;
+  if v_phone is null then raise exception 'PP422: numéro de téléphone invalide'; end if;
+
+  -- Nouveau patient / patient déjà suivi
+  seen := exists (select 1 from public.appointments a where a.patient_id = uid and a.doctor_id = d.id
+                  and a.relative_id is not distinct from p_relative and a.status in ('completed', 'confirmed') and a.scheduled_at < now());
+  if t.audience = 'new' and seen then raise exception 'PP409: ce motif est réservé aux nouveaux patients : choisissez un motif de suivi'; end if;
+  if t.audience = 'returning' and not seen then raise exception 'PP409: ce motif est réservé aux patients déjà suivis par ce médecin'; end if;
+  if not d.accepts_new_patients and not seen then raise exception 'PP409: ce médecin n''accepte pas de nouveaux patients en ligne pour le moment'; end if;
+
+  if (select count(*) from public.appointments where patient_id = uid and status in ('pending', 'proposed', 'confirmed') and coalesce(scheduled_at, requested_date::timestamptz) >= now()) >= 5 then
+    raise exception 'PP429: vous avez déjà 5 rendez-vous à venir : annulez-en un pour en prendre un autre';
+  end if;
+  if exists (select 1 from public.appointments where patient_id = uid and doctor_id = d.id and relative_id is not distinct from p_relative
+             and status in ('pending', 'proposed', 'confirmed') and coalesce(scheduled_at::date, requested_date) = (p_start at time zone 'UTC')::date) then
+    raise exception 'PP409: vous avez déjà un rendez-vous avec ce médecin ce jour-là';
+  end if;
+
+  -- Une réservation à la fois par médecin : le créneau est revérifié sous verrou
+  perform pg_advisory_xact_lock(hashtextextended(d.id::text, 0));
+  if not exists (select 1 from public.available_slots(p_site, p_type, (p_start at time zone 'UTC')::date, 1) a where a.slot_start = p_start) then
+    raise exception 'PP409: ce créneau n''est plus disponible : choisissez-en un autre';
+  end if;
+
+  insert into public.appointments (site_id, doctor_id, clinic_id, patient_id, patient_name, patient_phone, requested_date, requested_period,
+                                   reason, status, scheduled_at, ends_at, type_id, relative_id, idempotency_key, source)
+  values (s.id, d.id, c.id, uid, v_name, v_phone, (p_start at time zone 'UTC')::date,
+          case when extract(hour from p_start at time zone 'UTC') < 13 then 'matin' else 'apres_midi' end,
+          nullif(btrim(coalesce(p_reason, '')), ''), 'confirmed', p_start, p_start + make_interval(mins => t.duration_min), t.id, p_relative, p_key, 'online')
+  returning id into aid;
+
+  perform public.notify_user(d.user_id, 'appointment', 'Nouveau rendez-vous',
+    format('%s — %s, %s à %s (%s).', v_name, t.name, to_char(p_start at time zone 'UTC', 'DD/MM/YYYY'), to_char(p_start at time zone 'UTC', 'HH24"h"MI'), c.name),
+    null, '/medecin/rendez-vous?vue=a_venir');
+  perform public.notify_clinic(c.id, 'appointment', 'Nouveau rendez-vous',
+    format('%s %s — %s, %s à %s.', d.title, d.display_name, v_name, to_char(p_start at time zone 'UTC', 'DD/MM/YYYY'), to_char(p_start at time zone 'UTC', 'HH24"h"MI')),
+    format('/clinique/%s/rendez-vous?vue=a_venir', c.id));
+  perform public.notify_user(uid, 'appointment', 'Rendez-vous confirmé',
+    format('%s %s, %s à %s, %s.%s', d.title, d.display_name, to_char(p_start at time zone 'UTC', 'DD/MM/YYYY'), to_char(p_start at time zone 'UTC', 'HH24"h"MI'), c.name,
+           coalesce(' À savoir : ' || t.instructions, '')), null, '/compte/rendez-vous');
+  delete from public.appointment_waitlist w where w.user_id = uid and w.doctor_id = d.id;
+  return aid;
+end $$;
+
+-- Rendez-vous saisi par le cabinet (patient qui a appelé) : bloque le créneau
+create or replace function public.practice_add_appointment(
+  p_site uuid, p_start timestamptz, p_duration_min int, p_patient_name text, p_phone text, p_note text default null, p_type uuid default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare s public.doctor_practice_sites; aid uuid; v_phone text := public.normalize_ml_phone(p_phone); dur int := coalesce(p_duration_min, 15);
+begin
+  select * into s from public.doctor_practice_sites where id = p_site;
+  if s.id is null or not public.can_manage_site(p_site) then raise exception 'PP403: action réservée au médecin ou à l''établissement' using errcode = '42501'; end if;
+  if v_phone is null then raise exception 'PP422: numéro de téléphone invalide'; end if;
+  if char_length(btrim(coalesce(p_patient_name, ''))) < 2 then raise exception 'PP422: indiquez le nom du patient'; end if;
+  if dur < 5 or dur > 240 then raise exception 'PP422: durée entre 5 et 240 minutes'; end if;
+  perform pg_advisory_xact_lock(hashtextextended(s.doctor_id::text, 0));
+  if exists (select 1 from public.appointments a where a.doctor_id = s.doctor_id and a.status in ('confirmed', 'proposed') and a.scheduled_at is not null
+             and tstzrange(a.scheduled_at, coalesce(a.ends_at, a.scheduled_at + interval '30 minutes')) && tstzrange(p_start, p_start + make_interval(mins => dur))) then
+    raise exception 'PP409: un rendez-vous est déjà prévu sur ce créneau';
+  end if;
+  insert into public.appointments (site_id, doctor_id, clinic_id, patient_id, patient_name, patient_phone, requested_date, requested_period,
+                                   status, scheduled_at, ends_at, type_id, response_note, source, decided_by)
+  values (s.id, s.doctor_id, s.clinic_id, null, btrim(p_patient_name), v_phone, (p_start at time zone 'UTC')::date,
+          case when extract(hour from p_start at time zone 'UTC') < 13 then 'matin' else 'apres_midi' end,
+          'confirmed', p_start, p_start + make_interval(mins => dur), p_type, nullif(btrim(coalesce(p_note, '')), ''), 'practice', auth.uid())
+  returning id into aid;
+  return aid;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Liste d'attente : prévenir quand un créneau se libère
+-- ---------------------------------------------------------------------------
+create table public.appointment_waitlist (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  doctor_id uuid not null references public.doctors(id) on delete cascade,
+  site_id uuid not null references public.doctor_practice_sites(id) on delete cascade,
+  until_date date not null,
+  notified_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique (user_id, site_id)
+);
+alter table public.appointment_waitlist enable row level security;
+create policy "pp_waitlist_own" on public.appointment_waitlist for select to authenticated using (user_id = auth.uid());
+revoke insert, update, delete on public.appointment_waitlist from anon, authenticated;
+grant select on public.appointment_waitlist to authenticated;
+
+create or replace function public.join_waitlist(p_site uuid, p_until date)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); s public.doctor_practice_sites; wid uuid;
+begin
+  if uid is null then raise exception 'PP401: connectez-vous' using errcode = '42501'; end if;
+  select * into s from public.doctor_practice_sites where id = p_site;
+  if s.id is null or not public.site_is_bookable(s) then raise exception 'PP404: la réservation en ligne n''est pas ouverte pour ce lieu'; end if;
+  if p_until is null or p_until < (now() at time zone 'UTC')::date or p_until > (now() at time zone 'UTC')::date + 60 then
+    raise exception 'PP422: choisissez une date limite dans les 60 prochains jours';
+  end if;
+  if (select count(*) from public.appointment_waitlist where user_id = uid) >= 5 then raise exception 'PP429: 5 alertes maximum'; end if;
+  insert into public.appointment_waitlist (user_id, doctor_id, site_id, until_date) values (uid, s.doctor_id, p_site, p_until)
+  on conflict (user_id, site_id) do update set until_date = excluded.until_date, notified_at = null
+  returning id into wid;
+  return wid;
+end $$;
+
+create or replace function public.leave_waitlist(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  delete from public.appointment_waitlist where id = p_id and user_id = auth.uid();
+  if not found then raise exception 'PP404: alerte introuvable'; end if;
+end $$;
+
+-- Annulation (remplace la version précédente) : délai d'annulation en ligne + alerte liste d'attente
+create or replace function public.cancel_appointment(p_id uuid, p_reason text default null)
+returns void language plpgsql security definer set search_path = public as $$
+declare a public.appointments; is_patient boolean; d public.doctors; s public.doctor_practice_sites; w record; v_when text;
+begin
+  select * into a from public.appointments where id = p_id for update;
+  if a.id is null then raise exception 'PP404: rendez-vous introuvable'; end if;
+  is_patient := coalesce(a.patient_id = auth.uid(), false);
+  if not is_patient and not public.can_manage_appointment(a) then raise exception 'PP404: rendez-vous introuvable'; end if;
+  if a.status not in ('pending', 'proposed', 'confirmed') then raise exception 'PP409: ce rendez-vous ne peut plus être annulé'; end if;
+  if a.status = 'confirmed' and a.scheduled_at < now() then raise exception 'PP409: l''heure du rendez-vous est passée'; end if;
+  select * into s from public.doctor_practice_sites where id = a.site_id;
+  if is_patient and a.status = 'confirmed' and s.id is not null and a.scheduled_at - now() < make_interval(hours => s.cancel_notice_hours) then
+    raise exception 'PP409: annulation en ligne impossible moins de % h avant : appelez le cabinet', s.cancel_notice_hours;
+  end if;
+  if not is_patient and char_length(btrim(coalesce(p_reason, ''))) < 3 then raise exception 'PP422: indiquez un motif au patient'; end if;
+  update public.appointments set status = 'cancelled', cancelled_by = case when is_patient then 'patient' else 'practice' end,
+         response_note = case when is_patient then response_note else btrim(p_reason) end where id = p_id;
+  select * into d from public.doctors where id = a.doctor_id;
+  v_when := coalesce(to_char(a.scheduled_at at time zone 'UTC', 'DD/MM/YYYY HH24"h"MI'), to_char(a.requested_date, 'DD/MM/YYYY'));
+  if is_patient then
+    perform public.notify_user(d.user_id, 'appointment', 'Rendez-vous annulé par le patient', format('%s, %s.', a.patient_name, v_when), null, '/medecin/rendez-vous');
+    perform public.notify_clinic(a.clinic_id, 'appointment', 'Rendez-vous annulé par le patient', format('%s, %s.', a.patient_name, v_when), format('/clinique/%s/rendez-vous', a.clinic_id));
+  elsif a.patient_id is not null then
+    perform public.notify_user(a.patient_id, 'appointment', 'Rendez-vous annulé', format('%s %s : %s', d.title, d.display_name, btrim(p_reason)), null, '/compte/rendez-vous');
+  end if;
+  -- Créneau libéré : prévenir la liste d'attente (10 personnes au plus, une fois par jour)
+  if a.status = 'confirmed' and a.scheduled_at > now() and a.site_id is not null then
+    for w in select * from public.appointment_waitlist
+             where site_id = a.site_id and until_date >= (a.scheduled_at at time zone 'UTC')::date
+               and user_id is distinct from a.patient_id and (notified_at is null or notified_at < now() - interval '1 day')
+             order by created_at limit 10 loop
+      perform public.notify_user(w.user_id, 'appointment', 'Un créneau s''est libéré',
+        format('%s %s : le %s à %s. Réservez vite, il est proposé à plusieurs personnes.', d.title, d.display_name,
+               to_char(a.scheduled_at at time zone 'UTC', 'DD/MM/YYYY'), to_char(a.scheduled_at at time zone 'UTC', 'HH24"h"MI')),
+        null, format('/medecins/%s/rendez-vous?lieu=%s', a.doctor_id, a.site_id));
+      update public.appointment_waitlist set notified_at = now() where id = w.id;
+    end loop;
+  end if;
+  perform public.log_audit('appointment.cancel', 'appointment', p_id::text, jsonb_build_object('by', case when is_patient then 'patient' else 'practice' end));
+end $$;
+
+-- Rappel la veille (notification ; SMS en file d'attente si un prestataire est branché)
+create or replace function public.send_appointment_reminders()
+returns int language plpgsql security definer set search_path = public as $$
+declare r record; n int := 0; nid uuid;
+begin
+  for r in
+    update public.appointments a set reminded_at = now()
+    where a.status = 'confirmed' and a.reminded_at is null and a.patient_id is not null
+      and a.scheduled_at between now() + interval '2 hours' and now() + interval '26 hours'
+    returning a.id, a.patient_id, a.scheduled_at, a.doctor_id, a.clinic_id
+  loop
+    insert into public.notifications (user_id, kind, title, body, link)
+    select r.patient_id, 'appointment', 'Rappel de rendez-vous',
+           format('%s %s, le %s à %s, %s. Empêché ? Annulez pour libérer le créneau.', d.title, d.display_name,
+                  to_char(r.scheduled_at at time zone 'UTC', 'DD/MM/YYYY'), to_char(r.scheduled_at at time zone 'UTC', 'HH24"h"MI'), c.name),
+           '/compte/rendez-vous'
+    from public.doctors d, public.clinics c where d.id = r.doctor_id and c.id = r.clinic_id
+    returning id into nid;
+    insert into public.notification_outbox (notification_id, channel) values (nid, 'sms');
+    n := n + 1;
+  end loop;
+  delete from public.appointment_waitlist where until_date < (now() at time zone 'UTC')::date;
+  return n;
+end $$;
+
+create or replace function public.run_maintenance()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare expired int; rl int; logs int; notifs int; outbox int; issues int; reminders int; appts int; appt_rem int;
+begin
+  expired := public.expire_overdue_orders();
+  appts := public.expire_appointments();
+  appt_rem := public.send_appointment_reminders();
+  delete from public.rate_limit_events where at < now() - interval '1 day';
+  get diagnostics rl = row_count;
+  delete from public.search_logs where created_at < now() - interval '400 days';
+  get diagnostics logs = row_count;
+  delete from public.notifications where read_at is not null and read_at < now() - interval '180 days';
+  get diagnostics notifs = row_count;
+  delete from public.notification_outbox where status in ('sent', 'skipped') and created_at < now() - interval '90 days';
+  get diagnostics outbox = row_count;
+  reminders := public.directory_reminders();
+  select count(*) into issues from public.integrity_issues() where severity = 'critique';
+  insert into public.maintenance_runs (expired, purged, critical_issues)
+  values (expired, jsonb_build_object('rate_limits', rl, 'search_logs', logs, 'notifications', notifs, 'outbox', outbox,
+                                      'directory_reminders', reminders, 'appointments_expired', appts, 'appointment_reminders', appt_rem), issues);
+  delete from public.maintenance_runs where ran_at < now() - interval '30 days';
+  return jsonb_build_object('expired', expired, 'appointments_expired', appts, 'appointment_reminders', appt_rem,
+    'purged', jsonb_build_object('rate_limits', rl, 'search_logs', logs, 'notifications', notifs, 'outbox', outbox, 'directory_reminders', reminders),
+    'critical_issues', issues);
+end $$;
+revoke execute on function public.run_maintenance() from public, anon, authenticated;
+grant execute on function public.run_maintenance() to service_role;
+
+-- ---------------------------------------------------------------------------
+-- Listes (versions enrichies)
+-- ---------------------------------------------------------------------------
+drop function public.my_appointments();
+create function public.my_appointments()
+returns table (id uuid, status text, requested_date date, requested_period text, scheduled_at timestamptz, ends_at timestamptz, response_note text,
+               patient_name text, reason text, cancelled_by text, created_at timestamptz,
+               doctor_id uuid, doctor_label text, clinic_id uuid, clinic_name text, clinic_address text, phone text,
+               site_id uuid, type_name text, instructions text, access_info text, can_cancel boolean, cancel_notice_hours int)
+language sql stable security definer set search_path = public as $$
+  select a.id, a.status, a.requested_date, a.requested_period, a.scheduled_at, a.ends_at, a.response_note, a.patient_name, a.reason, a.cancelled_by, a.created_at,
+         d.id, d.title || ' ' || d.display_name, c.id, c.name, c.address, coalesce(s.appointment_phone, c.phone),
+         a.site_id, t.name, t.instructions, s.access_info,
+         a.status in ('pending', 'proposed') or (a.status = 'confirmed' and a.scheduled_at - now() >= make_interval(hours => coalesce(s.cancel_notice_hours, 0))),
+         coalesce(s.cancel_notice_hours, 0)
+  from public.appointments a
+  join public.doctors d on d.id = a.doctor_id
+  join public.clinics c on c.id = a.clinic_id
+  left join public.doctor_practice_sites s on s.id = a.site_id
+  left join public.appointment_types t on t.id = a.type_id
+  where a.patient_id = auth.uid()
+  order by (a.status in ('pending', 'proposed', 'confirmed')) desc, coalesce(a.scheduled_at, a.requested_date::timestamptz) desc
+  limit 100
+$$;
+
+drop function public.practice_appointments(uuid, text);
+create function public.practice_appointments(p_clinic uuid default null, p_view text default 'a_traiter', p_date date default null)
+returns table (id uuid, status text, requested_date date, requested_period text, scheduled_at timestamptz, ends_at timestamptz, response_note text,
+               patient_name text, patient_phone text, reason text, cancelled_by text, created_at timestamptz,
+               doctor_label text, clinic_id uuid, clinic_name text, type_name text, source text, site_id uuid)
+language plpgsql stable security definer set search_path = public as $$
+declare me uuid := public.my_doctor_id();
+begin
+  if p_clinic is null and me is null then raise exception 'PP403: espace médecin requis' using errcode = '42501'; end if;
+  if p_clinic is not null and not public.is_clinic_member(p_clinic) then raise exception 'PP403: action réservée à l''établissement' using errcode = '42501'; end if;
+  return query
+  select a.id, a.status, a.requested_date, a.requested_period, a.scheduled_at, a.ends_at, a.response_note, a.patient_name, a.patient_phone, a.reason, a.cancelled_by, a.created_at,
+         d.title || ' ' || d.display_name, c.id, c.name, t.name, a.source, a.site_id
+  from public.appointments a
+  join public.doctors d on d.id = a.doctor_id
+  join public.clinics c on c.id = a.clinic_id
+  left join public.appointment_types t on t.id = a.type_id
+  where (case when p_clinic is null then a.doctor_id = me else a.clinic_id = p_clinic end)
+    and case p_view
+          when 'a_traiter' then a.status in ('pending', 'proposed')
+          when 'a_venir' then a.status = 'confirmed' and a.scheduled_at >= date_trunc('day', now())
+          when 'a_cloturer' then a.status = 'confirmed' and a.scheduled_at < now()
+          when 'jour' then a.status in ('confirmed', 'proposed', 'completed', 'no_show')
+                           and (a.scheduled_at at time zone 'UTC')::date = coalesce(p_date, (now() at time zone 'UTC')::date)
+          else a.status not in ('pending', 'proposed') and not (a.status = 'confirmed' and a.scheduled_at >= date_trunc('day', now()))
+        end
+  order by case when p_view in ('a_traiter', 'a_venir', 'a_cloturer', 'jour') then coalesce(a.scheduled_at, a.requested_date::timestamptz) end asc,
+           a.updated_at desc
+  limit 300;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Droits
+-- ---------------------------------------------------------------------------
+revoke execute on function public.site_is_bookable(public.doctor_practice_sites), public.send_appointment_reminders()
+  from public, anon, authenticated;
+-- Utilisée par les politiques RLS (se limite aux droits de l'utilisateur connecté)
+revoke execute on function public.can_manage_site(uuid) from public, anon;
+grant execute on function public.can_manage_site(uuid) to authenticated;
+grant execute on function public.send_appointment_reminders() to service_role;
+revoke execute on function public.update_doctor_practice_info(jsonb), public.update_site_booking(uuid, text, int, int, text),
+  public.save_appointment_type(jsonb), public.add_practice_block(uuid, timestamptz, timestamptz, text), public.remove_practice_block(uuid),
+  public.add_relative(text, text, text), public.remove_relative(uuid),
+  public.book_appointment(uuid, uuid, timestamptz, text, text, text, uuid, text),
+  public.practice_add_appointment(uuid, timestamptz, int, text, text, text, uuid),
+  public.join_waitlist(uuid, date), public.leave_waitlist(uuid), public.my_appointments(), public.practice_appointments(uuid, text, date)
+  from public, anon;
+grant execute on function public.update_doctor_practice_info(jsonb), public.update_site_booking(uuid, text, int, int, text),
+  public.save_appointment_type(jsonb), public.add_practice_block(uuid, timestamptz, timestamptz, text), public.remove_practice_block(uuid),
+  public.add_relative(text, text, text), public.remove_relative(uuid),
+  public.book_appointment(uuid, uuid, timestamptz, text, text, text, uuid, text),
+  public.practice_add_appointment(uuid, timestamptz, int, text, text, text, uuid),
+  public.join_waitlist(uuid, date), public.leave_waitlist(uuid), public.my_appointments(), public.practice_appointments(uuid, text, date)
+  to authenticated;
+grant execute on function public.available_slots(uuid, uuid, date, int), public.next_availabilities(uuid[]) to anon, authenticated;
+
+-- >>> 20261029000100_services.sql
+-- ============================================================================
+-- PharmaProxi — Migration : services pratiques
+--   1. Pharmacies de garde (dates, horaires ; confirmées par l'administration
+--      ou déclarées par la pharmacie)
+--   2. Laboratoires et examens : catalogue d'examens, offres des établissements
+--      (tarif et délai communiqués, date de vérification, source)
+--   3. Alertes de disponibilité d'un médicament + signaux de demande pour les
+--      pharmacies + observatoire des ruptures (agrégé, anonymisé)
+--   4. Répertoire d'urgence : services d'urgence et ambulances
+-- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 0. Types d'établissements complémentaires
+-- ---------------------------------------------------------------------------
+alter table public.facility_listings drop constraint if exists facility_listings_kind_check;
+alter table public.facility_listings add constraint facility_listings_kind_check
+  check (kind in ('clinique', 'cabinet', 'cabinet_dentaire', 'centre_sante', 'csref', 'hopital', 'imagerie', 'laboratoire', 'urgences', 'ambulance'));
+alter table public.facility_listings add column emergency_24h boolean not null default false;
+
+-- Import des établissements : colonnes facultatives « publie » (oui/non) et « urgences_24h »
+create or replace function public.admin_import_facility_listings(p_rows jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  uid uuid := public.require_admin();
+  rec record; ok int := 0; dup int := 0; errors jsonb := '[]'::jsonb;
+  v_region uuid; v_kind text; v_p1 text; v_p2 text; v_lat double precision; v_lng double precision; v_pub boolean; v_urg boolean;
+begin
+  if jsonb_typeof(p_rows) <> 'array' then raise exception 'PP422: format invalide'; end if;
+  if jsonb_array_length(p_rows) > 5000 then raise exception 'PP422: 5 000 lignes maximum par import'; end if;
+  for rec in select coalesce((e ->> 'line')::int, o::int + 1) as line, e from jsonb_array_elements(p_rows) with ordinality as t(e, o) loop
+    begin
+      if char_length(btrim(coalesce(rec.e ->> 'nom', ''))) < 2 then raise exception 'PP422: nom manquant'; end if;
+      v_region := case when nullif(btrim(rec.e ->> 'region'), '') is null then null else public.resolve_region(rec.e ->> 'region') end;
+      if nullif(btrim(rec.e ->> 'region'), '') is not null and v_region is null then
+        raise exception 'PP422: région inconnue « % »', rec.e ->> 'region';
+      end if;
+      v_kind := coalesce(nullif(btrim(rec.e ->> 'type'), ''), 'centre_sante');
+      if v_kind not in ('clinique', 'cabinet', 'cabinet_dentaire', 'centre_sante', 'csref', 'hopital', 'imagerie', 'laboratoire', 'urgences', 'ambulance') then
+        raise exception 'PP422: type inconnu « % »', v_kind;
+      end if;
+      v_p1 := public.normalize_ml_phone(rec.e ->> 'telephone');
+      v_p2 := public.normalize_ml_phone(rec.e ->> 'telephone2');
+      if nullif(btrim(rec.e ->> 'telephone'), '') is not null and v_p1 is null then raise exception 'PP422: téléphone invalide « % »', rec.e ->> 'telephone'; end if;
+      v_lat := nullif(replace(btrim(rec.e ->> 'latitude'), ',', '.'), '')::double precision;
+      v_lng := nullif(replace(btrim(rec.e ->> 'longitude'), ',', '.'), '')::double precision;
+      v_pub := lower(btrim(coalesce(rec.e ->> 'publie', ''))) not in ('non', 'no', 'false', '0', 'n');
+      v_urg := lower(btrim(coalesce(rec.e ->> 'urgences_24h', ''))) in ('oui', 'yes', 'true', '1', 'o');
+      if exists (select 1 from public.facility_listings f where f.search_name = public.normalize_text(rec.e ->> 'nom')
+                 and f.region_id is not distinct from v_region) then
+        dup := dup + 1; continue;
+      end if;
+      insert into public.facility_listings (name, kind, category_label, region_id, city_label, address, phone, phone2, latitude, longitude, source,
+                                            is_published, emergency_24h, created_by)
+      values (btrim(rec.e ->> 'nom'), v_kind, nullif(btrim(rec.e ->> 'categorie'), ''), v_region, nullif(btrim(rec.e ->> 'ville'), ''),
+              nullif(btrim(rec.e ->> 'adresse'), ''), v_p1, v_p2, v_lat, v_lng, coalesce(nullif(btrim(rec.e ->> 'source'), ''), 'Import CSV'),
+              v_pub, v_urg, uid);
+      ok := ok + 1;
+    exception
+      when invalid_text_representation then errors := errors || jsonb_build_object('row', rec.line, 'error', 'coordonnées invalides');
+      when check_violation then errors := errors || jsonb_build_object('row', rec.line, 'error', 'valeur hors limites');
+      when unique_violation then dup := dup + 1;
+      when others then errors := errors || jsonb_build_object('row', rec.line, 'error', regexp_replace(sqlerrm, '^PP[0-9]+: ', ''));
+    end;
+  end loop;
+  perform public.log_audit('facility.import', 'facility_listing', null,
+    jsonb_build_object('imported', ok, 'duplicates', dup, 'failed', jsonb_array_length(errors)));
+  return jsonb_build_object('imported', ok, 'duplicates', dup, 'failed', jsonb_array_length(errors), 'errors', errors);
+end $$;
+
+create or replace function public.admin_set_facility_emergency(p_id uuid, p_on boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform public.require_admin();
+  update public.facility_listings set emergency_24h = p_on, updated_at = now() where id = p_id;
+  if not found then raise exception 'PP404: fiche introuvable'; end if;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 1. Pharmacies de garde
+-- ---------------------------------------------------------------------------
+create table public.pharmacy_duty (
+  id uuid primary key default gen_random_uuid(),
+  pharmacy_id uuid references public.pharmacies(id) on delete cascade,
+  listing_id uuid references public.pharmacy_listings(id) on delete cascade,
+  starts_at timestamptz not null,
+  ends_at timestamptz not null,
+  status text not null default 'confirmed' check (status in ('confirmed', 'declared')),
+  source text not null default 'Saisie administrateur' check (char_length(source) between 1 and 200),
+  created_by uuid references public.profiles(id) on delete set null,
+  created_at timestamptz not null default now(),
+  check (num_nonnulls(pharmacy_id, listing_id) = 1),
+  check (ends_at > starts_at and ends_at - starts_at <= interval '8 days')
+);
+create index pharmacy_duty_time on public.pharmacy_duty (starts_at, ends_at);
+alter table public.pharmacy_duty enable row level security;
+create policy "pp_duty_public_read" on public.pharmacy_duty for select to anon, authenticated using (true);
+revoke insert, update, delete on public.pharmacy_duty from anon, authenticated;
+grant select on public.pharmacy_duty to anon, authenticated;
+
+create or replace function public.admin_add_duty(p_pharmacy uuid, p_listing uuid, p_start timestamptz, p_end timestamptz, p_source text default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare uid uuid := public.require_admin(); did uuid;
+begin
+  if p_pharmacy is not null and not exists (select 1 from public.pharmacies where id = p_pharmacy and status = 'verified') then
+    raise exception 'PP422: pharmacie vérifiée introuvable';
+  end if;
+  insert into public.pharmacy_duty (pharmacy_id, listing_id, starts_at, ends_at, status, source, created_by)
+  values (p_pharmacy, p_listing, p_start, p_end, 'confirmed', coalesce(nullif(btrim(coalesce(p_source, '')), ''), 'Saisie administrateur'), uid)
+  returning id into did;
+  perform public.log_audit('duty.add', 'pharmacy_duty', did::text);
+  return did;
+exception when check_violation then
+  raise exception 'PP422: choisissez une pharmacie, et une fin après le début (8 jours maximum)';
+end $$;
+
+-- Import du tableau de garde : [{line, pharmacie, region, commune, debut, fin, source}]
+-- debut/fin : « 2026-11-02 », « 2026-11-02 20:00 » ou « 02/11/2026 20:00 ». Une date seule vaut 08:00 → lendemain 08:00.
+create or replace function public.admin_import_duty(p_rows jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  uid uuid := public.require_admin();
+  rec record; ok int := 0; errors jsonb := '[]'::jsonb; v_region uuid; v_commune uuid; v_ph uuid; v_li uuid; v_s timestamptz; v_e timestamptz; n int;
+begin
+  if jsonb_typeof(p_rows) <> 'array' or jsonb_array_length(p_rows) > 3000 then raise exception 'PP422: 3 000 lignes maximum'; end if;
+  for rec in select coalesce((e ->> 'line')::int, o::int + 1) as line, e from jsonb_array_elements(p_rows) with ordinality as t(e, o) loop
+    begin
+      v_region := public.resolve_region(rec.e ->> 'region');
+      if v_region is null then raise exception 'PP422: région inconnue « % »', coalesce(rec.e ->> 'region', ''); end if;
+      v_commune := public.resolve_commune(v_region, rec.e ->> 'commune');
+      v_s := public.parse_duty_time(rec.e ->> 'debut', false);
+      v_e := public.parse_duty_time(coalesce(nullif(btrim(rec.e ->> 'fin'), ''), rec.e ->> 'debut'), true);
+      if v_s is null or v_e is null then raise exception 'PP422: dates invalides'; end if;
+      select count(*), min(p.id::text)::uuid into n, v_ph from public.pharmacies p
+      where p.status = 'verified' and p.region_id = v_region and public.normalize_text(p.name) = public.normalize_text(rec.e ->> 'pharmacie')
+        and (v_commune is null or p.commune_id = v_commune);
+      v_li := null;
+      if n = 0 then
+        v_ph := null;
+        select count(*), min(l.id::text)::uuid into n, v_li from public.pharmacy_listings l
+        where l.region_id = v_region and l.search_name = public.normalize_text(rec.e ->> 'pharmacie')
+          and (v_commune is null or l.commune_id is null or l.commune_id = v_commune);
+      end if;
+      if n = 0 then raise exception 'PP404: pharmacie « % » introuvable dans l''annuaire (ajoutez-la d''abord)', rec.e ->> 'pharmacie'; end if;
+      if n > 1 then raise exception 'PP409: plusieurs pharmacies « % » : précisez la commune', rec.e ->> 'pharmacie'; end if;
+      insert into public.pharmacy_duty (pharmacy_id, listing_id, starts_at, ends_at, status, source, created_by)
+      values (v_ph, v_li, v_s, v_e, 'confirmed', coalesce(nullif(btrim(rec.e ->> 'source'), ''), 'Tableau de garde importé'), uid);
+      ok := ok + 1;
+    exception
+      when check_violation then errors := errors || jsonb_build_object('row', rec.line, 'error', 'la fin doit être après le début (8 jours maximum)');
+      when others then errors := errors || jsonb_build_object('row', rec.line, 'error', regexp_replace(sqlerrm, '^PP[0-9]+: ', ''));
+    end;
+  end loop;
+  perform public.log_audit('duty.import', 'pharmacy_duty', null, jsonb_build_object('imported', ok, 'failed', jsonb_array_length(errors)));
+  return jsonb_build_object('imported', ok, 'failed', jsonb_array_length(errors), 'errors', errors);
+end $$;
+
+create or replace function public.parse_duty_time(p text, p_is_end boolean)
+returns timestamptz language plpgsql immutable as $$
+declare t text := btrim(coalesce(p, '')); d date; tm time;
+begin
+  if t = '' then return null; end if;
+  t := regexp_replace(t, '\s+', ' ', 'g');
+  if t ~ '^\d{2}/\d{2}/\d{4}' then t := substr(t, 7, 4) || '-' || substr(t, 4, 2) || '-' || substr(t, 1, 2) || substr(t, 11); end if;
+  d := substr(t, 1, 10)::date;
+  if char_length(t) > 10 then
+    tm := replace(btrim(substr(t, 11)), 'h', ':')::time;
+    return (d::timestamp + tm) at time zone 'UTC';
+  end if;
+  -- Date seule : garde de 08:00 à 08:00 le lendemain
+  return ((case when p_is_end then d + 1 else d end)::timestamp + time '08:00') at time zone 'UTC';
+exception when others then
+  return null;
+end $$;
+
+-- La pharmacie déclare elle-même sa garde (affichée « déclarée par la pharmacie »)
+create or replace function public.pharmacy_declare_duty(p_pharmacy uuid, p_start timestamptz, p_end timestamptz)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare did uuid;
+begin
+  if not exists (select 1 from public.pharmacy_members m join public.pharmacies p on p.id = m.pharmacy_id
+                 where m.pharmacy_id = p_pharmacy and m.user_id = auth.uid() and p.status = 'verified') then
+    raise exception 'PP403: réservé à l''équipe d''une pharmacie vérifiée' using errcode = '42501';
+  end if;
+  if p_end < now() then raise exception 'PP422: cette garde est déjà passée'; end if;
+  insert into public.pharmacy_duty (pharmacy_id, starts_at, ends_at, status, source, created_by)
+  values (p_pharmacy, p_start, p_end, 'declared', 'Déclarée par la pharmacie', auth.uid()) returning id into did;
+  return did;
+exception when check_violation then
+  raise exception 'PP422: la fin doit être après le début (8 jours maximum)';
+end $$;
+
+create or replace function public.delete_duty(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare d public.pharmacy_duty;
+begin
+  select * into d from public.pharmacy_duty where id = p_id;
+  if d.id is null then raise exception 'PP404: garde introuvable'; end if;
+  if not (public.is_admin() or (d.status = 'declared' and exists (
+      select 1 from public.pharmacy_members m where m.pharmacy_id = d.pharmacy_id and m.user_id = auth.uid()))) then
+    raise exception 'PP403: action non autorisée' using errcode = '42501';
+  end if;
+  delete from public.pharmacy_duty where id = p_id;
+end $$;
+
+create or replace function public.duty_pharmacies(p_from timestamptz default now(), p_to timestamptz default null,
+                                                  p_region uuid default null, p_commune uuid default null,
+                                                  p_lat double precision default null, p_lng double precision default null)
+returns table (duty_id uuid, kind text, id uuid, name text, address text, area text, phone text, whatsapp text,
+               latitude double precision, longitude double precision, starts_at timestamptz, ends_at timestamptz,
+               status text, source text, distance_km double precision, region_id uuid, commune_id uuid)
+language sql stable security definer set search_path = public as $$
+  select d.id, 'verified', p.id, p.name, p.address, concat_ws(', ', lo.name, c.name, r.name), p.phone, p.whatsapp,
+         p.latitude, p.longitude, d.starts_at, d.ends_at, d.status, d.source, public.distance_km(p_lat, p_lng, p.latitude, p.longitude), p.region_id, p.commune_id
+  from public.pharmacy_duty d
+  join public.pharmacies p on p.id = d.pharmacy_id and p.status = 'verified'
+  join public.regions r on r.id = p.region_id
+  left join public.communes c on c.id = p.commune_id
+  left join public.localities lo on lo.id = p.locality_id
+  where d.ends_at > p_from and d.starts_at < coalesce(p_to, p_from + interval '1 second')
+    and (p_region is null or p.region_id = p_region) and (p_commune is null or p.commune_id = p_commune)
+  union all
+  select d.id, 'listing', l.id, l.name, l.address, concat_ws(', ', l.area_label, c.name, r.name), l.phone, null,
+         l.latitude, l.longitude, d.starts_at, d.ends_at, d.status, d.source, public.distance_km(p_lat, p_lng, l.latitude, l.longitude), l.region_id, l.commune_id
+  from public.pharmacy_duty d
+  join public.pharmacy_listings l on l.id = d.listing_id and l.is_published
+  join public.regions r on r.id = l.region_id
+  left join public.communes c on c.id = l.commune_id
+  where d.ends_at > p_from and d.starts_at < coalesce(p_to, p_from + interval '1 second')
+    and (p_region is null or l.region_id = p_region) and (p_commune is null or l.commune_id = p_commune)
+  order by 15 nulls last, 11, 4
+  limit 300
+$$;
+
+-- ---------------------------------------------------------------------------
+-- 2. Laboratoires et examens
+-- ---------------------------------------------------------------------------
+create table public.medical_exams (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique check (code ~ '^[a-z0-9_]{2,40}$'),
+  name text not null unique check (char_length(name) between 2 and 120),
+  category text not null check (category in ('biologie', 'imagerie', 'autre')),
+  synonyms text check (char_length(coalesce(synonyms, '')) <= 300),
+  description text check (char_length(coalesce(description, '')) <= 400),
+  sort_order int not null default 100,
+  is_active boolean not null default true,
+  search_text text generated always as (public.normalize_text(name || ' ' || coalesce(synonyms, ''))) stored
+);
+alter table public.medical_exams enable row level security;
+create policy "pp_exams_public_read" on public.medical_exams for select to anon, authenticated using (is_active or public.is_admin());
+revoke insert, update, delete on public.medical_exams from anon, authenticated;
+grant select on public.medical_exams to anon, authenticated;
+
+-- Liste de départ d'examens courants (descriptions neutres, sans conseil médical)
+insert into public.medical_exams (code, name, category, synonyms, description, sort_order) values
+  ('nfs', 'Numération formule sanguine (NFS)', 'biologie', 'hémogramme globules sang', 'Compte des globules rouges, blancs et des plaquettes.', 10),
+  ('glycemie', 'Glycémie à jeun', 'biologie', 'sucre diabète glucose', 'Mesure du sucre dans le sang.', 11),
+  ('hba1c', 'Hémoglobine glyquée (HbA1c)', 'biologie', 'diabète suivi', 'Reflète l''équilibre du sucre sur plusieurs semaines.', 12),
+  ('creatinine', 'Créatininémie', 'biologie', 'rein fonction rénale créatinine', 'Évalue le fonctionnement des reins.', 13),
+  ('uree', 'Urée sanguine', 'biologie', 'rein azote', null, 14),
+  ('ionogramme', 'Ionogramme sanguin', 'biologie', 'sodium potassium électrolytes', null, 15),
+  ('bilan_lipidique', 'Bilan lipidique', 'biologie', 'cholestérol triglycérides', null, 16),
+  ('transaminases', 'Transaminases (ASAT, ALAT)', 'biologie', 'foie hépatique sgot sgpt', 'Évalue le foie.', 17),
+  ('crp', 'Protéine C réactive (CRP)', 'biologie', 'inflammation', null, 18),
+  ('vs', 'Vitesse de sédimentation (VS)', 'biologie', 'inflammation', null, 19),
+  ('groupe_sanguin', 'Groupe sanguin et rhésus', 'biologie', 'groupage abo', null, 20),
+  ('bhcg', 'Test de grossesse sanguin (β-HCG)', 'biologie', 'grossesse hcg', null, 21),
+  ('vih', 'Sérologie VIH', 'biologie', 'sida dépistage', 'Dépistage, avec conseil et confidentialité.', 22),
+  ('aghbs', 'Antigène HBs (hépatite B)', 'biologie', 'hépatite b dépistage', null, 23),
+  ('hepatite_c', 'Sérologie hépatite C', 'biologie', 'vhc', null, 24),
+  ('paludisme', 'Recherche de paludisme (goutte épaisse / TDR)', 'biologie', 'palu goutte épaisse frottis tdr plasmodium', null, 25),
+  ('widal', 'Sérodiagnostic de Widal', 'biologie', 'typhoïde fièvre typhoïde', null, 26),
+  ('ecbu', 'Examen cytobactériologique des urines (ECBU)', 'biologie', 'urines infection urinaire', null, 27),
+  ('selles', 'Examen parasitologique des selles (KAOP)', 'biologie', 'selles parasites kaop', null, 28),
+  ('tsh', 'TSH (thyroïde)', 'biologie', 'thyroïde', null, 29),
+  ('psa', 'PSA', 'biologie', 'prostate', null, 30),
+  ('electrophorese_hb', 'Électrophorèse de l''hémoglobine', 'biologie', 'drépanocytose hémoglobine', null, 31),
+  ('radio_thorax', 'Radiographie du thorax', 'imagerie', 'radio poumons thorax', null, 50),
+  ('radio_os', 'Radiographie osseuse', 'imagerie', 'radio fracture os', null, 51),
+  ('echo_abdo', 'Échographie abdominale', 'imagerie', 'écho ventre abdomen', null, 52),
+  ('echo_obst', 'Échographie obstétricale', 'imagerie', 'écho grossesse', null, 53),
+  ('echo_pelv', 'Échographie pelvienne', 'imagerie', 'écho pelvis', null, 54),
+  ('scanner', 'Scanner (tomodensitométrie)', 'imagerie', 'tdm ct scan', null, 55),
+  ('irm', 'IRM', 'imagerie', 'résonance magnétique', null, 56),
+  ('mammographie', 'Mammographie', 'imagerie', 'sein', null, 57),
+  ('ecg', 'Électrocardiogramme (ECG)', 'autre', 'cœur ecg', null, 70)
+on conflict (code) do nothing;
+
+create table public.facility_exams (
+  id uuid primary key default gen_random_uuid(),
+  facility_id uuid not null references public.facility_listings(id) on delete cascade,
+  exam_id uuid not null references public.medical_exams(id) on delete cascade,
+  price_xof integer check (price_xof is null or price_xof between 0 and 10000000),
+  price_note text check (char_length(coalesce(price_note, '')) <= 80),
+  delay text check (char_length(coalesce(delay, '')) <= 60),
+  source text not null default 'Communiqué par l''établissement' check (char_length(source) between 1 and 200),
+  verified_at date,
+  updated_at timestamptz not null default now(),
+  unique (facility_id, exam_id)
+);
+create index facility_exams_exam on public.facility_exams (exam_id);
+alter table public.facility_exams enable row level security;
+create policy "pp_facility_exams_public_read" on public.facility_exams for select to anon, authenticated using (
+  exists (select 1 from public.facility_listings f where f.id = facility_id and f.is_published) or public.is_admin());
+revoke insert, update, delete on public.facility_exams from anon, authenticated;
+grant select on public.facility_exams to anon, authenticated;
+
+-- Import des examens proposés : [{line, etablissement, region, examen, prix, delai, source, verifie_le}]
+create or replace function public.admin_import_facility_exams(p_rows jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  uid uuid := public.require_admin();
+  rec record; ok int := 0; errors jsonb := '[]'::jsonb; v_fac uuid; v_exam uuid; n int; v_price int; v_region uuid;
+begin
+  if jsonb_typeof(p_rows) <> 'array' or jsonb_array_length(p_rows) > 5000 then raise exception 'PP422: 5 000 lignes maximum'; end if;
+  for rec in select coalesce((e ->> 'line')::int, o::int + 1) as line, e from jsonb_array_elements(p_rows) with ordinality as t(e, o) loop
+    begin
+      v_region := case when nullif(btrim(rec.e ->> 'region'), '') is null then null else public.resolve_region(rec.e ->> 'region') end;
+      select count(*), min(f.id::text)::uuid into n, v_fac from public.facility_listings f
+      where f.search_name = public.normalize_text(rec.e ->> 'etablissement') and (v_region is null or f.region_id = v_region);
+      if n = 0 then raise exception 'PP404: établissement « % » introuvable (importez-le d''abord)', rec.e ->> 'etablissement'; end if;
+      if n > 1 then raise exception 'PP409: plusieurs établissements « % » : précisez la région', rec.e ->> 'etablissement'; end if;
+      select e.id into v_exam from public.medical_exams e
+      where e.code = lower(btrim(rec.e ->> 'examen')) or public.normalize_text(e.name) = public.normalize_text(rec.e ->> 'examen')
+      limit 1;
+      if v_exam is null then raise exception 'PP404: examen « % » inconnu (code ou nom exact de la liste)', rec.e ->> 'examen'; end if;
+      v_price := nullif(regexp_replace(coalesce(rec.e ->> 'prix', ''), '[^0-9]', '', 'g'), '')::int;
+      insert into public.facility_exams (facility_id, exam_id, price_xof, price_note, delay, source, verified_at)
+      values (v_fac, v_exam, v_price, nullif(btrim(rec.e ->> 'note_prix'), ''), nullif(btrim(rec.e ->> 'delai'), ''),
+              coalesce(nullif(btrim(rec.e ->> 'source'), ''), 'Communiqué par l''établissement'),
+              coalesce(nullif(btrim(rec.e ->> 'verifie_le'), '')::date, current_date))
+      on conflict (facility_id, exam_id) do update set price_xof = excluded.price_xof, price_note = excluded.price_note, delay = excluded.delay,
+        source = excluded.source, verified_at = excluded.verified_at, updated_at = now();
+      ok := ok + 1;
+    exception
+      when check_violation then errors := errors || jsonb_build_object('row', rec.line, 'error', 'valeur hors limites');
+      when others then errors := errors || jsonb_build_object('row', rec.line, 'error', regexp_replace(sqlerrm, '^PP[0-9]+: ', ''));
+    end;
+  end loop;
+  perform public.log_audit('exams.import', 'facility_exam', null, jsonb_build_object('imported', ok, 'failed', jsonb_array_length(errors)));
+  return jsonb_build_object('imported', ok, 'failed', jsonb_array_length(errors), 'errors', errors);
+end $$;
+
+create or replace function public.search_labs(p_exam uuid default null, p_query text default null, p_region uuid default null,
+                                              p_sort text default 'name', p_limit int default 30, p_offset int default 0)
+returns table (facility_id uuid, name text, kind text, region_name text, city_label text, address text, phone text, phone2 text,
+               latitude double precision, longitude double precision, price_xof int, price_note text, delay text, source text,
+               verified_at date, exams_count bigint, total_count bigint)
+language sql stable security definer set search_path = public, extensions as $$
+  with q as (select nullif(public.normalize_text(p_query), '') as t)
+  select f.id, f.name, f.kind, r.name, f.city_label, f.address, f.phone, f.phone2, f.latitude, f.longitude,
+         fe.price_xof, fe.price_note, fe.delay, coalesce(fe.source, f.source), fe.verified_at,
+         (select count(*) from public.facility_exams x where x.facility_id = f.id), count(*) over ()
+  from public.facility_listings f cross join q
+  left join public.regions r on r.id = f.region_id
+  left join public.facility_exams fe on fe.facility_id = f.id and fe.exam_id = p_exam
+  where f.is_published and f.claimed_clinic_id is null and f.kind in ('laboratoire', 'imagerie', 'hopital', 'csref', 'clinique')
+    and (p_exam is null or fe.id is not null)
+    and (p_exam is not null or f.kind in ('laboratoire', 'imagerie'))
+    and (p_region is null or f.region_id = p_region)
+    and (q.t is null or f.search_name like '%' || q.t || '%' or extensions.similarity(f.search_name, q.t) > 0.3)
+  order by case when p_sort = 'price' then fe.price_xof end asc nulls last, f.search_name
+  limit least(greatest(coalesce(p_limit, 30), 1), 100) offset greatest(coalesce(p_offset, 0), 0)
+$$;
+
+-- ---------------------------------------------------------------------------
+-- 3. Alertes de disponibilité, signaux de demande, observatoire des ruptures
+-- ---------------------------------------------------------------------------
+create table public.medicine_alerts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  catalog_id uuid not null references public.medicine_catalog(id) on delete cascade,
+  region_id uuid references public.regions(id) on delete set null,
+  commune_id uuid references public.communes(id) on delete set null,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null default now() + interval '30 days',
+  notified_at timestamptz,
+  unique (user_id, catalog_id)
+);
+create index medicine_alerts_catalog on public.medicine_alerts (catalog_id) where notified_at is null;
+alter table public.medicine_alerts enable row level security;
+create policy "pp_alerts_own" on public.medicine_alerts for select to authenticated using (user_id = auth.uid());
+revoke insert, update, delete on public.medicine_alerts from anon, authenticated;
+grant select on public.medicine_alerts to authenticated;
+
+create or replace function public.create_medicine_alert(p_catalog uuid, p_region uuid default null, p_commune uuid default null)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); aid uuid; v_cat uuid;
+begin
+  if uid is null then raise exception 'PP401: connectez-vous pour créer une alerte' using errcode = '42501'; end if;
+  select coalesce(merged_into, id) into v_cat from public.medicine_catalog where id = p_catalog and review_status <> 'rejected';
+  if v_cat is null then raise exception 'PP404: produit introuvable'; end if;
+  if (select count(*) from public.medicine_alerts where user_id = uid and notified_at is null and expires_at > now()) >= 10 then
+    raise exception 'PP429: 10 alertes actives maximum';
+  end if;
+  insert into public.medicine_alerts (user_id, catalog_id, region_id, commune_id)
+  values (uid, v_cat, p_region, p_commune)
+  on conflict (user_id, catalog_id) do update set region_id = excluded.region_id, commune_id = excluded.commune_id,
+    created_at = now(), expires_at = now() + interval '30 days', notified_at = null
+  returning id into aid;
+  return aid;
+end $$;
+
+create or replace function public.delete_medicine_alert(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  delete from public.medicine_alerts where id = p_id and user_id = auth.uid();
+  if not found then raise exception 'PP404: alerte introuvable'; end if;
+end $$;
+
+-- Un stock redevient disponible dans une pharmacie vérifiée : prévenir les personnes en attente (une fois)
+create or replace function public.inventory_alert_notify()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare p public.pharmacies; m public.medicine_catalog; a record;
+begin
+  if not new.is_available or new.quantity - new.reserved_quantity <= 0 then return new; end if;
+  if tg_op = 'UPDATE' and old.is_available and old.quantity - old.reserved_quantity > 0 then return new; end if;
+  select * into p from public.pharmacies where id = new.pharmacy_id and status = 'verified';
+  if p.id is null then return new; end if;
+  select * into m from public.medicine_catalog where id = new.catalog_id;
+  for a in
+    update public.medicine_alerts al set notified_at = now()
+    where al.catalog_id = new.catalog_id and al.notified_at is null and al.expires_at > now()
+      and (al.region_id is null or al.region_id = p.region_id) and (al.commune_id is null or al.commune_id = p.commune_id)
+    returning al.user_id
+  loop
+    perform public.notify_user(a.user_id, 'medicine_alert', 'Médicament disponible',
+      format('%s est déclaré disponible chez %s. Appelez ou demandez une confirmation avant de vous déplacer.',
+             concat_ws(' ', m.brand_name, m.dosage), p.name), null, format('/pharmacies/%s', p.id));
+  end loop;
+  return new;
+end $$;
+create trigger pharmacy_inventory_alerts after insert or update of is_available, quantity, reserved_quantity on public.pharmacy_inventory
+  for each row execute function public.inventory_alert_notify();
+
+-- Pour une pharmacie : produits recherchés par des patients de sa zone qu'elle ne déclare pas disponibles (agrégé)
+create or replace function public.pharmacy_demand_signals(p_pharmacy uuid)
+returns table (catalog_id uuid, label text, waiting bigint)
+language plpgsql stable security definer set search_path = public as $$
+declare p public.pharmacies;
+begin
+  if not exists (select 1 from public.pharmacy_members where pharmacy_id = p_pharmacy and user_id = auth.uid()) then
+    raise exception 'PP403: réservé à l''équipe de la pharmacie' using errcode = '42501';
+  end if;
+  select * into p from public.pharmacies where id = p_pharmacy;
+  return query
+  select a.catalog_id, concat_ws(' ', m.brand_name, m.dosage, m.form), count(*)
+  from public.medicine_alerts a
+  join public.medicine_catalog m on m.id = a.catalog_id
+  where a.notified_at is null and a.expires_at > now()
+    and (a.region_id is null or a.region_id = p.region_id)
+    and (a.commune_id is null or a.commune_id = p.commune_id)
+    and not exists (select 1 from public.pharmacy_inventory i where i.pharmacy_id = p_pharmacy and i.catalog_id = a.catalog_id
+                    and i.is_available and i.quantity - i.reserved_quantity > 0)
+  group by a.catalog_id, m.brand_name, m.dosage, m.form
+  order by 3 desc, 2
+  limit 20;
+end $$;
+
+-- Observatoire (administration) : demandes non satisfaites, sans aucune donnée personnelle.
+-- Les recherches sans résultat ne sont affichées qu'à partir de 3 occurrences.
+create or replace function public.admin_shortage_observatory(p_days int default 30)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare since timestamptz := now() - make_interval(days => least(greatest(coalesce(p_days, 30), 1), 365));
+begin
+  perform public.require_admin();
+  return jsonb_build_object(
+    'alerts', (select coalesce(jsonb_agg(x order by x.n desc), '[]'::jsonb) from (
+       select concat_ws(' ', m.brand_name, m.dosage, m.form) as produit, coalesce(r.name, 'Tout le Mali') as region, count(*) as n,
+              count(*) filter (where a.notified_at is not null) as satisfaites
+       from public.medicine_alerts a join public.medicine_catalog m on m.id = a.catalog_id left join public.regions r on r.id = a.region_id
+       where a.created_at > since group by 1, 2 order by 3 desc limit 30) x),
+    'searches', (select coalesce(jsonb_agg(y order by y.n desc), '[]'::jsonb) from (
+       select s.query_normalized as recherche, coalesce(r.name, 'Tout le Mali') as region, count(*) as n
+       from public.search_logs s left join public.regions r on r.id = s.region_id
+       where s.created_at > since and s.result_count = 0 and coalesce(s.kind, 'medicine') = 'medicine' and char_length(s.query_normalized) >= 3
+       group by 1, 2 having count(*) >= 3 order by 3 desc limit 30) y));
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- 4. Répertoire d'urgence
+-- ---------------------------------------------------------------------------
+create or replace function public.emergency_directory(p_region uuid default null)
+returns table (kind text, id uuid, name text, category text, area text, address text, phone text, phone2 text, verified boolean)
+language sql stable security definer set search_path = public as $$
+  select 'clinic', c.id, c.name, c.kind, concat_ws(', ', co.name, r.name), c.address, c.phone, c.whatsapp, true
+  from public.clinics c join public.regions r on r.id = c.region_id left join public.communes co on co.id = c.commune_id
+  where public.clinic_is_public(c.id) and c.emergency_24h and (p_region is null or c.region_id = p_region)
+  union all
+  select 'listing', f.id, f.name, f.kind, coalesce(f.city_label, r.name), f.address, f.phone, f.phone2, false
+  from public.facility_listings f left join public.regions r on r.id = f.region_id
+  where f.is_published and f.claimed_clinic_id is null and (f.kind in ('urgences', 'ambulance') or f.emergency_24h)
+    and (p_region is null or f.region_id = p_region or f.region_id is null)
+  order by 1, 3
+  limit 200
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Maintenance : purge des alertes expirées et des gardes anciennes
+-- ---------------------------------------------------------------------------
+create or replace function public.purge_services()
+returns int language plpgsql security definer set search_path = public as $$
+declare n int; m int;
+begin
+  delete from public.medicine_alerts where expires_at < now() - interval '30 days';
+  get diagnostics n = row_count;
+  delete from public.pharmacy_duty where ends_at < now() - interval '90 days';
+  get diagnostics m = row_count;
+  return n + m;
+end $$;
+
+create or replace function public.run_maintenance()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare expired int; rl int; logs int; notifs int; outbox int; issues int; reminders int; appts int; appt_rem int; svc int;
+begin
+  expired := public.expire_overdue_orders();
+  appts := public.expire_appointments();
+  appt_rem := public.send_appointment_reminders();
+  svc := public.purge_services();
+  delete from public.rate_limit_events where at < now() - interval '1 day';
+  get diagnostics rl = row_count;
+  delete from public.search_logs where created_at < now() - interval '400 days';
+  get diagnostics logs = row_count;
+  delete from public.notifications where read_at is not null and read_at < now() - interval '180 days';
+  get diagnostics notifs = row_count;
+  delete from public.notification_outbox where status in ('sent', 'skipped') and created_at < now() - interval '90 days';
+  get diagnostics outbox = row_count;
+  reminders := public.directory_reminders();
+  select count(*) into issues from public.integrity_issues() where severity = 'critique';
+  insert into public.maintenance_runs (expired, purged, critical_issues)
+  values (expired, jsonb_build_object('rate_limits', rl, 'search_logs', logs, 'notifications', notifs, 'outbox', outbox,
+                                      'directory_reminders', reminders, 'appointments_expired', appts, 'appointment_reminders', appt_rem,
+                                      'services', svc), issues);
+  delete from public.maintenance_runs where ran_at < now() - interval '30 days';
+  return jsonb_build_object('expired', expired, 'appointments_expired', appts, 'appointment_reminders', appt_rem,
+    'purged', jsonb_build_object('rate_limits', rl, 'search_logs', logs, 'notifications', notifs, 'outbox', outbox,
+                                 'directory_reminders', reminders, 'services', svc),
+    'critical_issues', issues);
+end $$;
+revoke execute on function public.run_maintenance() from public, anon, authenticated;
+grant execute on function public.run_maintenance() to service_role;
+
+-- ---------------------------------------------------------------------------
+-- Droits
+-- ---------------------------------------------------------------------------
+revoke execute on function public.inventory_alert_notify(), public.purge_services() from public, anon, authenticated;
+revoke execute on function public.admin_add_duty(uuid, uuid, timestamptz, timestamptz, text), public.admin_import_duty(jsonb),
+  public.pharmacy_declare_duty(uuid, timestamptz, timestamptz), public.delete_duty(uuid),
+  public.admin_import_facility_exams(jsonb), public.admin_set_facility_emergency(uuid, boolean),
+  public.create_medicine_alert(uuid, uuid, uuid), public.delete_medicine_alert(uuid),
+  public.pharmacy_demand_signals(uuid), public.admin_shortage_observatory(int) from public, anon;
+grant execute on function public.admin_add_duty(uuid, uuid, timestamptz, timestamptz, text), public.admin_import_duty(jsonb),
+  public.pharmacy_declare_duty(uuid, timestamptz, timestamptz), public.delete_duty(uuid),
+  public.admin_import_facility_exams(jsonb), public.admin_set_facility_emergency(uuid, boolean),
+  public.create_medicine_alert(uuid, uuid, uuid), public.delete_medicine_alert(uuid),
+  public.pharmacy_demand_signals(uuid), public.admin_shortage_observatory(int) to authenticated;
+grant execute on function public.duty_pharmacies(timestamptz, timestamptz, uuid, uuid, double precision, double precision),
+  public.search_labs(uuid, text, uuid, text, int, int), public.emergency_directory(uuid), public.parse_duty_time(text, boolean) to anon, authenticated;
+
 -- >>> Maintenance planifiée toutes les 10 minutes (pg_cron)
 create extension if not exists pg_cron;
 select cron.schedule('pharmaproxi-maintenance', '*/10 * * * *', $$select public.run_maintenance()$$);

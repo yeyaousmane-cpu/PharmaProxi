@@ -53,3 +53,10 @@ export function formatDistance(km: number | null | undefined) {
   if (km === null || km === undefined) return null;
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0).replace(".", ",")} km`;
 }
+
+/** Lien WhatsApp avec un message prérempli (le numéro doit être au format +223…). */
+export function whatsappUrl(phone: string | null | undefined, text: string) {
+  const digits = (phone ?? "").replace(/[^0-9]/g, "");
+  if (digits.length < 8) return null;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}

@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { FileText, MapPin, Navigation, Phone, Store } from "lucide-react";
+import { FileText, MapPin, MessageCircle, Navigation, Phone, Store } from "lucide-react";
 import { FreshnessBadge } from "@/components/freshness-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { formatDistance, formatPhone, formatXof } from "@/lib/format";
+import { formatDistance, formatPhone, formatXof, whatsappUrl } from "@/lib/format";
 import type { Freshness } from "@/lib/freshness";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,7 @@ export function ResultCard({ r }: { r: SearchRow }) {
   const label = [r.brand_name, r.dosage, r.form].filter(Boolean).join(" · ");
   const place = [r.locality_name, r.commune_name, r.region_name].filter(Boolean).join(", ");
   const dist = formatDistance(r.distance_km);
+  const wa = whatsappUrl(r.whatsapp, `Bonjour, avez-vous ${[r.brand_name, r.dosage].filter(Boolean).join(" ")} disponible ? (vu sur PharmaProxi)`);
   return (
     <article className="rounded-xl border bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -60,6 +61,11 @@ export function ResultCard({ r }: { r: SearchRow }) {
         <a href={`tel:${r.phone}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))} aria-label={`Appeler ${r.pharmacy_name} au ${formatPhone(r.phone)}`}>
           <Phone aria-hidden /> Appeler
         </a>
+        {wa ? (
+          <a href={wa} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} aria-label={`Écrire à ${r.pharmacy_name} sur WhatsApp`}>
+            <MessageCircle aria-hidden /> WhatsApp
+          </a>
+        ) : null}
         {r.latitude !== null && r.longitude !== null ? (
           <a href={directionsUrl(r.latitude, r.longitude)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
             <Navigation aria-hidden /> Itinéraire

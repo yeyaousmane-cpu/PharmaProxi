@@ -65,7 +65,10 @@ export default async function DoctorSpace({ searchParams }: { searchParams: Prom
           <h1 className="text-2xl font-bold text-brand-deep">Espace médecin</h1>
           <p className="text-muted-foreground">{d.title} {d.display_name}</p>
         </div>
-        <Link prefetch={false} href={`/medecins/${d.id}`} className={cn(buttonVariants({ variant: "outline" }))}><Eye aria-hidden /> Voir ma fiche publique</Link>
+        <div className="flex flex-wrap gap-2">
+          <Link prefetch={false} href="/medecin/rendez-vous" className={cn(buttonVariants())}><CalendarClock aria-hidden /> Demandes de rendez-vous</Link>
+          <Link prefetch={false} href={`/medecins/${d.id}`} className={cn(buttonVariants({ variant: "outline" }))}><Eye aria-hidden /> Voir ma fiche publique</Link>
+        </div>
       </header>
       {sp.inscrit && <Alert tone="success" title="Demande enregistrée">Étape suivante : déposez vos justificatifs, puis indiquez vos lieux de consultation.</Alert>}
       {pendingInvites.length > 0 && (

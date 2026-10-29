@@ -120,6 +120,23 @@ Menu **Authentication** :
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000100_pharmacy_listings.sql`.
 2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (*Add file › Upload files*) : le programme `.github/workflows/installer.yml` le décompresse et Vercel redéploie.
 
+### Passer à la v0.7.0 (gardes, laboratoires, alertes, urgences)
+
+1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261029000100_services.sql` (après celle de la v0.6.0).
+2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub.
+3. Vérifiez : `/garde`, `/laboratoires`, `/urgences` s'affichent ; *Administration › Gardes, examens, ruptures* est accessible.
+4. Dans *Administration › Paramètres*, renseignez `emergency_numbers` avec des numéros d'urgence **vérifiés** (ils s'affichent en tête de `/urgences`).
+
+### Passer à la v0.6.0 (réservation par créneaux)
+
+1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000400_booking.sql` (après celle de la v0.5.0).
+2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub.
+
+### Passer à la v0.5.0 (rendez-vous)
+
+1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000300_appointments.sql`.
+2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (le programme d'installation le décompresse, Vercel redéploie).
+
 ### Passer à la v0.4.0 (registres publics)
 
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000200_registers.sql` (après celle de la v0.3.1).

@@ -62,6 +62,12 @@ Toutes les décisions ci-dessous sont enregistrées dans le **journal d'audit** 
 - Quand l'officine s'inscrit et que vous la validez, ouvrez sa fiche non inscrite et cliquez sur **Rattacher** : la fiche d'annuaire disparaît au profit de la vraie fiche.
 - Un signalement (numéro faux, pharmacie fermée) : corrigez la fiche, ou masquez-la.
 
+## Rendez-vous
+
+- Ce sont les médecins (*Espace médecin › Demandes de rendez-vous*) ou les établissements (*fiche de l'établissement › Rendez-vous*) qui ouvrent les demandes en ligne, lieu par lieu.
+- L'administration ne voit ni les patients ni les motifs : seulement des statistiques (fonction `admin_appointment_stats`).
+- Un patient signale un problème (rendez-vous non honoré, comportement) : orientez-le vers l'établissement ; en cas de manquement répété d'un médecin, suspendez sa fiche.
+
 ## Tableau de l'Ordre des médecins
 
 - *Annuaire médical › Tableau de l'Ordre* : importez chaque année le Tableau publié par l'Ordre (CSV : ordre ; inscription ; nom ; prenom ; specialite ; structure ; crom), en cochant « Remplacer l'édition existante ».
@@ -100,6 +106,21 @@ Un lieu (médecin ↔ établissement) est publié seulement si le médecin **et*
 
 ### Règles à respecter
 Aucun classement payant ni mise en avant : l'ordre est alphabétique ou par distance. Aucun avis ni note sur les médecins. Aucune recommandation médicale.
+
+## Gardes, laboratoires et ruptures
+
+### Tableau de garde
+*Administration › Gardes, examens, ruptures › Pharmacies de garde.* Importez le tableau officiel (CSV : pharmacie ; region ; debut ; commune ; fin ; source) ou ajoutez une garde à la main. Indiquez toujours la source (Ordre des pharmaciens, direction régionale de la santé…). La pharmacie doit d'abord figurer dans l'annuaire. Les gardes déclarées par une pharmacie apparaissent avec la mention « déclarée par la pharmacie » : vous pouvez les supprimer en cas d'erreur.
+
+### Laboratoires et examens
+1. Importez les établissements dans *Annuaire médical › Établissements non vérifiés* (type `laboratoire` ou `imagerie`). Cochez « Importer masqué » si les coordonnées doivent encore être confirmées, puis publiez chaque fiche après un appel de vérification.
+2. Importez les examens proposés (*Gardes, examens, ruptures › Laboratoires et examens*). **N'inscrivez un tarif que s'il a été communiqué par l'établissement**, avec la date de l'information ; laissez la colonne vide sinon.
+
+### Services d'urgence
+Importez les services d'urgence et ambulances (types `urgences`, `ambulance`, colonne `urgences_24h`) ou utilisez le bouton « Urgences 24 h » sur une fiche. Renseignez `emergency_numbers` dans les paramètres avec des numéros vérifiés.
+
+### Observatoire des ruptures
+Chiffres agrégés et anonymes de la demande exprimée sur PharmaProxi. Ils ne mesurent pas l'état réel du marché : croisez-les avec d'autres sources avant toute communication publique, et ne publiez jamais de données permettant d'identifier une pharmacie ou une personne.
 
 ## Incidents techniques
 

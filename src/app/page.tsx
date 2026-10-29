@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Building2, ShieldCheck, Stethoscope, Store } from "lucide-react";
+import { Building2, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
+import { RecentList } from "@/components/recent/recent-list";
 import { SearchBar } from "@/components/search-bar";
 import { HowItWorks } from "@/components/home/how-it-works";
 import { DemoBadge } from "@/components/demo-badge";
@@ -41,6 +42,24 @@ export default async function Home() {
             <SearchBar geo={geo} large />
           </div>
         </div>
+      </section>
+
+      <section className="container-page py-6" aria-label="Services pratiques">
+        <ul className="grid gap-3 sm:grid-cols-3">
+          {[
+            { href: "/garde", Icon: Moon, title: "Pharmacies de garde", text: "Ouvertes la nuit et le week-end", tone: "text-indigo-700 border-indigo-200 hover:border-indigo-400" },
+            { href: "/laboratoires", Icon: FlaskConical, title: "Laboratoires et examens", text: "Où faire une analyse, tarifs communiqués", tone: "text-brand-blue border-sky-200 hover:border-brand-blue" },
+            { href: "/urgences", Icon: Siren, title: "Urgences", text: "Services d'urgence et ambulances", tone: "text-red-700 border-red-200 hover:border-red-400" },
+          ].map(({ href, Icon, title, text, tone }) => (
+            <li key={href}>
+              <Link prefetch={false} href={href} className={`flex h-full items-center gap-3 rounded-xl border bg-white p-4 transition hover:shadow-sm ${tone}`}>
+                <Icon className="size-7 shrink-0" aria-hidden />
+                <span><span className="block font-bold text-foreground">{title}</span><span className="block text-sm text-muted-foreground">{text}</span></span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-6"><RecentList emptyHidden /></div>
       </section>
 
       <section className="border-b bg-gradient-to-b from-brand-sky to-white" aria-labelledby="doc-title">

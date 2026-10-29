@@ -40,6 +40,7 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
 
   let rows: DoctorRow[] = [];
   let reg: RegisterRow[] = [];
+  const nextMap = new Map<string, { site_id: string; slot_start: string }>();
   type Summary = { year: number | null; total: number };
   let summary = null as Summary | null;
   let error: string | null = null;
@@ -70,6 +71,10 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
       });
       if (e) error = humanizeError(e);
       rows = (data as DoctorRow[]) ?? [];
+      if (rows.length) {
+        const { data: nx } = await supabase.rpc("next_availabilities", { p_doctors: rows.map((r) => r.doctor_id) });
+        for (const n of (nx as { doctor_id: string; site_id: string; slot_start: string }[] | null) ?? []) nextMap.set(n.doctor_id, n);
+      }
     }
   }
   const total = Number(rows[0]?.total_count ?? 0);
@@ -197,7 +202,7 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
         {rows.length > 0 && (
           <>
             <p className="text-sm text-muted-foreground">{total} médecin{total > 1 ? "s" : ""}{specName ? ` · ${specName}` : ""}. {sort === "distance" ? "Du plus proche au plus éloigné." : "Par ordre alphabétique."}</p>
-            <div className="grid gap-3">{rows.map((d) => <DoctorCard key={d.doctor_id} d={d} />)}</div>
+            <div className="grid gap-3">{rows.map((d) => <DoctorCard key={d.doctor_id} d={d} next={nextMap.get(d.doctor_id) ?? null} />)}</div>
             {pages > 1 && (
               <nav aria-label="Pagination" className="flex items-center justify-center gap-2">
                 {page > 1 && <Link prefetch={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href={link({ page: String(page - 1) })}>Précédent</Link>}

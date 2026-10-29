@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Package, Trash2 } from "lucide-react";
+import { BellRing, CalendarCheck, MapPin, Package, Trash2 } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getGeo } from "@/lib/geo";
@@ -27,8 +27,10 @@ export default async function AccountPage() {
     <div className="container-page max-w-3xl space-y-6 py-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Mon compte</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link prefetch={false} href="/compte/commandes" className={cn(buttonVariants({ variant: "secondary" }))}><Package aria-hidden /> Mes commandes</Link>
+          <Link prefetch={false} href="/compte/rendez-vous" className={cn(buttonVariants({ variant: "secondary" }))}><CalendarCheck aria-hidden /> Mes rendez-vous</Link>
+          <Link prefetch={false} href="/compte/alertes" className={cn(buttonVariants({ variant: "secondary" }))}><BellRing aria-hidden /> Mes alertes</Link>
           <form action={signOut}><button className={cn(buttonVariants({ variant: "outline" }))}>Déconnexion</button></form>
         </div>
       </div>

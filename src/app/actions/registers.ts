@@ -84,10 +84,13 @@ const FACILITY_HEADERS: Record<string, string> = {
   nom: "nom", etablissement: "nom", "nom de l'etablissement": "nom", type: "type", categorie: "categorie", category: "categorie",
   region: "region", ville: "ville", localite: "ville", adresse: "adresse", telephone: "telephone", tel: "telephone",
   telephone2: "telephone2", "telephone 2": "telephone2", latitude: "latitude", longitude: "longitude", source: "source",
+  publie: "publie", publier: "publie", "a publier": "publie", urgences_24h: "urgences_24h", "urgences 24h": "urgences_24h", "urgences 24h/24": "urgences_24h",
 };
 /** Type déduit de la catégorie ou du nom quand la colonne « type » est vide. */
 function inferKind(name: string, cat: string) {
   const t = `${cat} ${name}`.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  if (/ambulance/.test(t)) return "ambulance";
+  if (/samu|urgence/.test(t)) return "urgences";
   if (/dentaire|odonto/.test(t)) return "cabinet_dentaire";
   if (/reference|csref/.test(t)) return "csref";
   if (/hopital|hospitalier|chu\b/.test(t)) return "hopital";
@@ -101,13 +104,14 @@ function inferKind(name: string, cat: string) {
 export async function importFacilities(_: ActionState, fd: FormData): Promise<ActionState> {
   const csv = await readCsv(fd.get("file"), FACILITY_HEADERS);
   if ("error" in csv) return { error: csv.error };
-  if (!csv.fields.includes("nom")) return { error: "Colonne obligatoire : nom. Facultatives : type, categorie, region, ville, adresse, telephone, telephone2, latitude, longitude, source." };
+  if (!csv.fields.includes("nom")) return { error: "Colonne obligatoire : nom. Facultatives : type, categorie, region, ville, adresse, telephone, telephone2, latitude, longitude, source, publie (oui/non), urgences_24h (oui/non)." };
   if (csv.rows.length === 0) return { error: "Le fichier ne contient aucune ligne." };
   const source = String(fd.get("source") ?? "").trim();
   const rows = csv.rows.map((r, i) => ({
     line: i + 2, nom: r.nom ?? "", type: (r.type ?? "").trim() || inferKind(r.nom ?? "", r.categorie ?? ""), categorie: r.categorie ?? "",
     region: r.region ?? "", ville: r.ville ?? "", adresse: r.adresse ?? "", telephone: r.telephone ?? "", telephone2: r.telephone2 ?? "",
     latitude: r.latitude ?? "", longitude: r.longitude ?? "", source: (r.source ?? "").trim() || source,
+    publie: fd.get("unpublished") === "on" ? "non" : (r.publie ?? ""), urgences_24h: r.urgences_24h ?? "",
   }));
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_import_facility_listings", { p_rows: rows });

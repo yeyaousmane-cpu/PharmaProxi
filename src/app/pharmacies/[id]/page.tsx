@@ -16,7 +16,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { directionsUrl } from "@/components/result-card";
-import { formatDate, formatPhone, formatXof } from "@/lib/format";
+import { formatDate, formatPhone, formatXof, whatsappUrl } from "@/lib/format";
+import { RecentTracker } from "@/components/recent/recent-tracker";
+import { DutyBadge, type DutySlot } from "@/components/duty/duty-badge";
 import type { Freshness } from "@/lib/freshness";
 import { cn } from "@/lib/utils";
 
@@ -43,11 +45,14 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
     .maybeSingle();
   if (!p) notFound();
 
-  const [session, settings, inv] = await Promise.all([
+  const nowIso = new Date().toISOString();
+  const [session, settings, inv, duty] = await Promise.all([
     getSession(),
     getSettings(),
     supabase.rpc("pharmacy_public_inventory", { p_pharmacy: id, p_query: sp.filtre ?? null, p_limit: 100 }),
+    supabase.rpc("duty_pharmacies", { p_from: nowIso, p_to: new Date(Date.now() + 7 * 86400_000).toISOString() }).eq("id", id),
   ]);
+  const duties = ((duty.data as DutySlot[]) ?? []).sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const items = (inv.data as Inv[]) ?? [];
   const addresses = session
     ? ((await supabase.from("customer_addresses").select("id, label, address_line").eq("user_id", session.userId)).data ?? [])
@@ -64,6 +69,7 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
   return (
     <div className="container-page grid gap-6 py-6 lg:grid-cols-[1fr_400px]">
       <div className="space-y-6">
+        <RecentTracker kind="pharmacie" id={p.id} name={p.name} phone={p.phone} place={place} href={`/pharmacies/${p.id}`} />
         <header className="rounded-2xl border bg-white p-5">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold">{p.name}</h1>
@@ -74,12 +80,13 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
             )}
             {p.is_demo && <DemoBadge />}
           </div>
+          <DutyBadge slots={duties} />
           {p.verified_at && <p className="text-xs text-muted-foreground">Vérifiée le {formatDate(p.verified_at)}</p>}
           <p className="mt-3 flex items-start gap-2 text-sm"><MapPin className="mt-0.5 size-4 shrink-0 text-brand-green" aria-hidden />{p.address} — {place}</p>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <a href={`tel:${p.phone}`} className={cn(buttonVariants({ size: "sm" }))}><Phone aria-hidden /> {formatPhone(p.phone)}</a>
             {p.whatsapp && (
-              <a href={`https://wa.me/${p.whatsapp.replace("+", "")}`} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+              <a href={whatsappUrl(p.whatsapp, "Bonjour, je vous contacte depuis PharmaProxi. ") ?? `https://wa.me/${p.whatsapp.replace("+", "")}`} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
                 <MessageCircle aria-hidden /> WhatsApp
               </a>
             )}

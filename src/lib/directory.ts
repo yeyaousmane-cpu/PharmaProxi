@@ -16,6 +16,7 @@ export const CLINIC_KINDS: Record<string, string> = {
 export const FACILITY_KINDS: Record<string, string> = {
   clinique: "Clinique", cabinet: "Cabinet médical", cabinet_dentaire: "Cabinet dentaire", centre_sante: "Centre de santé",
   csref: "Centre de santé de référence", hopital: "Hôpital", imagerie: "Imagerie médicale", laboratoire: "Laboratoire d'analyses",
+  urgences: "Service d'urgence", ambulance: "Ambulance",
 };
 
 export const CLINIC_SERVICES: Record<string, string> = {

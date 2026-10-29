@@ -49,6 +49,34 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 - Page publique `/pharmacies` (pharmacies inscrites + non inscrites, recherche par nom, zone, proximité) et repères blancs sur la carte.
 - Administration : import CSV (point-virgule ou virgule, UTF-8 ou Windows-1252, numéros maliens normalisés, doublons ignorés, erreurs ligne par ligne), ajout manuel, masquage, suppression, rattachement à la pharmacie inscrite correspondante (suggestions par ressemblance du nom), journal d'audit.
 
+**Services pratiques (v0.7.0)**
+- **Pharmacies de garde** (`/garde`) : en ce moment ou sur 7 jours, par région/commune ou par proximité ; date, horaires, adresse, téléphone, WhatsApp, itinéraire ; source affichée (tableau officiel importé par l'administration) ou mention « déclarée par la pharmacie ». Import CSV du tableau, ajout manuel, déclaration par la pharmacie depuis son tableau de bord ; badge « De garde » sur la fiche de la pharmacie.
+- **Laboratoires et examens** (`/laboratoires`) : catalogue de 31 examens courants (biologie, imagerie, ECG) ; établissements qui déclarent les réaliser ; tarifs et délais **uniquement s'ils ont été communiqués**, avec source et date ; comparaison par tarif. Import CSV des examens ; établissements importables « masqués » tant que leurs coordonnées ne sont pas confirmées.
+- **Alertes de disponibilité** : « M'alerter » sur la fiche d'un produit introuvable (zone choisie, 30 jours, 10 alertes max) ; notification unique quand une pharmacie vérifiée de la zone le déclare disponible ; page `/compte/alertes`.
+- **Signaux de demande** pour les pharmacies (tableau de bord) : produits recherchés dans leur zone qu'elles ne déclarent pas disponibles, en nombre de personnes, sans identité.
+- **Observatoire des ruptures** (administration) : alertes demandées et recherches sans résultat (à partir de 3 occurrences), agrégées et anonymes, sur 7/30/90 jours.
+- **Urgences** (`/urgences`) : numéros d'urgence renseignés par l'administration, services d'urgence et établissements 24 h/24, ambulances, accès aux pharmacies de garde.
+- **WhatsApp** : message prérempli (« avez-vous … disponible ? ») sur les résultats de recherche, la fiche pharmacie et les gardes.
+- **Mode léger** : les 15 dernières pharmacies et médecins consultés (nom, zone, téléphone) restent sur le téléphone et s'affichent sur l'accueil, la page Urgences et la page hors connexion ; jamais de stock hors ligne.
+- Non inclus, avec la raison : dossier santé personnel et téléconsultation (hébergement agréé de données de santé et cadre réglementaire) ; vérification d'authenticité des médicaments (données officielles de la DPM nécessaires) ; soins à domicile et paramédicaux (circuit de vérification des diplômes à définir avec les ordres) ; assurances et mutuelles (conditions de prise en charge à obtenir des organismes) ; assistant multilingue et fiches en bambara (validation par des professionnels de santé) ; approvisionnement auprès des grossistes ; « profil mis en avant » payant (contraire à l'ordre neutre de l'annuaire).
+
+**Réservation en ligne par créneaux (v0.6.0)**
+- Motifs de consultation (durée, nouveaux patients / patients suivis, consignes, tarif indicatif déclaré), par lieu ou pour tous les lieux.
+- Deux modes par lieu : **réservation immédiate** d'un créneau libre (calculé à partir des horaires, de la durée du motif, des absences, des plages bloquées et des rendez-vous existants, tous lieux confondus) ou **demande à confirmer**.
+- Aucune double réservation, même en cas de clics simultanés (verrou par médecin, testé avec 6 réservations concurrentes).
+- Prochaine disponibilité affichée dans les résultats et sur la fiche ; informations pratiques (présentation, tarifs, moyens de paiement, nouveaux patients acceptés, accès).
+- Proches (enfants, parents) ; délai minimum de réservation et délai d'annulation en ligne ; ajout à l'agenda du téléphone (.ics) ; reprendre rendez-vous.
+- Liste d'attente : alerte quand un créneau se libère ; rappel la veille (notification + SMS en file d'attente).
+- Agenda du jour pour le médecin et le secrétariat ; rendez-vous saisis par téléphone ; plages bloquées.
+- Non inclus (hébergement agréé de données de santé et prestataires nécessaires) : téléconsultation vidéo, ordonnances et documents médicaux, paiement en ligne, messagerie patient-médecin.
+
+**Rendez-vous (v0.5.0)**
+- Demande de rendez-vous en ligne depuis la fiche d'un médecin vérifié, sur les lieux où le médecin ou l'établissement a ouvert les demandes : jour de consultation + moment de la journée, nom du patient (soi ou un proche), téléphone, motif facultatif.
+- Contrôles : jours et heures de consultation, absences annoncées, 60 jours maximum, 3 demandes en attente par patient, une demande par médecin et par jour, anti-doublon.
+- Le médecin ou le secrétariat confirme avec une heure, propose un autre moment (le patient accepte ou refuse) ou refuse avec un motif ; annulation des deux côtés ; clôture « honoré / patient absent ».
+- Expiration automatique sous 48 h (maintenance planifiée), notifications à chaque étape, motif visible uniquement du patient, du médecin et du secrétariat (pas de l'administration).
+- Pas de téléconsultation, pas de paiement, pas de conseil médical. Rappels SMS : à brancher avec un prestataire.
+
 **Registres publics (v0.4.0)**
 - **Tableau de l'Ordre des médecins** (édition 2025 : 4 330 médecins) : recherche publique par nom, spécialité, région (conseil régional) et structure ; aucune coordonnée personnelle ; badge « Inscrit au Tableau » ; lien vers l'établissement ; pas de doublon avec les fiches vérifiées (même n° d'inscription). Import annuel par CSV depuis l'administration ; masquage durable à la demande d'un médecin.
 - 10 spécialités ajoutées pour couvrir le Tableau (santé publique, médecine d'urgence, chirurgie thoracique et cardiovasculaire…).

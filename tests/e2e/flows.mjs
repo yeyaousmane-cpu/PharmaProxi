@@ -95,7 +95,13 @@ async function login(ctx, role) {
   await page.fill("#email", mail(role));
   await page.fill("#password", PW);
   await page.click("button[type=submit]");
-  const moved = await page.waitForURL((u) => !u.pathname.startsWith("/connexion"), { timeout: 8000 }).then(() => true, () => false);
+  let moved = await page.waitForURL((u) => !u.pathname.startsWith("/connexion"), { timeout: 8000 }).then(() => true, () => false);
+  if (!moved && /Trop de|réessayez|Réessayez/.test(await page.locator("main").innerText().catch(() => ""))) {
+    // Le serveur d'authentification local limite les rafales de connexions : nouvelle tentative
+    await page.waitForTimeout(5000);
+    await page.click("button[type=submit]");
+    moved = await page.waitForURL((u) => !u.pathname.startsWith("/connexion"), { timeout: 8000 }).then(() => true, () => false);
+  }
   if (!moved) {
     reloads++; console.log("      ⚠ blocage n°2 :", current?.url?.() ?? "");
     await page.goto(`${BASE}/`, NI); // le cookie de session a été posté avec la réponse
@@ -623,6 +629,158 @@ await step("administration : masquer puis republier une fiche", async () => {
   await aCtx.close();
 });
 
+console.log("Rendez-vous");
+const nextMonday = (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + 1); while (d.getUTCDay() !== 1) d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); })();
+await step("médecin : ouverture des demandes de rendez-vous en ligne", async () => {
+  const dCtx = await newCtx(mobile);
+  const d = await login(dCtx, "doctor1");
+  current = d;
+  await d.goto(`${BASE}/medecin/rendez-vous?vue=reglages`, NI);
+  const row = d.locator("li", { hasText: "Clinique DÉMO du Djoliba" }).first();
+  await act(d, () => row.getByRole("button", { name: "Ouvrir la prise de rendez-vous" }).click(),
+    () => d.locator("li", { hasText: "Clinique DÉMO du Djoliba" }).first().getByRole("button", { name: "Fermer la prise de rendez-vous" }));
+  assert((await d.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (agenda médecin)");
+  await dCtx.close();
+});
+
+await step("patient : demande de rendez-vous depuis la fiche du médecin", async () => {
+  const cCtx = await newCtx(mobile);
+  const c = await login(cCtx, "customer");
+  current = c;
+  await c.goto(`${BASE}/medecins`, NI);
+  await c.fill("#q", "Aminata");
+  await c.getByRole("button", { name: "Rechercher" }).click();
+  await c.getByRole("link", { name: /Démo Aminata/ }).first().click();
+  await c.waitForURL(/\/medecins\/[0-9a-f-]{36}$/);
+  await c.getByRole("link", { name: "Demander un rendez-vous" }).first().click();
+  await c.waitForURL(/\/rendez-vous/);
+  await c.fill("#date", nextMonday);
+  await c.getByLabel("Le matin").check();
+  await c.fill("#reason", "Consultation de suivi");
+  await c.getByRole("checkbox", { name: /J'ai compris/ }).check();
+  assert((await c.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (formulaire de rendez-vous)");
+  await shot(c, "19-demande-rendez-vous-mobile");
+  await c.getByRole("button", { name: "Envoyer la demande" }).click();
+  await c.waitForURL(/\/compte\/rendez-vous/, { timeout: 15000 });
+  await c.getByText("En attente de réponse").first().waitFor({ timeout: 10000 });
+  await cCtx.close();
+});
+
+await step("secrétariat : confirmation avec une heure ; le patient voit le rendez-vous confirmé", async () => {
+  const kCtx = await newCtx(mobile);
+  const k = await login(kCtx, "clinic");
+  current = k;
+  await k.goto(`${BASE}/clinique`, NI);
+  await k.getByRole("link", { name: /Clinique DÉMO du Djoliba/ }).first().click();
+  await k.waitForURL(/\/clinique\/[0-9a-f-]{36}$/);
+  await k.getByRole("link", { name: "Rendez-vous", exact: true }).click();
+  await k.waitForURL(/\/rendez-vous/);
+  await k.getByText("Consultation de suivi").waitFor({ timeout: 10000 });
+  await k.fill("input[name=time]", "09:30");
+  await act(k, () => k.getByRole("button", { name: "Confirmer", exact: true }).click(), () => k.getByText("Aucune demande en attente."));
+  await k.goto(`${k.url().split("?")[0]}?vue=a_venir`, NI);
+  await k.getByText(/fixé :.*09 h 30/).waitFor({ timeout: 10000 });
+  assert((await k.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (agenda établissement)");
+  await shot(k, "20-agenda-etablissement-mobile");
+  await kCtx.close();
+  const cCtx = await newCtx(mobile);
+  const c = await login(cCtx, "customer");
+  await c.goto(`${BASE}/compte/rendez-vous`, NI);
+  await c.getByText("Confirmé", { exact: true }).first().waitFor({ timeout: 10000 });
+  await c.getByText(/à 09 h 30/).first().waitFor({ timeout: 10000 });
+  await shot(c, "21-mes-rendez-vous-mobile");
+  await cCtx.close();
+});
+
+let bookedDay = null;
+await step("médecin : motif de consultation et réservation immédiate", async () => {
+  const dCtx = await newCtx(mobile);
+  const d = await login(dCtx, "doctor1");
+  current = d;
+  await d.goto(`${BASE}/medecin/rendez-vous?vue=reglages`, NI);
+  await d.fill("#tn-new", "Consultation");
+  await d.fill("#td-new", "30");
+  await d.fill("#tf-new", "10 000 FCFA");
+  await d.getByRole("button", { name: "Ajouter", exact: true }).click();
+  await d.getByText("Motif enregistré.").first().waitFor({ timeout: 10000 });
+  await d.reload(NI);
+  const row = d.locator("li", { hasText: "Clinique DÉMO du Djoliba" }).first();
+  await row.getByText("Réglages du lieu").click();
+  await row.getByLabel("Réservation immédiate d'un créneau libre").check();
+  await row.getByLabel("Informations d'accès").fill("Bâtiment B, 1er étage");
+  await row.getByRole("button", { name: "Enregistrer" }).click();
+  await d.getByText("Réglages enregistrés.").first().waitFor({ timeout: 10000 });
+  await d.reload(NI);
+  await d.locator("li", { hasText: "Clinique DÉMO du Djoliba" }).getByText("Réservation immédiate", { exact: true }).waitFor({ timeout: 10000 });
+  assert((await d.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (réglages)");
+  await shot(d, "22-reglages-medecin-mobile");
+  await dCtx.close();
+});
+
+await step("patient : prochaine disponibilité, choix du motif et du créneau, réservation confirmée, fichier agenda", async () => {
+  const cCtx = await newCtx(mobile);
+  const c = await login(cCtx, "customer");
+  current = c;
+  await c.goto(`${BASE}/medecins?q=Aminata`, NI);
+  await c.getByText(/Prochaine disponibilité/).first().click();
+  await c.waitForURL(/\/rendez-vous\?lieu=/);
+  await c.getByRole("link", { name: /Consultation\s.*30 min/ }).first().click();
+  await c.getByText("2. Choisissez un horaire").waitFor({ timeout: 10000 });
+  await shot(c, "23-creneaux-mobile");
+  // Le patient a déjà un rendez-vous ce lundi-là avec ce médecin : il choisit un autre jour
+  const pick = async () => (await c.locator("a[href*='creneau=']").evaluateAll((els) => els.map((e) => e.getAttribute("href"))))
+    .find((h) => !decodeURIComponent(h.split("creneau=")[1]).startsWith(nextMonday));
+  let slotHref = await pick();
+  if (!slotHref) {
+    await c.getByRole("link", { name: /Suivant/ }).click();
+    await c.waitForURL(/debut=/);
+    slotHref = await pick();
+  }
+  assert(slotHref, "aucun créneau un autre jour");
+  const slot = c.locator(`a[href="${slotHref}"]`);
+  bookedDay = decodeURIComponent(slotHref.split("creneau=")[1]).slice(0, 10);
+  await slot.click();
+  await c.getByText("3. Confirmez votre rendez-vous").waitFor({ timeout: 10000 });
+  await c.getByRole("checkbox", { name: /Je confirme ce rendez-vous/ }).check();
+  assert((await c.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (confirmation)");
+  await c.getByRole("button", { name: "Confirmer le rendez-vous" }).click();
+  await c.waitForURL(/\/compte\/rendez-vous/, { timeout: 15000 });
+  const card = c.locator("li", { hasText: "Motif : Consultation" }).first();
+  await card.getByText("Confirmé", { exact: true }).waitFor({ timeout: 10000 });
+  await card.getByText("Bâtiment B, 1er étage").waitFor({ timeout: 10000 });
+  const ics = await card.getByRole("link", { name: "Ajouter à mon agenda" }).getAttribute("href");
+  const res = await c.request.get(`${BASE}${ics}`);
+  assert(res.status() === 200 && (await res.text()).includes("BEGIN:VEVENT"), "fichier agenda invalide");
+  await shot(c, "24-rendez-vous-confirme-mobile");
+  await cCtx.close();
+});
+
+await step("agenda du jour : rendez-vous en ligne, rendez-vous téléphonique et plage bloquée", async () => {
+  const dCtx = await newCtx(mobile);
+  const d = await login(dCtx, "doctor1");
+  current = d;
+  await d.goto(`${BASE}/medecin/rendez-vous?vue=jour&date=${bookedDay}`, NI);
+  await d.getByText("pris en ligne").first().waitFor({ timeout: 10000 });
+  await d.getByText("+ Ajouter un rendez-vous (patient au téléphone)").click();
+  await d.fill("#pa-time", "19:00");
+  await d.fill("#pa-name", "Patient Téléphone");
+  await d.fill("#pa-phone", "76 55 44 33");
+  await d.getByRole("button", { name: "Ajouter", exact: true }).click();
+  await d.getByText(/Rendez-vous ajouté à l'agenda/).first().waitFor({ timeout: 10000 });
+  await d.getByText("+ Bloquer une plage (réunion, garde…)").click();
+  await d.fill("#pb-from", "20:00");
+  await d.fill("#pb-to", "21:00");
+  await d.fill("#pb-note", "Réunion");
+  await d.getByRole("button", { name: "Bloquer" }).click();
+  await d.getByText(/Plage bloquée/).first().waitFor({ timeout: 10000 });
+  await d.reload(NI);
+  await d.getByText("Patient Téléphone").waitFor({ timeout: 10000 });
+  await d.getByText(/Bloqué.*Réunion/).waitFor({ timeout: 10000 });
+  assert((await d.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (agenda du jour)");
+  await shot(d, "25-agenda-du-jour-mobile");
+  await dCtx.close();
+});
+
 console.log("Registres publics");
 const DATA = process.env.E2E_DATA_DIR; // fichiers réels (Tableau de l'Ordre, établissements, pharmacies partenaires)
 await step("administration : import du Tableau de l'Ordre et des établissements", async () => {
@@ -670,6 +828,116 @@ await step("public : médecins du Tableau par spécialité, établissements non 
   assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (établissements)");
   await shot(v, "18-etablissements-mobile");
   await c.close();
+});
+
+await step("administration : garde, laboratoires (masqué si à confirmer), examens et tarifs communiqués", async () => {
+  const aCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
+  const a = await login(aCtx, "admin");
+  current = a;
+  await a.goto(`${BASE}/admin/annuaire?vue=etablissements`, NI);
+  await a.setInputFiles("#fac-file", { name: "labs.csv", mimeType: "text/csv", buffer: Buffer.from(
+    "nom;type;region;ville;telephone;telephone2;publie;urgences_24h\n" +
+    "Laboratoire Essai Alpha;laboratoire;District de Bamako;Bamako;20 22 00 01;76 00 11 22;oui;\n" +
+    "Laboratoire Essai Beta;laboratoire;District de Bamako;Bamako;20 22 00 02;;oui;\n" +
+    "Laboratoire Essai Gamma;laboratoire;District de Bamako;Bamako;20 22 00 03;;non;\n" +
+    "Urgences Essai;urgences;District de Bamako;Bamako;20 22 00 04;;oui;oui\n", "utf8") });
+  await a.getByRole("button", { name: "Importer" }).click();
+  await a.getByText(/4 établissement\(s\) importé\(s\)/).waitFor({ timeout: 20000 });
+  await a.goto(`${BASE}/admin/services?vue=examens`, NI);
+  await a.setInputFiles("#ex-file", { name: "examens.csv", mimeType: "text/csv", buffer: Buffer.from(
+    "etablissement;examen;prix;delai;source\nLaboratoire Essai Alpha;nfs;5 000;24 h;Appel au laboratoire\nLaboratoire Essai Beta;nfs;4000;;Appel au laboratoire\n" +
+    "Laboratoire Essai Beta;glycemie;;;Appel au laboratoire\nLaboratoire Inconnu;nfs;1000;;x\n", "utf8") });
+  await a.getByRole("button", { name: "Importer" }).click();
+  await a.getByText(/3 examen\(s\) proposé\(s\) importé\(s\), 1 ligne\(s\) en erreur.*introuvable/).waitFor({ timeout: 20000 });
+  await a.goto(`${BASE}/admin/services?vue=garde`, NI);
+  await a.selectOption("#duty-target", { label: "Pharmacie DÉMO des Collines — Commune IV" });
+  const iso = (d) => new Date(d).toISOString().slice(0, 16);
+  await a.fill("#duty-s", iso(Date.now() - 3600_000));
+  await a.fill("#duty-e", iso(Date.now() + 20 * 3600_000));
+  await a.fill("#duty-so", "Tableau de garde de test");
+  await a.getByRole("button", { name: "Ajouter" }).click();
+  await a.getByText("Garde enregistrée.").first().waitFor({ timeout: 10000 });
+  await a.getByText(/Tableau de garde de test/).first().waitFor({ timeout: 10000 });
+  await aCtx.close();
+});
+
+await step("public : pharmacies de garde, comparaison des tarifs de laboratoire, urgences (mobile)", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/garde`, NI);
+  await v.getByText("Pharmacie DÉMO des Collines").first().waitFor({ timeout: 10000 });
+  await v.getByText(/Source : Tableau de garde de test/).first().waitFor({ timeout: 10000 });
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (garde)");
+  await shot(v, "19-garde-mobile");
+  await v.getByRole("link", { name: "Pharmacie DÉMO des Collines" }).first().click();
+  await v.getByText("De garde en ce moment").first().waitFor({ timeout: 10000 });
+  await v.goto(`${BASE}/laboratoires`, NI);
+  await v.getByText("Laboratoire Essai Alpha").first().waitFor({ timeout: 10000 });
+  assert(!(await v.getByText("Laboratoire Essai Gamma").count()), "un laboratoire non publié est visible");
+  await v.selectOption("select[name=examen]", { label: "Numération formule sanguine (NFS)" });
+  await v.getByRole("button", { name: "Rechercher" }).click();
+  await v.waitForURL(/examen=/);
+  await v.getByRole("link", { name: "Comparer les tarifs communiqués" }).click();
+  await v.waitForURL(/tri=prix/);
+  await v.waitForLoadState("networkidle");
+  const names = await v.locator("main li p.text-base").allInnerTexts();
+  assert(names[0] === "Laboratoire Essai Beta" && names[1] === "Laboratoire Essai Alpha", `ordre des tarifs inattendu : ${names.join(", ")}`);
+  await v.getByText("4 000 FCFA").first().waitFor();
+  await v.getByText("Résultat : 24 h").first().waitFor();
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (laboratoires)");
+  await shot(v, "20-laboratoires-mobile");
+  await v.goto(`${BASE}/urgences`, NI);
+  await v.getByText("Urgences Essai").first().waitFor({ timeout: 10000 });
+  await v.getByText(/pharmacie\(s\) de garde en ce moment/).first().waitFor({ timeout: 10000 });
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (urgences)");
+  await shot(v, "21-urgences-mobile");
+  // Consultés récemment : la pharmacie ouverte plus haut est retrouvée sur l'accueil et hors connexion
+  await v.goto(`${BASE}/offline`, NI);
+  await v.getByText("Vos contacts consultés récemment").waitFor({ timeout: 10000 });
+  await v.getByText("Pharmacie DÉMO des Collines").first().waitFor({ timeout: 10000 });
+  await c.close();
+});
+
+await step("alerte de disponibilité : demande anonyme visible du pharmacien, notification au retour en stock", async () => {
+  const cCtx2 = await newCtx(mobile);
+  const c = await login(cCtx2, "customer");
+  current = c;
+  await c.goto(`${BASE}/recherche?q=demo%20gel`, NI);
+  await c.getByRole("link", { name: /DÉMO Gel hydroalcoolique/ }).first().click();
+  await c.waitForURL(/\/produits\//);
+  await c.waitForLoadState("networkidle");
+  await c.selectOption("select[name=region]", { label: "District de Bamako" });
+  await c.selectOption("select[name=commune]", { label: "Commune III" });
+  await c.getByRole("button", { name: "Filtrer" }).click();
+  await c.waitForURL(/commune=/);
+  await c.getByText("Introuvable pour l'instant ?").waitFor({ timeout: 10000 });
+  await c.getByRole("button", { name: "M'alerter" }).click();
+  await c.getByText(/Alerte créée/).first().waitFor({ timeout: 10000 });
+  await c.goto(`${BASE}/compte/alertes`, NI);
+  await c.getByText(/En attente/).first().waitFor({ timeout: 10000 });
+  await shot(c, "22-alertes-mobile");
+
+  const pCtx = await newCtx(mobile);
+  const p = await login(pCtx, "pharmacist1");
+  current = p;
+  await p.goto(`${BASE}/pharmacien`, NI);
+  await p.getByText("Recherchés dans votre zone").waitFor({ timeout: 10000 });
+  await p.locator("li").filter({ hasText: "DÉMO Gel hydroalcoolique" }).getByText("1 personne").waitFor({ timeout: 10000 });
+  await p.goto(`${BASE}/pharmacien/stocks?q=gel`, NI);
+  const row = () => p.locator("li").filter({ hasText: "DÉMO Gel hydroalcoolique" }).first();
+  await row().locator("input[name=quantity]").fill("6");
+  await row().locator("input[name=is_available]").check();
+  await act(p, () => row().getByRole("button", { name: "Enregistrer" }).click(), () => row().getByText(/Libre : 6/));
+  await pCtx.close();
+
+  current = c;
+  await c.goto(`${BASE}/compte/notifications`, NI);
+  await c.getByText("Médicament disponible").first().waitFor({ timeout: 10000 });
+  await c.getByText(/DÉMO Gel hydroalcoolique 100 ml est déclaré disponible chez Pharmacie DÉMO du Fleuve/).first().waitFor({ timeout: 10000 });
+  await c.goto(`${BASE}/compte/alertes`, NI);
+  await c.getByText(/Disponibilité signalée/).first().waitFor({ timeout: 10000 });
+  await cCtx2.close();
 });
 
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {
