@@ -99,7 +99,7 @@ export default async function EmergencyPage({ searchParams }: { searchParams: Pr
         )}
       </section>
       <RecentList title="Vos contacts consultés récemment" emptyHidden />
-      <p className="text-xs text-muted-foreground">Un numéro ne répond pas ou est erroné ? <Link prefetch={false} href="/infos/contact" className="underline">Signalez-le-nous</Link> pour que nous le corrigions rapidement.</p>
+      <p className="text-xs text-muted-foreground">Un numéro ne répond pas ou est erroné ? <Link prefetch={false} href="/infos/contact?sujet=erreur#formulaire" className="underline">Signalez-le-nous</Link> pour que nous le corrigions rapidement.</p>
     </div>
   );
 }

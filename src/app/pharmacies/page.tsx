@@ -128,7 +128,7 @@ export default async function PharmacyDirectory({ searchParams }: { searchParams
 
       <Pagination basePath="/pharmacies" params={sp} page={page} total={total} size={SIZE} />
       <p className="text-xs text-muted-foreground">
-        Une information est erronée (numéro, adresse, pharmacie fermée) ? <Link prefetch={false} href="/infos/contact" className="underline">Signalez-le-nous</Link>.
+        Une information est erronée (numéro, adresse, pharmacie fermée) ? <Link prefetch={false} href="/infos/contact?sujet=erreur#formulaire" className="underline">Signalez-le-nous</Link>.
       </p>
     </div>
   );

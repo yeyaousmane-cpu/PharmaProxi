@@ -134,7 +134,7 @@ export default async function DutyPage({ searchParams }: { searchParams: Promise
       )}
       <p className="text-xs text-muted-foreground">
         Vous êtes pharmacien ? Déclarez vos gardes depuis votre <Link prefetch={false} href="/pharmacien" className="underline">tableau de bord</Link>.
-        Une garde erronée ? <Link prefetch={false} href="/infos/contact" className="underline">Signalez-la-nous</Link>.
+        Une garde erronée ? <Link prefetch={false} href="/infos/contact?sujet=erreur#formulaire" className="underline">Signalez-la-nous</Link>.
       </p>
     </div>
   );

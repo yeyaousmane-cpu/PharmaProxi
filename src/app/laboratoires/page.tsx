@@ -145,7 +145,7 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
         Un examen se fait sur prescription ou conseil d&apos;un professionnel de santé. Cette page indique seulement où il est proposé.
       </Alert>
       <p className="text-xs text-muted-foreground">
-        Vous dirigez un laboratoire ? Communiquez-nous vos examens, tarifs et délais : <Link prefetch={false} href="/infos/contact" className="underline">contactez-nous</Link>.
+        Vous dirigez un laboratoire ? Communiquez-nous vos examens, tarifs et délais : <Link prefetch={false} href="/infos/contact?sujet=medecin#formulaire" className="underline">contactez-nous</Link>.
       </p>
     </div>
   );

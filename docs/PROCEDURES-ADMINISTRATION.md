@@ -122,6 +122,9 @@ Importez les services d'urgence et ambulances (types `urgences`, `ambulance`, co
 ### Observatoire des ruptures
 Chiffres agrégés et anonymes de la demande exprimée sur PharmaProxi. Ils ne mesurent pas l'état réel du marché : croisez-les avec d'autres sources avant toute communication publique, et ne publiez jamais de données permettant d'identifier une pharmacie ou une personne.
 
+## Messages de contact
+*Administration › Messages.* Chaque message envoyé depuis la page Contact apparaît dans « Nouveaux » et déclenche une notification. Répondez par e-mail ou téléphone (liens directs), ajoutez une note interne, puis marquez « Traité ». Ne transférez jamais ces messages hors de la plateforme : ils contiennent des données personnelles. Pour publier l'e-mail ou le téléphone officiels de PharmaProxi, modifiez la page `contact` dans *Administration › Contenus*.
+
 ## Incidents techniques
 
 1. **Site indisponible** : consulter `/api/health`. `database: unreachable` → vérifier l'état du projet Supabase (tableau de bord Supabase, page de statut). Les pages publiques restent servies en mode visiteur tant que l'application tourne.

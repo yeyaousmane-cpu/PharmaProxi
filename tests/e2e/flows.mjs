@@ -996,6 +996,37 @@ await step("alerte de disponibilité : demande anonyme visible du pharmacien, no
   await cCtx2.close();
 });
 
+await step("contact : un visiteur écrit, l'administration reçoit et traite le message", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/garde`, NI);
+  await v.getByRole("link", { name: "Signalez-la-nous" }).click();
+  await v.waitForURL(/\/infos\/contact\?sujet=erreur/);
+  await v.getByText("Écrire à PharmaProxi").waitFor({ timeout: 10000 });
+  assert((await v.locator("#c-topic").inputValue()) === "erreur", "sujet non prérempli");
+  await v.fill("#c-name", "Visiteur Test");
+  await v.fill("#c-phone", "76 12 34 56");
+  await v.fill("#c-message", "La pharmacie de garde indiquée cette nuit était fermée.");
+  await v.getByRole("button", { name: "Envoyer le message" }).click();
+  await v.getByText(/votre message a bien été envoyé/).first().waitFor({ timeout: 10000 });
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (contact)");
+  await shot(v, "29-contact-mobile");
+  await c.close();
+  const aCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
+  const a = await login(aCtx, "admin");
+  current = a;
+  await a.goto(`${BASE}/admin/messages`, NI);
+  const card = a.locator("li", { hasText: "Visiteur Test" }).first();
+  await card.getByText("La pharmacie de garde indiquée cette nuit était fermée.").waitFor({ timeout: 10000 });
+  await card.getByPlaceholder(/Note interne/).fill("Rappelé, garde corrigée");
+  await card.getByRole("button", { name: "Traité" }).click();
+  await a.getByText("Message mis à jour.").first().waitFor({ timeout: 10000 });
+  await a.goto(`${BASE}/admin/messages?statut=closed`, NI);
+  await a.locator("li", { hasText: "Visiteur Test" }).first().waitFor({ timeout: 10000 });
+  await aCtx.close();
+});
+
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {
   const all = [...consoleErrors, ...pageErrors];
   assert(all.length === 0, all.slice(0, 5).join(" | "));

@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/auth";
 
 const NAV = [
   ["/admin", "Vue générale"], ["/admin/pharmacies", "Pharmacies"], ["/admin/pharmacies-non-inscrites", "Pharmacies non inscrites"], ["/admin/annuaire", "Annuaire médical"], ["/admin/services", "Gardes, examens, ruptures"], ["/admin/catalogue", "Catalogue"], ["/admin/commandes", "Commandes"],
-  ["/admin/livreurs", "Livreurs"], ["/admin/utilisateurs", "Utilisateurs"], ["/admin/signalements", "Signalements"],
+  ["/admin/livreurs", "Livreurs"], ["/admin/utilisateurs", "Utilisateurs"], ["/admin/signalements", "Signalements"], ["/admin/messages", "Messages"],
   ["/admin/geographie", "Géographie"], ["/admin/parametres", "Paramètres"], ["/admin/contenus", "Contenus"], ["/admin/integrite", "Intégrité"], ["/admin/audit", "Journal d'audit"],
 ];
 
