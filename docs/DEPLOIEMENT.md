@@ -120,6 +120,12 @@ Menu **Authentication** :
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000100_pharmacy_listings.sql`.
 2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (*Add file › Upload files*) : le programme `.github/workflows/installer.yml` le décompresse et Vercel redéploie.
 
+### Passer à la v0.8.0 (rubrique « Prendre rendez-vous », laboratoires DPM)
+
+1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.8.0.sql` (migration `20261029000200_booking_hub.sql` + les 19 laboratoires de la liste DPM). Contrôle attendu : `true, 19, 13`.
+2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub.
+3. Vérifiez : `/rendez-vous` s'affiche ; « Rendez-vous » apparaît dans la barre du bas sur téléphone ; `/laboratoires` liste les laboratoires autorisés.
+
 ### Passer à la v0.7.0 (gardes, laboratoires, alertes, urgences)
 
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261029000100_services.sql` (après celle de la v0.6.0).

@@ -9,7 +9,7 @@ import type { Schedule } from "@/lib/directory";
 export const metadata = { title: "Mes rendez-vous — espace médecin" };
 const one = <T,>(v: T | T[] | null | undefined) => (Array.isArray(v) ? v[0] : v) ?? null;
 
-export default async function DoctorAppointments({ searchParams }: { searchParams: Promise<{ vue?: string; date?: string }> }) {
+export default async function DoctorAppointments({ searchParams }: { searchParams: Promise<{ vue?: string; date?: string; jours?: string }> }) {
   const sp = await searchParams;
   const s = await requireUser("/medecin/rendez-vous");
   if (!s.doctor) redirect("/medecin/inscription");
@@ -30,7 +30,7 @@ export default async function DoctorAppointments({ searchParams }: { searchParam
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><CalendarCheck className="size-6 text-brand-blue" aria-hidden /> Demandes de rendez-vous</h1>
         <p className="text-muted-foreground">{d?.title} {d?.display_name} · le secrétariat de chaque établissement voit aussi ces demandes.</p>
       </div>
-      <PracticeBoard view={sp.vue} date={sp.date} basePath="/medecin/rendez-vous" sites={boardSites} doctorId={s.doctor.id} />
+      <PracticeBoard view={sp.vue} date={sp.date} days={sp.jours} basePath="/medecin/rendez-vous" sites={boardSites} doctorId={s.doctor.id} />
     </div>
   );
 }

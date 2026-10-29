@@ -47,6 +47,8 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
     supabase.from("doctor_absences").select("id, starts_on, ends_on, note").eq("doctor_id", id).gte("ends_on", new Date().toISOString().slice(0, 10)).order("starts_on"),
     supabase.rpc("next_availabilities", { p_doctors: [id] }),
   ]);
+  // Visibilité : compteur anonyme des consultations de la fiche (hors le médecin lui-même)
+  if (session?.doctor?.id !== id) await supabase.rpc("record_doctor_view", { p_doctor: id });
   const next = ((nextRes.data as { site_id: string; slot_start: string }[] | null) ?? [])[0] ?? null;
   const sites = (sitesRes.data ?? []).filter((s) => s.doctor_accepted && s.clinic_accepted && one(s.clinics)?.status === "verified");
   const absences = absRes.data ?? [];

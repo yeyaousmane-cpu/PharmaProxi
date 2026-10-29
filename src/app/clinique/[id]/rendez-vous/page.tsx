@@ -9,7 +9,7 @@ import type { Schedule } from "@/lib/directory";
 export const metadata = { title: "Rendez-vous — établissement" };
 const one = <T,>(v: T | T[] | null | undefined) => (Array.isArray(v) ? v[0] : v) ?? null;
 
-export default async function ClinicAppointments({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ vue?: string; date?: string }> }) {
+export default async function ClinicAppointments({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ vue?: string; date?: string; jours?: string }> }) {
   const { id } = await params;
   const sp = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -37,7 +37,7 @@ export default async function ClinicAppointments({ params, searchParams }: { par
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><CalendarCheck className="size-6 text-brand-blue" aria-hidden /> Rendez-vous</h1>
         <p className="text-muted-foreground">Demandes des patients pour les médecins de l&apos;établissement. Chaque médecin voit aussi les siennes.</p>
       </div>
-      <PracticeBoard clinicId={id} view={sp.vue} date={sp.date} basePath={`/clinique/${id}/rendez-vous`} sites={boardSites} />
+      <PracticeBoard clinicId={id} view={sp.vue} date={sp.date} days={sp.jours} basePath={`/clinique/${id}/rendez-vous`} sites={boardSites} />
     </div>
   );
 }

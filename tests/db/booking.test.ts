@@ -161,4 +161,43 @@ describe.skipIf(!hasDb)("Réservation par créneaux", () => {
     expect(await slots(dayIn(8))).toEqual([]);
     await expectError(book(patient, `${dayIn(8)}T08:00:00Z`), /n'est pas ouverte/);
   });
+  it("rubrique « Prendre rendez-vous » : seuls les lieux ouverts, filtres spécialité et mode", async () => {
+    const all = (await q(db, null, "select doctor_id, site_id, booking_mode, clinic_name from public.bookable_doctors()")).rows;
+    expect(all).toEqual([{ doctor_id: doctor, site_id: site, booking_mode: "request", clinic_name: "Polyclinique Niger" }]);
+    const cardio = (await sys(db, "select id from public.medical_specialties where code = 'cardiologie'")).rows[0].id;
+    const pedia = (await sys(db, "select id from public.medical_specialties where code = 'pediatrie'")).rows[0].id;
+    expect((await q(db, null, "select 1 from public.bookable_doctors($1)", [cardio])).rowCount).toBe(1);
+    expect((await q(db, null, "select 1 from public.bookable_doctors($1)", [pedia])).rowCount).toBe(0);
+    expect((await q(db, null, "select 1 from public.bookable_doctors(p_mode => 'instant')")).rowCount).toBe(0);
+    expect((await q(db, null, "select 1 from public.bookable_doctors(p_query => 'keita')")).rowCount).toBe(1);
+    await q(db, docUser, "select public.set_site_appointments($1, false)", [site]);
+    expect((await q(db, null, "select 1 from public.bookable_doctors()")).rowCount).toBe(0);
+    await q(db, docUser, "select public.set_site_appointments($1, true)", [site]);
+  });
+  it("déplacer un rendez-vous (patient), statistiques d'activité et vues de la fiche", async () => {
+    await q(db, docUser, "select public.update_site_booking($1, 'instant', 0, 2, null)", [site]);
+    const day = dayIn(10);
+    const free = await slots(day);
+    const id = await book(patient2, free[0], { key: "move-1" });
+    await expectError(q(db, stranger, "select public.move_appointment($1, $2)", [id, free[2]]), /introuvable/);
+    await expectError(q(db, patient2, "select public.move_appointment($1, $2)", [id, `${day}T23:59:00Z`]), /plus disponible/);
+    await q(db, patient2, "select public.move_appointment($1, $2)", [id, free[2]]);
+    const a = (await q(db, patient2, "select scheduled_at, reminded_at from public.appointments where id = $1", [id])).rows[0];
+    expect(new Date(a.scheduled_at).toISOString()).toBe(free[2]);
+    expect(await slots(day)).toContain(free[0]);
+    expect(await slots(day)).not.toContain(free[2]);
+    // Vues de la fiche (anonymes, agrégées)
+    await q(db, null, "select public.record_doctor_view($1)", [doctor]);
+    await q(db, null, "select public.record_doctor_view($1)", [doctor]);
+    await expectError(q(db, null, "select * from public.doctor_profile_views"), /permission denied/);
+    const st = (await q(db, docUser, "select public.practice_stats(null, 30) as s")).rows[0].s;
+    expect(st.vues_fiche).toBe(2);
+    expect(st.libres_7j).toBeGreaterThan(0);
+    expect(st.passe).toHaveProperty("absents");
+    expect(st.repere_specialite).toBeNull(); // moins de 5 médecins comparables : pas de repère
+    const cs = (await q(db, clinicUser, "select public.practice_stats($1, 30) as s", [clinic])).rows[0].s;
+    expect(cs.vues_fiche).toBe(2);
+    await expectError(q(db, stranger, "select public.practice_stats(null, 30)"), /espace médecin/);
+    await expectError(q(db, stranger, "select public.practice_stats($1, 30)", [clinic]), /équipe/);
+  });
 });

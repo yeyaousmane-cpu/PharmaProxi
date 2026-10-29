@@ -1,14 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Map, Search, Stethoscope, User } from "lucide-react";
+import { CalendarCheck, Home, Search, Stethoscope, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/", label: "Accueil", Icon: Home },
   { href: "/recherche", label: "Médicaments", Icon: Search },
   { href: "/medecins", label: "Médecins", Icon: Stethoscope },
-  { href: "/carte", label: "Carte", Icon: Map },
+  { href: "/rendez-vous", label: "Rendez-vous", Icon: CalendarCheck },
   { href: "/compte", label: "Compte", Icon: User },
 ];
 

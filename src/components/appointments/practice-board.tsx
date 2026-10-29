@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { cancelAppointment, closeAppointment, respondAppointment } from "@/app/actions/appointments";
 import { APPT_PERIODS, APPT_STATUS, formatApptDay, formatApptTime } from "@/lib/appointments";
+import { PracticeStats } from "@/components/appointments/practice-stats";
 import { DayTools, PracticeInfoCard, SiteSettingsCard, TypesCard, type BoardSite } from "@/components/appointments/practice-tools";
 import { todayMali } from "@/lib/appointments";
 import { formatPhone } from "@/lib/format";
@@ -21,17 +22,17 @@ type Row = {
 };
 export type { BoardSite } from "@/components/appointments/practice-tools";
 
-const VIEWS = [["a_traiter", "À traiter"], ["jour", "Agenda du jour"], ["a_venir", "À venir"], ["a_cloturer", "À clôturer"], ["historique", "Historique"], ["reglages", "Réglages"]] as const;
+const VIEWS = [["a_traiter", "À traiter"], ["jour", "Agenda du jour"], ["a_venir", "À venir"], ["a_cloturer", "À clôturer"], ["historique", "Historique"], ["statistiques", "Statistiques"], ["reglages", "Réglages"]] as const;
 
 /**
  * Agenda des demandes de rendez-vous, partagé entre l'espace médecin (clinicId absent)
  * et l'espace établissement (clinicId : secrétariat).
  */
-export async function PracticeBoard({ clinicId, view, date, basePath, sites, doctorId }: { clinicId?: string; view?: string; date?: string; basePath: string; sites: BoardSite[]; doctorId?: string }) {
+export async function PracticeBoard({ clinicId, view, date, basePath, sites, doctorId, days }: { clinicId?: string; view?: string; date?: string; basePath: string; sites: BoardSite[]; doctorId?: string; days?: string }) {
   const v = VIEWS.some(([k]) => k === view) ? view! : "a_traiter";
   const supabase = await createClient();
   const day = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : todayMali();
-  const { data, error } = v === "reglages" ? { data: [], error: null } : await supabase.rpc("practice_appointments", { p_clinic: clinicId ?? null, p_view: v, p_date: v === "jour" ? day : null });
+  const { data, error } = v === "reglages" || v === "statistiques" ? { data: [], error: null } : await supabase.rpc("practice_appointments", { p_clinic: clinicId ?? null, p_view: v, p_date: v === "jour" ? day : null });
   const rows = (data as Row[]) ?? [];
   const hidden = clinicId ? <input type="hidden" name="clinic_id" value={clinicId} /> : null;
 
@@ -57,9 +58,10 @@ export async function PracticeBoard({ clinicId, view, date, basePath, sites, doc
           {doctorId && <PracticeInfoCard doctorId={doctorId} />}
         </div>
       )}
+      {v === "statistiques" && <PracticeStats clinicId={clinicId} basePath={basePath} days={days} />}
       {v === "jour" && <DayTools sites={sites} clinicId={clinicId} date={day} basePath={basePath} doctorId={doctorId} />}
       {error && <Alert tone="error" title={humanizeError(error)} />}
-      {!error && v !== "reglages" && rows.length === 0 && (
+      {!error && v !== "reglages" && v !== "statistiques" && rows.length === 0 && (
         <p className="rounded-xl border border-dashed bg-white p-8 text-center text-sm text-muted-foreground">
           {v === "a_traiter" ? "Aucune demande en attente." : v === "jour" ? "Aucun rendez-vous ce jour-là." : v === "a_venir" ? "Aucun rendez-vous à venir." : v === "a_cloturer" ? "Rien à clôturer." : "Aucun rendez-vous passé."}
         </p>

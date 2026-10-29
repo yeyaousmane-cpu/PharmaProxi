@@ -673,7 +673,7 @@ await step("secrétariat : confirmation avec une heure ; le patient voit le rend
   await k.goto(`${BASE}/clinique`, NI);
   await k.getByRole("link", { name: /Clinique DÉMO du Djoliba/ }).first().click();
   await k.waitForURL(/\/clinique\/[0-9a-f-]{36}$/);
-  await k.getByRole("link", { name: "Rendez-vous", exact: true }).click();
+  await k.locator("main").getByRole("link", { name: "Rendez-vous", exact: true }).click();
   await k.waitForURL(/\/rendez-vous/);
   await k.getByText("Consultation de suivi").waitFor({ timeout: 10000 });
   await k.fill("input[name=time]", "09:30");
@@ -781,6 +781,50 @@ await step("agenda du jour : rendez-vous en ligne, rendez-vous téléphonique et
   await dCtx.close();
 });
 
+await step("patient : rubrique « Prendre rendez-vous », créneau en un clic, puis déplacement du rendez-vous", async () => {
+  const pCtx = await newCtx(mobile);
+  const c = await login(pCtx, "pharmacist2"); // un autre patient, sans rendez-vous avec ce médecin
+  current = c;
+  c.on("dialog", (dlg) => dlg.accept());
+  await c.getByRole("navigation", { name: "Navigation mobile" }).getByRole("link", { name: "Rendez-vous", exact: true }).click();
+  await c.waitForURL(/\/rendez-vous$/);
+  await c.getByRole("heading", { name: "Prendre rendez-vous" }).waitFor({ timeout: 10000 });
+  const card = c.locator("li", { hasText: "Dr Démo Aminata" }).first();
+  await card.getByText("Réservation immédiate").waitFor({ timeout: 10000 });
+  assert((await c.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (prendre rendez-vous)");
+  await shot(c, "26-prendre-rendez-vous-mobile");
+  await card.locator("a[href*='creneau=']").first().click();
+  await c.getByText("3. Confirmez votre rendez-vous").waitFor({ timeout: 10000 });
+  await c.getByRole("checkbox", { name: /Je confirme ce rendez-vous/ }).check();
+  await c.getByRole("button", { name: "Confirmer le rendez-vous" }).click();
+  await c.waitForURL(/\/compte\/rendez-vous/, { timeout: 15000 });
+  const mine = c.locator("li", { hasText: "Motif : Consultation" }).first();
+  const before = await mine.innerText();
+  await mine.getByRole("link", { name: "Déplacer" }).click();
+  await c.waitForURL(/\/deplacer/);
+  await c.getByText("Choisissez le nouveau créneau").waitFor({ timeout: 10000 });
+  await shot(c, "27-deplacer-rendez-vous-mobile");
+  await c.locator("main form button").first().click();
+  await c.waitForURL(/\/compte\/rendez-vous$/, { timeout: 15000 });
+  await c.getByText(/Rendez-vous déplacé/).first().waitFor({ timeout: 10000 });
+  const after = await c.locator("li", { hasText: "Motif : Consultation" }).first().innerText();
+  assert(after !== before, "l'horaire du rendez-vous n'a pas changé");
+  await pCtx.close();
+});
+
+await step("médecin : statistiques d'activité (remplissage, annulations, visibilité)", async () => {
+  const dCtx = await newCtx(mobile);
+  const d = await login(dCtx, "doctor1");
+  current = d;
+  await d.goto(`${BASE}/medecin/rendez-vous?vue=statistiques`, NI);
+  await d.getByText("Remplissage des 7 prochains jours").waitFor({ timeout: 10000 });
+  await d.getByText("Consultations de la fiche").waitFor({ timeout: 10000 });
+  await d.getByText("Repère de votre spécialité").waitFor({ timeout: 10000 });
+  assert((await d.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (statistiques)");
+  await shot(d, "28-statistiques-medecin-mobile");
+  await dCtx.close();
+});
+
 console.log("Registres publics");
 const DATA = process.env.E2E_DATA_DIR; // fichiers réels (Tableau de l'Ordre, établissements, pharmacies partenaires)
 await step("administration : import du Tableau de l'Ordre et des établissements", async () => {
@@ -843,6 +887,11 @@ await step("administration : garde, laboratoires (masqué si à confirmer), exam
     "Urgences Essai;urgences;District de Bamako;Bamako;20 22 00 04;;oui;oui\n", "utf8") });
   await a.getByRole("button", { name: "Importer" }).click();
   await a.getByText(/4 établissement\(s\) importé\(s\)/).waitFor({ timeout: 20000 });
+  if (DATA) {
+    await a.setInputFiles("#fac-file", `${DATA}/laboratoires-dpm-2023.csv`);
+    await a.getByRole("button", { name: "Importer" }).click();
+    await a.getByText(/19 établissement\(s\) importé\(s\), 0 doublon\(s\) ignoré\(s\), 0 ligne\(s\) en erreur/).waitFor({ timeout: 20000 });
+  }
   await a.goto(`${BASE}/admin/services?vue=examens`, NI);
   await a.setInputFiles("#ex-file", { name: "examens.csv", mimeType: "text/csv", buffer: Buffer.from(
     "etablissement;examen;prix;delai;source\nLaboratoire Essai Alpha;nfs;5 000;24 h;Appel au laboratoire\nLaboratoire Essai Beta;nfs;4000;;Appel au laboratoire\n" +
@@ -875,6 +924,13 @@ await step("public : pharmacies de garde, comparaison des tarifs de laboratoire,
   await v.goto(`${BASE}/laboratoires`, NI);
   await v.getByText("Laboratoire Essai Alpha").first().waitFor({ timeout: 10000 });
   assert(!(await v.getByText("Laboratoire Essai Gamma").count()), "un laboratoire non publié est visible");
+  if (DATA) {
+    await v.goto(`${BASE}/laboratoires?q=algi`, NI);
+    await v.getByText("Autorisé — liste DPM").first().waitFor({ timeout: 10000 });
+    await v.goto(`${BASE}/laboratoires?q=bio%207`, NI);
+    assert(!(await v.getByText("BIO 7", { exact: true }).count()), "un laboratoire dont l'autorisation est en cours est publié");
+    await v.goto(`${BASE}/laboratoires`, NI);
+  }
   await v.selectOption("select[name=examen]", { label: "Numération formule sanguine (NFS)" });
   await v.getByRole("button", { name: "Rechercher" }).click();
   await v.waitForURL(/examen=/);

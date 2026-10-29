@@ -21,7 +21,7 @@ export const revalidate = 0;
 
 type Exam = { id: string; code: string; name: string; category: "biologie" | "imagerie" | "autre"; description: string | null };
 type Row = {
-  facility_id: string; name: string; kind: string; region_name: string | null; city_label: string | null; address: string | null;
+  facility_id: string; name: string; kind: string; category_label: string | null; region_name: string | null; city_label: string | null; address: string | null;
   phone: string | null; phone2: string | null; latitude: number | null; longitude: number | null; price_xof: number | null;
   price_note: string | null; delay: string | null; source: string; verified_at: string | null; exams_count: number; total_count: number;
 };
@@ -120,11 +120,14 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
                 )}
               </div>
               <div className="flex flex-wrap gap-1.5">
-                <Badge className="bg-muted text-muted-foreground">Non vérifié par PharmaProxi</Badge>
+                {r.category_label?.includes("autorisé (DPM)") && <Badge className="border-emerald-200 bg-emerald-50 text-emerald-800">Autorisé — liste DPM</Badge>}
+                {r.category_label?.includes("en cours") && <Badge className="border-amber-200 bg-amber-50 text-amber-900">Autorisation en cours (DPM)</Badge>}
+                <Badge className="bg-muted text-muted-foreground">Coordonnées non vérifiées par PharmaProxi</Badge>
                 {exam && r.delay && <Badge className="bg-white">Résultat : {r.delay}</Badge>}
                 {!exam && r.exams_count > 0 && <Badge className="bg-white"><ScanLine className="size-3" aria-hidden /> {r.exams_count} examen(s) renseigné(s)</Badge>}
               </div>
               {exam && <p className="text-xs text-muted-foreground">Source : {r.source}{r.verified_at ? ` · information du ${formatDate(r.verified_at)}` : ""}</p>}
+              {!r.phone && <p className="text-xs text-muted-foreground">Téléphone pas encore renseigné.</p>}
               {r.address && <p className="flex items-start gap-2 text-sm text-muted-foreground"><MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />{r.address}</p>}
               <div className="mt-auto flex flex-wrap gap-2 pt-1">
                 {r.phone && <a href={`tel:${r.phone}`} className={cn(buttonVariants({ size: "sm" }))}><Phone aria-hidden /> {formatPhone(r.phone)}</a>}

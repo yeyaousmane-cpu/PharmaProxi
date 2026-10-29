@@ -284,3 +284,15 @@ export async function removePracticeBlock(_: ActionState, fd: FormData): Promise
   await setFlash("Plage débloquée.");
   return { ok: true, message: "Plage débloquée." };
 }
+
+export async function moveAppointment(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid.safeParse(fd.get("id"));
+  const start = s(fd, "start");
+  if (!id.success || Number.isNaN(new Date(start).getTime())) return { error: "Requête invalide" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("move_appointment", { p_id: id.data, p_new_start: new Date(start).toISOString() });
+  if (error) return { error: humanizeError(error) };
+  refresh();
+  await setFlash("Rendez-vous déplacé : le cabinet est prévenu.");
+  redirect("/compte/rendez-vous");
+}

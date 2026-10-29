@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, Search, SearchX, Stethoscope } from "lucide-react";
+import { Building2, CalendarCheck, Search, SearchX, Stethoscope } from "lucide-react";
 import { DoctorCard, type DoctorRow } from "@/components/directory/doctor-card";
 import { RegisterList, type RegisterRow } from "@/components/directory/register-list";
 import { EmergencyBanner, NotDirectoryAdvice } from "@/components/directory/directory-bits";
@@ -96,7 +96,10 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
           <h1 className="text-2xl font-bold text-brand-deep sm:text-3xl">Trouver un médecin spécialiste</h1>
           <p className="text-muted-foreground">Le bon spécialiste, l&apos;établissement où il consulte et ses jours de consultation.</p>
         </div>
-        <Link prefetch={false} href="/cliniques" className={cn(buttonVariants({ variant: "outline" }), "shrink-0")}><Building2 aria-hidden /> Voir les cliniques</Link>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Link prefetch={false} href="/rendez-vous" className={cn(buttonVariants(), "bg-brand-blue hover:bg-brand-blue/90")}><CalendarCheck aria-hidden /> Prendre rendez-vous en ligne</Link>
+          <Link prefetch={false} href="/cliniques" className={cn(buttonVariants({ variant: "outline" }))}><Building2 aria-hidden /> Voir les cliniques</Link>
+        </div>
       </header>
 
       <EmergencyBanner numbers={settings.emergency_numbers} />

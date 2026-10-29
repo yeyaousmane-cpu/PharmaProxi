@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Building2, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
+import { CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
 import { RecentList } from "@/components/recent/recent-list";
 import { SearchBar } from "@/components/search-bar";
 import { HowItWorks } from "@/components/home/how-it-works";
@@ -66,11 +66,11 @@ export default async function Home() {
         <div className="container-page grid gap-6 py-8 md:grid-cols-[1fr_1.2fr] md:items-center">
           <div>
             <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-brand-blue"><Stethoscope className="size-4" aria-hidden /> Annuaire médical</p>
-            <h2 id="doc-title" className="mt-1 text-2xl font-bold text-brand-deep">Besoin d&apos;un médecin spécialiste ?</h2>
-            <p className="mt-2 text-muted-foreground">Trouvez le bon spécialiste, l&apos;établissement où il consulte, ses jours de consultation et un contact vérifié.</p>
+            <h2 id="doc-title" className="mt-1 text-2xl font-bold text-brand-deep">Besoin d&apos;un médecin ? Prenez rendez-vous en ligne</h2>
+            <p className="mt-2 text-muted-foreground">Trouvez le bon spécialiste, choisissez un créneau libre et réservez en quelques secondes. Rappel la veille, annulation en ligne.</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link prefetch={false} href="/medecins" className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-blue px-4 text-sm font-semibold text-white hover:bg-brand-blue/90"><Stethoscope className="size-4" aria-hidden /> Trouver un spécialiste</Link>
-              <Link prefetch={false} href="/cliniques" className="inline-flex h-11 items-center gap-2 rounded-lg border bg-white px-4 text-sm font-semibold hover:bg-muted"><Building2 className="size-4" aria-hidden /> Cliniques</Link>
+              <Link prefetch={false} href="/rendez-vous" className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-blue px-4 text-sm font-semibold text-white hover:bg-brand-blue/90"><CalendarCheck className="size-4" aria-hidden /> Prendre rendez-vous</Link>
+              <Link prefetch={false} href="/medecins" className="inline-flex h-11 items-center gap-2 rounded-lg border bg-white px-4 text-sm font-semibold hover:bg-muted"><Stethoscope className="size-4" aria-hidden /> Trouver un spécialiste</Link>
             </div>
           </div>
           <ul className="flex flex-wrap gap-2" aria-label="Spécialités fréquentes">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BellRing, CalendarCheck, CalendarPlus, MapPin, Phone, RotateCcw, Users } from "lucide-react";
+import { BellRing, CalendarCheck, CalendarPlus, MapPin, Phone, RotateCcw, Users, CalendarClock } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
@@ -73,6 +73,9 @@ export default async function MyAppointments() {
           )}
           {upcoming && !r.can_cancel && r.status === "confirmed" && (
             <span className="text-xs text-muted-foreground">Annulation en ligne possible jusqu&apos;à {r.cancel_notice_hours} h avant : appelez le cabinet.</span>
+          )}
+          {upcoming && r.can_cancel && r.status === "confirmed" && r.type_name && (
+            <Link prefetch={false} href={`/compte/rendez-vous/${r.id}/deplacer`} className="inline-flex items-center gap-1 text-sm font-medium text-brand-blue hover:underline"><CalendarClock className="size-4" aria-hidden /> Déplacer</Link>
           )}
           {upcoming && r.can_cancel && (
             <ActionForm action={cancelAppointment}><input type="hidden" name="id" value={r.id} />
