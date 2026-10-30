@@ -49,6 +49,11 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 - Page publique `/pharmacies` (pharmacies inscrites + non inscrites, recherche par nom, zone, proximité) et repères blancs sur la carte.
 - Administration : import CSV (point-virgule ou virgule, UTF-8 ou Windows-1252, numéros maliens normalisés, doublons ignorés, erreurs ligne par ligne), ajout manuel, masquage, suppression, rattachement à la pharmacie inscrite correspondante (suggestions par ressemblance du nom), journal d'audit.
 
+**Infirmiers et soins à domicile (v0.13.0)** — `/infirmiers` (menu « Services », pied de page)
+- Onglet « Soins à domicile » : structures (adresse, zones, téléphone, WhatsApp, types de soins, horaires, tarifs communiqués, réservation, source), statut « non vérifiée » / « autorisation vérifiée » (référence d'autorisation obligatoire pour vérifier, jamais publiée). 4 structures de Bamako référencées non vérifiées.
+- Onglet « Tableau de l'Ordre des infirmiers » (CNOIIM) : recherche par nom, structure, n° d'inscription, région, « se déplace à domicile » ; téléphone affiché uniquement si l'infirmier l'a autorisé ; demande de publication, correction ou retrait via Contact.
+- Administration (*Infirmiers*) : import CSV annuel (colonnes souples, « nom et prénom » séparés automatiquement, erreurs ligne par ligne), retrait durable à la demande, téléphone/accord/domicile/vérification par fiche, gestion complète des structures. Journal d'audit.
+
 **Navigation (v0.12.0)**
 - Ordinateur (≥ 1280 px) : Médicaments, Pharmacies, Médecins, Rendez-vous, menus « Santé ▾ » et « Services ▾ », Urgences ; menu du compte (mon compte, rendez-vous, notifications, espaces professionnels, administration, déconnexion).
 - Téléphone et tablette : bouton « Menu » ouvrant toutes les rubriques classées (Trouver, Santé, Services, Mon compte) ; la bande défilante est supprimée ; barre du bas inchangée.

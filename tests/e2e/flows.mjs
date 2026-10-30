@@ -1360,6 +1360,43 @@ await step("PharmaProxi Femme : activation, cycle, journal, code secret, partage
   await cc.close();
 });
 
+await step("infirmiers : structures à domicile non vérifiées, import du Tableau, téléphone publié seulement si autorisé", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/`, NI);
+  await v.getByRole("button", { name: "Menu" }).click();
+  await v.getByRole("navigation", { name: "Menu", exact: true }).getByRole("link", { name: /Infirmiers et soins à domicile/ }).click();
+  await v.waitForURL(/\/infirmiers/);
+  await v.getByRole("heading", { name: "Keneya Assistance" }).waitFor({ timeout: 10000 });
+  assert((await v.getByText("Non vérifiée", { exact: true }).count()) === 4, "statut des structures inattendu");
+  assert((await v.locator('a[href="tel:+22396969617"]').count()) === 1, "téléphone de Santé Mobile Groupe absent");
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (infirmiers)");
+  await shot(v, "43-infirmiers-domicile-mobile");
+  // Import du Tableau par l'administration
+  const aCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
+  const a = await login(aCtx, "admin");
+  current = a;
+  await a.goto(`${BASE}/admin/infirmiers`, NI);
+  const csv = "N° d'inscription;Nom et prénom;Spécialité;Section;Structure;Téléphone;Téléphone autorisé;Domicile\nINF-1;TRAORE Aminata;Infirmière d'État;Bamako;CSRéf Commune V;76 12 34 56;oui;oui\nINF-2;COULIBALY Seydou;Infirmier;Sikasso;Hôpital de Sikasso;66 11 22 33;non;non\n";
+  await a.locator("#nr-file").setInputFiles({ name: "cnoiim.csv", mimeType: "text/csv", buffer: Buffer.from(csv, "utf8") });
+  await a.getByRole("button", { name: "Importer" }).click();
+  await a.getByText(/2 infirmier\(s\) importé\(s\)/).waitFor({ timeout: 20000 });
+  await aCtx.close();
+  current = v;
+  await v.goto(`${BASE}/infirmiers?onglet=ordre`, NI);
+  await v.getByText("TRAORE Aminata").waitFor({ timeout: 10000 });
+  await v.getByText("COULIBALY Seydou").waitFor();
+  assert((await v.locator('a[href="tel:+22376123456"]').count()) === 1, "téléphone autorisé non affiché");
+  assert((await v.locator('a[href="tel:+22366112233"]').count()) === 0, "téléphone non autorisé affiché");
+  await v.locator("input[name=q]").fill("sikasso");
+  await v.getByRole("button", { name: "Rechercher" }).click();
+  await v.getByText("COULIBALY Seydou").waitFor({ timeout: 10000 });
+  assert(!(await v.getByText("TRAORE Aminata").count()), "filtre de recherche inopérant");
+  await shot(v, "44-infirmiers-ordre-mobile");
+  await c.close();
+});
+
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {
   const all = [...consoleErrors, ...pageErrors];
   assert(all.length === 0, all.slice(0, 5).join(" | "));

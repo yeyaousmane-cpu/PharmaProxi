@@ -28,6 +28,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
     { label: "Services", links: [
       { href: "/garde", label: "Pharmacies de garde", hint: "Ouvertes la nuit et le week-end" },
       { href: "/laboratoires", label: "Laboratoires et examens", hint: "Où faire une analyse, tarifs" },
+      { href: "/infirmiers", label: "Infirmiers et soins à domicile", hint: "Pansements, injections, perfusions chez vous" },
       { href: "/cliniques", label: "Cliniques et hôpitaux", hint: "Établissements de santé" },
       { href: "/carte", label: "Carte", hint: "Tout autour de moi" },
       { href: "/urgences", label: "Urgences", hint: "Services d'urgence, ambulances", tone: "red" },

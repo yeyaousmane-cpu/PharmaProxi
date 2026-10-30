@@ -120,6 +120,12 @@ Menu **Authentication** :
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000100_pharmacy_listings.sql`.
 2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (*Add file › Upload files*) : le programme `.github/workflows/installer.yml` le décompresse et Vercel redéploie.
 
+### Passer à la v0.13.0 (infirmiers et soins à domicile)
+
+1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.13.0-infirmiers.sql`. Contrôle attendu : `4, true`.
+2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub.
+3. *Administration › Infirmiers* : importez le Tableau du CNOIIM (CSV), vérifiez les structures de soins à domicile.
+
 ### Passer à la v0.12.0 (PharmaProxi Femme + nouvelle navigation)
 
 1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.11-et-0.12.sql` (contient aussi l'assistant 0.11 ; peut être relancé). Contrôle attendu : `true, true`.
