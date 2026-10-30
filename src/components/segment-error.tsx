@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useStaleDeployReload } from "@/lib/stale-deploy";
 
 /**
  * Erreur dans un espace (pharmacien, administration…) : la navigation reste
@@ -12,6 +13,7 @@ export function SegmentError({ error, reset, home, label }: { error: Error & { d
   useEffect(() => {
     console.error(error);
   }, [error]);
+  useStaleDeployReload(error);
   const offline = typeof navigator !== "undefined" && !navigator.onLine;
   return (
     <div role="alert" className="mx-auto max-w-lg rounded-2xl border bg-white p-6 text-center">
