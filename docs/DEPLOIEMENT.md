@@ -120,6 +120,13 @@ Menu **Authentication** :
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000100_pharmacy_listings.sql`.
 2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (*Add file › Upload files*) : le programme `.github/workflows/installer.yml` le décompresse et Vercel redéploie.
 
+### Passer à la v0.12.0 (PharmaProxi Femme + nouvelle navigation)
+
+1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.11-et-0.12.sql` (contient aussi l'assistant 0.11 ; peut être relancé). Contrôle attendu : `true, true`.
+2. Dans Vercel › *Settings › Environment Variables* : `FEMME_ENCRYPTION_KEY` (type **Secret**) = 32 octets aléatoires en base64 (voir `.env.example`). Conservez-la précieusement : sans elle, les notes déjà chiffrées sont illisibles. Facultatif mais recommandé.
+3. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub.
+4. Testez `/femme` avec un compte : activation, journal, code secret, verrouillage.
+
 ### Passer à la v0.11.0 (assistant santé)
 
 1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.11.0-assistant.sql`. Contrôle attendu : `true`.

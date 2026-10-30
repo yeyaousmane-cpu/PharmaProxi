@@ -49,6 +49,21 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 - Page publique `/pharmacies` (pharmacies inscrites + non inscrites, recherche par nom, zone, proximité) et repères blancs sur la carte.
 - Administration : import CSV (point-virgule ou virgule, UTF-8 ou Windows-1252, numéros maliens normalisés, doublons ignorés, erreurs ligne par ligne), ajout manuel, masquage, suppression, rattachement à la pharmacie inscrite correspondante (suggestions par ressemblance du nom), journal d'audit.
 
+**Navigation (v0.12.0)**
+- Ordinateur (≥ 1280 px) : Médicaments, Pharmacies, Médecins, Rendez-vous, menus « Santé ▾ » et « Services ▾ », Urgences ; menu du compte (mon compte, rendez-vous, notifications, espaces professionnels, administration, déconnexion).
+- Téléphone et tablette : bouton « Menu » ouvrant toutes les rubriques classées (Trouver, Santé, Services, Mon compte) ; la bande défilante est supprimée ; barre du bas inchangée.
+
+**PharmaProxi Femme (v0.12.0)** — `/femme`
+- Espace privé réservé aux femmes (déclaration à l'activation + consentement ; le sexe ne peut pas être vérifié techniquement). Tranche d'âge seulement (pas de date de naissance). Parcours : cycle, projet de grossesse, grossesse, post-partum, ménopause, modifiables à tout moment.
+- Calendrier mensuel : règles notées, règles prévues, période fertile et ovulation estimées (moyenne des 6 derniers cycles, écarts aberrants ignorés), détection des cycles irréguliers, historique et graphique des durées, retard. Toujours présenté comme une estimation, jamais comme une contraception.
+- Journal quotidien : saignements, 16 symptômes, douleur 0-10, humeur, sommeil, glaire, température, rapports (facultatif), tests, note personnelle ; tendances sur 60/90 jours (douleur, symptômes, humeur, courbe de température). Aucun diagnostic automatique.
+- Grossesse : semaines d'aménorrhée, terme estimé (ou date donnée par la sage-femme), trimestre, repères, 8 contacts prénatals OMS 2016 datés avec rappel en un clic, signes d'urgence ; post-partum : 4 contrôles OMS 2022, signes d'alerte ; sources citées, contenus signalés comme non encore relus par un professionnel PharmaProxi.
+- Rappels (consultation, examen, traitement prescrit, rendez-vous ; répétition) et rappels automatiques facultatifs (règles estimées, saisie) : notification dans le compte uniquement, texte neutre.
+- Bibliothèque : fiches publiées des catégories « Santé de la femme » (nouvelle), « Santé reproductive », « Grossesse » ; thèmes (cycle, gynécologie, fertilité, contraception, grossesse, ménopause) ; « quand consulter » ; accès annuaire (gynécologues, sages-femmes, généralistes, endocrinologues, cliniques, laboratoires, gardes, rendez-vous).
+- Partenaire : lien facultatif, désactivé par défaut, réservé aux majeures, révocable, ne montrant que des contenus pédagogiques choisis.
+- Adolescentes (13-17 ans) : pas de suivi des rapports, de projet de grossesse, de fertilité ni de partage.
+- Sécurité : lecture limitée par la base à la propriétaire (aucun accès administrateur sur le site) ; code secret 4-6 chiffres (empreinte bcrypt) — tant que l'espace est verrouillé, la base refuse lecture et écriture ; verrouillage après 30 min d'inactivité ; blocage 15 min après 5 erreurs ; mode discret (« Mon espace ») ; notes chiffrées AES-256-GCM si `FEMME_ENCRYPTION_KEY` ; journal des accès sensibles visible par l'utilisatrice ; export JSON ; suppression définitive ; aucune donnée envoyée à l'assistant IA, à la publicité ou à des tiers.
+
 **Assistant santé (v0.11.0)**
 - Page `/assistant` (menu, accueil, Santé essentielle, pied de page) : questions de santé du quotidien en français simple, réponse affichée au fur et à mesure, suggestions (mal de tête, fièvre, diarrhée, paludisme, rhume, brûlures d'estomac, chaleur, mal de dents), nouvelle conversation, arrêt de la réponse.
 - Modèle Claude (API Anthropic) appelé uniquement par le serveur ; clé secrète `ANTHROPIC_API_KEY` jamais envoyée au navigateur. Sans clé : « bientôt disponible ».

@@ -1230,36 +1230,134 @@ await step("assistant santé : réponse en flux, urgence détectée sans IA, lie
   const n = execSyncText(`psql postgres://postgres@localhost:54322/pp_e2e -tAc "select requests || ',' || emergencies from public.assistant_usage"`);
   assert(n === "1,2", `compteur inattendu : ${n}`);
   await c.close();
-  // Bureau : à 1280 px, liens en pastilles sous le logo ; à 1600 px, en-tête complet sur une ligne sans chevauchement
+  // Bureau (1280 px) : en-tête sur une ligne, menus « Santé » et « Services », menu du compte
   const dCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
-  const d = await dCtx.newPage();
+  const d = await login(dCtx, "admin");
   current = d;
   await d.goto(`${BASE}/assistant`, NI);
-  await d.getByRole("navigation", { name: "Espaces" }).getByRole("link", { name: "Assistant", exact: true }).waitFor();
-  assert((await d.evaluate(() => document.documentElement.scrollWidth)) <= 1280, "défilement horizontal (bureau)");
-  await d.setViewportSize({ width: 1600, height: 900 });
   const nav = d.getByRole("navigation", { name: "Navigation principale" });
-  await nav.getByRole("link", { name: "Carte", exact: true }).waitFor();
+  await nav.getByRole("button", { name: "Santé" }).click();
+  await nav.getByRole("link", { name: /PharmaProxi Femme/ }).waitFor();
+  await nav.getByRole("link", { name: /Assistant santé/ }).waitFor();
+  await d.keyboard.press("Escape");
+  await nav.getByRole("button", { name: "Services" }).click();
+  await nav.getByRole("link", { name: /Pharmacies de garde/ }).waitFor();
+  await d.keyboard.press("Escape");
   const navBox = await nav.boundingBox();
-  const loginBox = await d.getByRole("link", { name: "Connexion" }).first().boundingBox();
-  assert(navBox.height < 60, `en-tête sur plusieurs lignes (${navBox.height}px)`);
-  assert(navBox.x + navBox.width <= loginBox.x, "liens de l'en-tête sous le bouton Connexion");
-  const scroll = await nav.evaluate((el) => el.scrollWidth - el.clientWidth);
-  assert(scroll <= 1, "liens de l'en-tête tronqués");
-  // Client connecté : même vérification (cloche, prénom et déconnexion en plus)
-  const cCtx = await newCtx({ viewport: { width: 1600, height: 900 }, locale: "fr-FR" });
-  const cu = await login(cCtx, "customer");
-  current = cu;
-  await cu.goto(`${BASE}/assistant`, NI);
-  const cNav = cu.getByRole("navigation", { name: "Navigation principale" });
-  await cNav.getByRole("link", { name: "Carte", exact: true }).waitFor();
-  const cBox = await cNav.boundingBox();
-  const bell = await cu.getByRole("link", { name: /^Notifications/ }).boundingBox();
-  assert(cBox.height < 60 && cBox.x + cBox.width <= bell.x, "en-tête du client connecté qui déborde");
-  assert((await cNav.evaluate((el) => el.scrollWidth - el.clientWidth)) <= 1, "liens tronqués (client connecté)");
-  await cCtx.close();
+  const bell = await d.getByRole("link", { name: /^Notifications/ }).first().boundingBox();
+  assert(navBox.height < 60 && navBox.x + navBox.width <= bell.x, "en-tête qui déborde (administrateur, 1280 px)");
+  await d.locator("header").getByRole("button", { name: /Admin|Démo/ }).click();
+  await d.getByRole("link", { name: "Administration", exact: true }).waitFor();
+  assert((await d.evaluate(() => document.documentElement.scrollWidth)) <= 1280, "défilement horizontal (bureau)");
   await shot(d, "37-assistant-bureau");
   await dCtx.close();
+});
+
+await step("menu mobile : toutes les rubriques classées, sans bande à faire défiler", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/`, NI);
+  await v.getByRole("button", { name: "Menu" }).click();
+  const menu = v.getByRole("navigation", { name: "Menu", exact: true });
+  for (const l of ["Médicaments", "Rendez-vous", "Santé essentielle", "Assistant santé", "PharmaProxi Femme", "Pharmacies de garde", "Laboratoires et examens", "Urgences", "Se connecter"])
+    await menu.getByRole("link", { name: new RegExp(l) }).first().waitFor();
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (menu)");
+  await shot(v, "38-menu-mobile");
+  await menu.getByRole("link", { name: /Pharmacies de garde/ }).click();
+  await v.waitForURL(/\/garde/);
+  await v.getByRole("heading", { level: 1 }).first().waitFor({ timeout: 10000 });
+  assert(!(await v.getByRole("navigation", { name: "Menu", exact: true }).count()), "le menu reste ouvert après navigation");
+  await c.close();
+});
+
+await step("PharmaProxi Femme : activation, cycle, journal, code secret, partage sans données, export, suppression (mobile)", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/femme`, NI);
+  await v.getByText("Un espace privé pour votre santé de femme").waitFor({ timeout: 10000 });
+  await c.close();
+  const cc = await newCtx(mobile);
+  const f = await login(cc, "customer");
+  current = f;
+  await f.goto(`${BASE}/femme`, NI);
+  await f.getByRole("heading", { name: "Créer votre espace" }).waitFor({ timeout: 10000 });
+  await f.getByText("25 à 34 ans").click();
+  await f.getByText("Suivre mon cycle").click();
+  const tenDaysAgo = new Date(Date.now() - 10 * 86400000).toISOString().slice(0, 10);
+  await f.locator("input[name=last_period]").fill(tenDaysAgo);
+  await f.locator("input[name=cycle_length]").fill("28");
+  // Sans la déclaration, le navigateur bloque l'envoi
+  await f.locator("input[name=consent]").check();
+  await f.getByRole("button", { name: "Créer mon espace privé" }).click();
+  assert(f.url().endsWith("/femme"), "envoi sans déclaration");
+  await f.locator("input[name=declared_woman]").check();
+  await f.getByRole("button", { name: "Créer mon espace privé" }).click();
+  await f.getByText("Jour 11").waitFor({ timeout: 10000 });
+  await f.getByText(/Période fertile estimée/).waitFor();
+  assert((await f.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (accueil Femme)");
+  await shot(f, "39-femme-accueil-mobile");
+  // Journal du jour
+  await f.getByRole("link", { name: /Noter ma journée/ }).click();
+  await f.getByText("Crampes", { exact: true }).click();
+  await f.getByText("Fatigue", { exact: true }).click();
+  await f.locator("label", { hasText: /^6$/ }).click();
+  await f.locator("textarea[name=note]").fill("Note privée de test");
+  await f.getByRole("button", { name: "Enregistrer ma journée" }).click();
+  await f.getByText("Journée enregistrée.").waitFor({ timeout: 10000 });
+  await shot(f, "40-femme-journal-mobile");
+  await f.getByRole("navigation", { name: "Mon espace" }).getByRole("link", { name: "Calendrier" }).click();
+  await f.getByText("Règles prévues").waitFor({ timeout: 10000 });
+  assert((await f.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (calendrier)");
+  await shot(f, "41-femme-calendrier-mobile");
+  // Code secret puis verrouillage : la base refuse les données
+  await f.goto(`${BASE}/femme/reglages`, NI);
+  await f.locator("input[name=pin]").fill("2468");
+  await f.locator("input[name=confirm]").first().fill("2468");
+  await f.getByRole("button", { name: "Activer le code" }).click();
+  await f.getByText(/Code secret enregistré/).waitFor({ timeout: 10000 });
+  await f.getByRole("button", { name: "Verrouiller" }).click();
+  await f.getByRole("heading", { name: "Espace verrouillé" }).waitFor({ timeout: 10000 });
+  await f.goto(`${BASE}/femme/journal`, NI);
+  await f.getByRole("heading", { name: "Espace verrouillé" }).waitFor();
+  assert(!(await f.getByText("Crampes").count()), "données visibles alors que l'espace est verrouillé");
+  const locked = await f.request.get(`${BASE}/femme/export`);
+  assert(locked.status() === 403, `export possible verrouillé (${locked.status()})`);
+  await shot(f, "42-femme-verrou-mobile");
+  await f.locator("#pin").fill("1111");
+  await f.getByRole("button", { name: "Ouvrir" }).click();
+  await f.getByText(/Code incorrect/).waitFor({ timeout: 10000 });
+  await f.locator("#pin").fill("2468");
+  await f.getByRole("button", { name: "Ouvrir" }).click();
+  await f.getByText("Symptômes les plus fréquents").waitFor({ timeout: 10000 });
+  // Export (note déchiffrée, aucun secret)
+  const ex = await (await f.request.get(`${BASE}/femme/export`)).json();
+  assert(ex.journal[0].note === "Note privée de test" && ex.regles.length === 1 && !("pin_hash" in ex.profil), "export inattendu");
+  // Note chiffrée dans la base si la clé est configurée
+  const stored = execSyncText(`psql postgres://postgres@localhost:54322/pp_e2e -tAc "select note from public.femme_days limit 1"`);
+  assert(process.env.FEMME_ENCRYPTION_KEY ? stored.startsWith("v1:") : stored === "Note privée de test", `note stockée inattendue : ${stored.slice(0, 20)}`);
+  // Partage partenaire : contenus choisis, aucune donnée personnelle
+  await f.goto(`${BASE}/femme/reglages`, NI);
+  await f.locator("label", { hasText: "Accompagner une femme enceinte" }).click();
+  await f.getByRole("button", { name: "Créer le lien de partage" }).click();
+  await f.getByText(/Lien à envoyer/).waitFor({ timeout: 10000 });
+  const link = (await f.locator("span.select-all").innerText()).trim();
+  const pc = await newCtx(mobile);
+  const pp = await pc.newPage();
+  await pp.goto(link.replace(/^https?:\/\/[^/]+/, BASE), NI);
+  await pp.getByText("Accompagner une femme enceinte").waitFor({ timeout: 10000 });
+  const txt = await pp.locator("main").innerText();
+  assert(!/Crampes|Jour 11|Note privée|Démo/.test(txt), "données personnelles sur la page partenaire");
+  await pc.close();
+  // Suppression totale
+  await f.locator("summary", { hasText: "Supprimer définitivement" }).click();
+  await f.locator("input[name=confirm]").last().fill("SUPPRIMER");
+  await f.getByRole("button", { name: "Tout supprimer" }).click();
+  await f.getByRole("heading", { name: "Créer votre espace" }).waitFor({ timeout: 10000 });
+  const left = execSyncText(`psql postgres://postgres@localhost:54322/pp_e2e -tAc "select (select count(*) from public.femme_days) + (select count(*) from public.femme_periods) + (select count(*) from public.femme_profiles)"`);
+  assert(left === "0", `données restantes après suppression : ${left}`);
+  await cc.close();
 });
 
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {
