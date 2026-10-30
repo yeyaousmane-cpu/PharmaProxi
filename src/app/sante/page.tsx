@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { ArrowRight, BookOpenCheck, CircleHelp, Dna, Droplets, HeartHandshake, Lightbulb, ShieldCheck } from "lucide-react";
 import { HealthIcon } from "@/components/health/health-icon";
 import { ArticleCard, FindProfessionals, HealthSearchBar, MedicalDisclaimer, type ArticleRow } from "@/components/health/health-bits";
@@ -67,6 +68,7 @@ export default async function HealthHome({ searchParams }: { searchParams: Promi
           <h1 className="mt-1 text-3xl font-bold text-[#052D1E] sm:text-4xl">Santé essentielle</h1>
           <p className="mt-2 max-w-2xl text-lg text-muted-foreground">Comprendre sa santé, prévenir les risques et prendre les bonnes décisions.</p>
           <div className="mt-5 max-w-2xl"><HealthSearchBar /></div>
+          <AudioGuide target="sante" className="mt-4 max-w-2xl" />
           <p className="mt-3 text-xs text-muted-foreground">
             Chaque fiche affiche ses sources, le professionnel qui l&apos;a validée et la date de sa dernière révision. {published === 0 ? "Les premières fiches sont en cours de validation médicale." : `${published} fiche(s) validée(s) publiée(s).`}
           </p>

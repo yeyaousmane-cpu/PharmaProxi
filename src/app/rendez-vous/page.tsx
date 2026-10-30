@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { Building2, CalendarCheck, CalendarClock, ClipboardList, MapPin, Stethoscope, Users } from "lucide-react";
 import { LocationPicker } from "@/components/location-picker";
 import { LocateButton } from "@/components/locate-button";
@@ -106,6 +107,7 @@ export default async function BookingHub({ searchParams }: { searchParams: Promi
         </div>
       </section>
 
+      <AudioGuide target="rendez-vous" />
       <EmergencyBanner numbers={settings.emergency_numbers} />
 
       <ol className="grid gap-2 text-sm sm:grid-cols-3" aria-label="Comment ça marche">

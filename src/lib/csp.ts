@@ -15,6 +15,7 @@ export function buildCsp(nonce: string, supabaseUrl: string, dev = process.env.N
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
     "font-src 'self' data:",
+    `media-src 'self' ${origin}`.trim(),
     `connect-src 'self' ${origin}`.trim(),
     "worker-src 'self'",
     "manifest-src 'self'",

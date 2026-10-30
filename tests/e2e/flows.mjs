@@ -1158,6 +1158,43 @@ await step("santé essentielle : rôle validateur, soumission, validation par un
   await cu.close();
 });
 
+await step("guides audio : administration (avancement, kit), lecteur multilingue sur l'accueil", async () => {
+  const aCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
+  const a = await login(aCtx, "admin");
+  current = a;
+  await a.goto(`${BASE}/admin/audio`, NI);
+  await a.getByRole("heading", { name: "Guides audio en langues nationales" }).waitFor({ timeout: 10000 });
+  for (const l of ["Bambara", "Peul", "Soninké", "Songhaï", "Tamasheq", "Dogon"]) await a.getByRole("columnheader", { name: l }).waitFor();
+  await a.locator("table").getByRole("link", { name: "Urgences" }).click();
+  await a.waitForURL(/\/admin\/audio\/urgences/);
+  await a.getByText("Texte à faire traduire oralement").waitFor();
+  await a.getByText("Vérifiée par (second locuteur)").first().waitFor();
+  await a.goto(`${BASE}/admin/audio/kit`, NI);
+  await a.getByText("Consignes pour la personne qui enregistre").waitFor();
+  await a.getByText(/Bienvenue sur PharmaProxi\. Ce site vous aide/).waitFor();
+  await aCtx.close();
+  // Le stockage de fichiers n'est pas émulé localement : enregistrements publiés insérés directement
+  const { execSync } = await import("node:child_process");
+  execSync(`psql postgres://postgres@localhost:54322/pp_e2e -qc "insert into public.audio_clips (target_key, lang, storage_path, mime, size_bytes, duration_s, speaker, reviewer, status, published_at) values ('accueil', 'francais', 'accueil/francais-test.mp3', 'audio/mpeg', 1000, 75, 'Voix test', null, 'published', now()), ('accueil', 'bambara', 'accueil/bambara-test.mp3', 'audio/mpeg', 1000, 80, 'Kumabaga test', 'Relecteur', 'published', now()) on conflict do nothing"`);
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/`, NI);
+  await v.getByRole("button", { name: /Écouter cette page/ }).click();
+  await v.getByRole("radio", { name: /Bambara/ }).click();
+  const src = await v.locator("audio").getAttribute("src");
+  assert(/\/storage\/v1\/object\/public\/audio-guides\/accueil\/bambara-test\.mp3$/.test(src ?? ""), `adresse audio inattendue : ${src}`);
+  await v.getByText(/Voix : Kumabaga test/).waitFor();
+  await v.reload(NI);
+  await v.getByRole("button", { name: /Écouter cette page/ }).click();
+  assert((await v.getByRole("radio", { name: /Bambara/ }).getAttribute("aria-checked")) === "true", "la langue choisie n'est pas mémorisée");
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (lecteur audio)");
+  await shot(v, "35-audio-accueil-mobile");
+  await v.goto(`${BASE}/garde`, NI);
+  assert(!(await v.getByRole("button", { name: /Écouter cette page/ }).count()), "lecteur affiché sans enregistrement publié");
+  await c.close();
+});
+
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {
   const all = [...consoleErrors, ...pageErrors];
   assert(all.length === 0, all.slice(0, 5).join(" | "));

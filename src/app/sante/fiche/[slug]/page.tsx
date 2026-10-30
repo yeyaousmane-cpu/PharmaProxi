@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { notFound } from "next/navigation";
 import { AlertTriangle, BadgeCheck, BookMarked, CircleHelp, FlaskConical, Lightbulb, Phone, Siren, Stethoscope } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
@@ -82,6 +83,7 @@ export default async function HealthArticlePage({ params }: { params: Promise<{ 
       </header>
 
       <div className="container-page max-w-4xl space-y-6 py-7">
+        {published && <AudioGuide target={`fiche:${a.slug}`} label="Écouter cette fiche" />}
         {HEALTH_SECTIONS.filter(([k]) => body[k]).map(([k, label]) => (
           <section key={k} aria-labelledby={`s-${k}`} className={k === "urgence" ? "rounded-2xl border border-red-200 bg-red-50 p-5 text-red-950" : "rounded-2xl border bg-white p-5"}>
             <h2 id={`s-${k}`} className="flex items-center gap-2 text-lg font-bold">{k === "urgence" && <Siren className="size-5" aria-hidden />}{label}</h2>

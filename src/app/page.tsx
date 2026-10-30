@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import Link from "next/link";
 import { BookOpenCheck, CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
 import { RecentList } from "@/components/recent/recent-list";
@@ -40,6 +41,7 @@ export default async function Home() {
           <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6">
             <h1 className="mb-4 text-2xl font-bold text-brand-deep sm:text-3xl">Quel médicament recherchez-vous ?</h1>
             <SearchBar geo={geo} large />
+            <AudioGuide target="accueil" className="mt-4" />
           </div>
         </div>
       </section>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { notFound } from "next/navigation";
 import { Clock, Dna, Droplets, HeartHandshake } from "lucide-react";
 import { HealthIcon } from "@/components/health/health-icon";
@@ -50,6 +51,7 @@ export default async function HealthCategory({ params }: { params: Promise<{ cat
             </div>
           </div>
           <div className="mt-5 max-w-2xl"><HealthSearchBar /></div>
+          <AudioGuide target={`sante-${cat.slug}`} className="mt-4 max-w-2xl" />
         </div>
       </section>
 

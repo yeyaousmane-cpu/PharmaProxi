@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { AuthShell } from "@/components/auth-shell";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Field, Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
   const sp = await searchParams;
   return (
     <AuthShell title="Créer un compte" subtitle="Gratuit. Aucune donnée médicale n'est demandée.">
+      <AudioGuide target="inscription" className="mb-4" />
       <ActionForm action={signUp} className="space-y-4" labels={{ full_name: "Nom", email: "E-mail", phone: "Téléphone", password: "Mot de passe", accept: "Conditions" }}>
         <input type="hidden" name="suite" value={sp.suite ?? "/"} />
         <Field label="Nom complet" htmlFor="full_name" required>

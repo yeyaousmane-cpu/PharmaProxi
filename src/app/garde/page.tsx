@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { MapPin, MessageCircle, Moon, Navigation, Phone, ShieldCheck } from "lucide-react";
 import { LocationPicker } from "@/components/location-picker";
 import { LocateButton } from "@/components/locate-button";
@@ -79,6 +80,7 @@ export default async function DutyPage({ searchParams }: { searchParams: Promise
         <LocateButton basePath="/garde" />
       </div>
 
+      <AudioGuide target="garde" />
       <nav className="flex gap-2" aria-label="Période">{tab(null, "En ce moment")}{tab("semaine", "7 prochains jours")}</nav>
 
       <form method="get" className="grid gap-2 rounded-xl border bg-white p-3 sm:grid-cols-[1fr_auto] sm:items-end">

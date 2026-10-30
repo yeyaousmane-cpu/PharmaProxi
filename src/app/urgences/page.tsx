@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { Ambulance, Moon, Phone, ShieldCheck, Siren } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -71,6 +72,7 @@ export default async function EmergencyPage({ searchParams }: { searchParams: Pr
         <p className="mt-2 text-xs">PharmaProxi ne pose aucun diagnostic. Les disponibilités des services ne sont pas garanties : appelez avant de vous déplacer quand c&apos;est possible.</p>
       </header>
 
+      <AudioGuide target="urgences" />
       <Link prefetch={false} href={`/garde${sp.region ? `?region=${sp.region}` : ""}`} className="flex items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400">
         <span className="flex items-center gap-3"><Moon className="size-6 text-indigo-700" aria-hidden />
           <span><strong>Pharmacies de garde</strong><span className="block text-sm text-muted-foreground">{dutyCount > 0 ? `${dutyCount} pharmacie(s) de garde en ce moment${sp.region ? " dans cette région" : ""}` : "Voir le tableau de garde"}</span></span>

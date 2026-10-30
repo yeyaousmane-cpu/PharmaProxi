@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { SearchX, SlidersHorizontal } from "lucide-react";
 import { SearchBar } from "@/components/search-bar";
 import { ResultCard, type SearchRow } from "@/components/result-card";
@@ -65,6 +66,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="container-page py-6">
+      <AudioGuide target="recherche" className="mb-4" />
       <div className="rounded-2xl border bg-white p-4 shadow-sm">
         <SearchBar geo={geo} defaults={{ q, region: sp.region, commune: sp.commune, quartier: sp.quartier }} />
       </div>
