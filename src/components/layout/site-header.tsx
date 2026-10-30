@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { Bell, LogIn, User } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import type { SessionInfo } from "@/lib/auth";
@@ -12,6 +13,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
     { href: "/medecins", label: "Médecins" },
     { href: "/rendez-vous", label: "Rendez-vous" },
     { href: "/sante", label: "Santé" },
+    { href: "/assistant", label: "Assistant" },
     { href: "/garde", label: "De garde" },
     { href: "/laboratoires", label: "Laboratoires" },
     { href: "/urgences", label: "Urgences" },
@@ -22,13 +24,15 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
     roles.includes("courier") && { href: "/livraison", label: "Livraisons" },
     roles.includes("admin") && { href: "/admin", label: "Administration" },
   ].filter(Boolean) as { href: string; label: string }[];
+  // En-tête complet sur une ligne seulement s'il tient (visiteurs et clients) ; sinon pastilles défilantes.
+  const wide = links.length <= 10;
 
   return (
     <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mali-stripe h-1" aria-hidden />
-      <div className="container-page flex h-14 items-center gap-4 sm:h-16">
+      <div className="container-page flex h-14 items-center gap-4 sm:h-16 2xl:max-w-[1440px]">
         <Logo />
-        <nav aria-label="Navigation principale" className="ml-2 hidden min-w-0 items-center gap-0.5 xl:flex">
+        <nav aria-label="Navigation principale" className={cn("ml-2 hidden min-w-0 items-center gap-0.5", wide && "2xl:flex")}>
           {links.map((l) => (
             <Link prefetch={false} key={l.href} href={l.href} className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
               {l.label}
@@ -61,7 +65,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
         </div>
       </div>
       {links.length > 3 && (
-        <nav aria-label="Espaces" className="container-page flex gap-1 overflow-x-auto pb-2 xl:hidden">
+        <nav aria-label="Espaces" className={cn("container-page flex gap-1 overflow-x-auto pb-2", wide && "2xl:hidden")}>
           {links.map((l, i) => (
             <Link prefetch={false} key={l.href} href={l.href} className={`shrink-0 rounded-full border bg-white px-3 py-1 text-xs font-medium ${i < 3 ? "hidden md:inline-block" : ""}`}>
               {l.label}

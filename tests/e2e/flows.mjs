@@ -6,6 +6,8 @@
  */
 import { chromium } from "@playwright/test";
 import { mkdirSync } from "node:fs";
+import { execSync as execSyncCp } from "node:child_process";
+const execSyncText = (cmd) => execSyncCp(cmd).toString().trim();
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 
@@ -1193,6 +1195,71 @@ await step("guides audio : administration (avancement, kit), lecteur multilingue
   await v.goto(`${BASE}/garde`, NI);
   assert(!(await v.getByRole("button", { name: /Écouter cette page/ }).count()), "lecteur affiché sans enregistrement publié");
   await c.close();
+});
+
+await step("assistant santé : réponse en flux, urgence détectée sans IA, liens sûrs (mobile, sans compte)", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/`, NI);
+  await v.getByRole("link", { name: /Assistant santé : posez votre question/ }).click();
+  await v.waitForURL(/\/assistant$/);
+  await v.getByText("L'assistant ne remplace pas un médecin ni un pharmacien.").waitFor({ timeout: 10000 });
+  await v.getByRole("button", { name: /J'ai mal à la tête depuis ce matin/ }).click();
+  await v.getByText(/Réponse de test à : « J'ai mal à la tête/).waitFor({ timeout: 15000 });
+  const link = v.getByRole("link", { name: "Trouver du paracétamol près de chez moi" });
+  await link.waitFor();
+  assert((await link.getAttribute("href")) === "/recherche?q=paracetamol", "lien de recherche inattendu");
+  // Signe de gravité : réponse fixe d'orientation vers les urgences
+  await v.getByLabel("Votre question de santé").fill("Mon père a une forte douleur dans la poitrine et il transpire");
+  await v.getByRole("button", { name: "Envoyer la question" }).click();
+  await v.getByText(/peut être une urgence/).waitFor({ timeout: 10000 });
+  await v.getByText(/rendez-vous immédiatement au service d'urgence le plus proche/).waitFor();
+  assert((await v.locator("[data-role=assistant]").count()) === 2, "nombre de réponses inattendu");
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (assistant)");
+  await shot(v, "36-assistant-mobile");
+  await v.getByRole("button", { name: "Nouvelle conversation" }).click();
+  await v.getByRole("button", { name: /Comment se protéger du paludisme/ }).waitFor();
+  // Contrôles côté serveur
+  const r1 = await v.request.post(`${BASE}/api/assistant`, { data: { messages: [] } });
+  assert(r1.status() === 400, `conversation vide acceptée (${r1.status()})`);
+  const r2 = await v.request.post(`${BASE}/api/assistant`, { data: { messages: [{ role: "user", content: "x".repeat(1200) }] } });
+  assert(r2.status() === 400, `question trop longue acceptée (${r2.status()})`);
+  const r3 = await v.request.post(`${BASE}/api/assistant`, { data: { messages: [{ role: "user", content: "J'ai pris trop de comprimés" }] } });
+  assert(r3.headers()["x-assistant"] === "urgence", "intoxication non détectée");
+  const n = execSyncText(`psql postgres://postgres@localhost:54322/pp_e2e -tAc "select requests || ',' || emergencies from public.assistant_usage"`);
+  assert(n === "1,2", `compteur inattendu : ${n}`);
+  await c.close();
+  // Bureau : à 1280 px, liens en pastilles sous le logo ; à 1600 px, en-tête complet sur une ligne sans chevauchement
+  const dCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
+  const d = await dCtx.newPage();
+  current = d;
+  await d.goto(`${BASE}/assistant`, NI);
+  await d.getByRole("navigation", { name: "Espaces" }).getByRole("link", { name: "Assistant", exact: true }).waitFor();
+  assert((await d.evaluate(() => document.documentElement.scrollWidth)) <= 1280, "défilement horizontal (bureau)");
+  await d.setViewportSize({ width: 1600, height: 900 });
+  const nav = d.getByRole("navigation", { name: "Navigation principale" });
+  await nav.getByRole("link", { name: "Carte", exact: true }).waitFor();
+  const navBox = await nav.boundingBox();
+  const loginBox = await d.getByRole("link", { name: "Connexion" }).first().boundingBox();
+  assert(navBox.height < 60, `en-tête sur plusieurs lignes (${navBox.height}px)`);
+  assert(navBox.x + navBox.width <= loginBox.x, "liens de l'en-tête sous le bouton Connexion");
+  const scroll = await nav.evaluate((el) => el.scrollWidth - el.clientWidth);
+  assert(scroll <= 1, "liens de l'en-tête tronqués");
+  // Client connecté : même vérification (cloche, prénom et déconnexion en plus)
+  const cCtx = await newCtx({ viewport: { width: 1600, height: 900 }, locale: "fr-FR" });
+  const cu = await login(cCtx, "customer");
+  current = cu;
+  await cu.goto(`${BASE}/assistant`, NI);
+  const cNav = cu.getByRole("navigation", { name: "Navigation principale" });
+  await cNav.getByRole("link", { name: "Carte", exact: true }).waitFor();
+  const cBox = await cNav.boundingBox();
+  const bell = await cu.getByRole("link", { name: /^Notifications/ }).boundingBox();
+  assert(cBox.height < 60 && cBox.x + cBox.width <= bell.x, "en-tête du client connecté qui déborde");
+  assert((await cNav.evaluate((el) => el.scrollWidth - el.clientWidth)) <= 1, "liens tronqués (client connecté)");
+  await cCtx.close();
+  await shot(d, "37-assistant-bureau");
+  await dCtx.close();
 });
 
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {

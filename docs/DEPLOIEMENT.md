@@ -120,6 +120,14 @@ Menu **Authentication** :
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000100_pharmacy_listings.sql`.
 2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (*Add file › Upload files*) : le programme `.github/workflows/installer.yml` le décompresse et Vercel redéploie.
 
+### Passer à la v0.11.0 (assistant santé)
+
+1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.11.0-assistant.sql`. Contrôle attendu : `true`.
+2. Créez une clé sur https://console.anthropic.com (*Settings › API keys › Create key*) et ajoutez un moyen de paiement (facturation à l'usage ; fixez une limite mensuelle de dépenses dans *Settings › Limits*).
+3. Dans Vercel › *Settings › Environment Variables* : `ANTHROPIC_API_KEY` = la clé (type **Secret**, Production). Facultatif : `ASSISTANT_DAILY_LIMIT` (2000 par défaut), `ASSISTANT_HOURLY_LIMIT` (20 questions par heure et par appareil), `ASSISTANT_MODEL`.
+4. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (le redéploiement prend en compte la clé).
+5. Testez `/assistant` : « J'ai mal à la tête » (réponse de l'IA) puis « douleur dans la poitrine » (réponse d'urgence fixe).
+
 ### Passer à la v0.10.0 (guides audio)
 
 1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.10.0-audio.sql`. Contrôle attendu : `14, 8, true`.

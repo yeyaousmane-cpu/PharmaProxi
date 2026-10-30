@@ -69,6 +69,7 @@ export default async function HealthHome({ searchParams }: { searchParams: Promi
           <p className="mt-2 max-w-2xl text-lg text-muted-foreground">Comprendre sa santé, prévenir les risques et prendre les bonnes décisions.</p>
           <div className="mt-5 max-w-2xl"><HealthSearchBar /></div>
           <AudioGuide target="sante" className="mt-4 max-w-2xl" />
+          <Link prefetch={false} href="/assistant" className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#068132] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#052D1E]">Une question ? Demandez à l&apos;assistant santé</Link>
           <p className="mt-3 text-xs text-muted-foreground">
             Chaque fiche affiche ses sources, le professionnel qui l&apos;a validée et la date de sa dernière révision. {published === 0 ? "Les premières fiches sont en cours de validation médicale." : `${published} fiche(s) validée(s) publiée(s).`}
           </p>

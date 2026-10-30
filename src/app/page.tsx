@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { AudioGuide } from "@/components/audio/audio-guide";
 import Link from "next/link";
-import { BookOpenCheck, CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
+import { Bot, BookOpenCheck, CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
 import { RecentList } from "@/components/recent/recent-list";
 import { SearchBar } from "@/components/search-bar";
 import { HowItWorks } from "@/components/home/how-it-works";
@@ -47,6 +47,12 @@ export default async function Home() {
       </section>
 
       <section className="container-page py-6" aria-label="Services pratiques">
+        <Link prefetch={false} href="/assistant" className="mb-3 flex items-center gap-3 rounded-xl border border-emerald-300 bg-[#EAF6EE] p-4 transition hover:border-[#068132] hover:shadow-sm">
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#068132] text-white"><Bot className="size-6" aria-hidden /></span>
+          <span className="min-w-0"><span className="block font-bold text-[#052D1E]">Assistant santé : posez votre question</span>
+            <span className="block text-sm text-muted-foreground">Mal de tête, fièvre, diarrhée, rhume… Une réponse immédiate, simple, et le bon médicament sans ordonnance.</span></span>
+          <span className="ml-auto hidden shrink-0 text-sm font-semibold text-[#068132] sm:block">Demander</span>
+        </Link>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { href: "/garde", Icon: Moon, title: "Pharmacies de garde", text: "Ouvertes la nuit et le week-end", tone: "text-indigo-700 border-indigo-200 hover:border-indigo-400" },
