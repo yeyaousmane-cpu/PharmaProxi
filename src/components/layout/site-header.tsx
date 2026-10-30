@@ -11,6 +11,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
     { href: "/pharmacies", label: "Pharmacies" },
     { href: "/medecins", label: "Médecins" },
     { href: "/rendez-vous", label: "Rendez-vous" },
+    { href: "/sante", label: "Santé" },
     { href: "/garde", label: "De garde" },
     { href: "/laboratoires", label: "Laboratoires" },
     { href: "/urgences", label: "Urgences" },

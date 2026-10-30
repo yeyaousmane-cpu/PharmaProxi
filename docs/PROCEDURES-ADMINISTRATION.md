@@ -122,6 +122,15 @@ Importez les services d'urgence et ambulances (types `urgences`, `ambulance`, co
 ### Observatoire des ruptures
 Chiffres agrégés et anonymes de la demande exprimée sur PharmaProxi. Ils ne mesurent pas l'état réel du marché : croisez-les avec d'autres sources avant toute communication publique, et ne publiez jamais de données permettant d'identifier une pharmacie ou une personne.
 
+## Bibliothèque « Santé essentielle »
+*Administration › Bibliothèque santé* (`/redaction-sante`).
+1. **Rôles** : la personne crée d'abord un compte. Attribuez « Rédacteur » ou « Validateur médical » avec son e-mail, son nom affiché (ex. « Dr A. Traoré, hématologue ») et sa qualification. Ne nommez validateur qu'un professionnel de santé dont vous avez vérifié l'identité et l'inscription à l'Ordre.
+2. **Rédiger** : « Nouvelle fiche » ou ouvrir un brouillon. Format simple : FAQ en blocs « Q : / R : », idées reçues « Idée : / Vérité : », sources une par ligne « Titre | Organisme | Lien | Date de publication | Date de consultation ». Jamais de source, de date ou de validateur inventés.
+3. **Soumettre** : exige un résumé et au moins une source.
+4. **Valider** (validateur, différent de l'auteur) : valider, demander une correction ou rejeter (avec un message). Le validateur confirme notamment le niveau de recommandation au regard des recommandations applicables au Mali.
+5. **Publier** (validateur ou administration). Modifier ensuite une fiche publiée la retire du public jusqu'à sa nouvelle validation.
+6. **Signalements** : traitez les signalements du public listés sur la page, corrigez la fiche si besoin.
+
 ## Messages de contact
 *Administration › Messages.* Chaque message envoyé depuis la page Contact apparaît dans « Nouveaux » et déclenche une notification. Répondez par e-mail ou téléphone (liens directs), ajoutez une note interne, puis marquez « Traité ». Ne transférez jamais ces messages hors de la plateforme : ils contiennent des données personnelles. Pour publier l'e-mail ou le téléphone officiels de PharmaProxi, modifiez la page `contact` dans *Administration › Contenus*.
 

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
+import { BookOpenCheck, CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
 import { RecentList } from "@/components/recent/recent-list";
 import { SearchBar } from "@/components/search-bar";
 import { HowItWorks } from "@/components/home/how-it-works";
@@ -45,11 +45,12 @@ export default async function Home() {
       </section>
 
       <section className="container-page py-6" aria-label="Services pratiques">
-        <ul className="grid gap-3 sm:grid-cols-3">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { href: "/garde", Icon: Moon, title: "Pharmacies de garde", text: "Ouvertes la nuit et le week-end", tone: "text-indigo-700 border-indigo-200 hover:border-indigo-400" },
             { href: "/laboratoires", Icon: FlaskConical, title: "Laboratoires et examens", text: "Où faire une analyse, tarifs communiqués", tone: "text-brand-blue border-sky-200 hover:border-brand-blue" },
             { href: "/urgences", Icon: Siren, title: "Urgences", text: "Services d'urgence et ambulances", tone: "text-red-700 border-red-200 hover:border-red-400" },
+            { href: "/sante", Icon: BookOpenCheck, title: "Santé essentielle", text: "Fiches validées, avant le mariage, drépanocytose", tone: "text-[#068132] border-emerald-200 hover:border-[#068132]" },
           ].map(({ href, Icon, title, text, tone }) => (
             <li key={href}>
               <Link prefetch={false} href={href} className={`flex h-full items-center gap-3 rounded-xl border bg-white p-4 transition hover:shadow-sm ${tone}`}>

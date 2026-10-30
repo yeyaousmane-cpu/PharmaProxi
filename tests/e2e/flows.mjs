@@ -1060,6 +1060,104 @@ await step("annonces : e-mail de bienvenue à l'inscription, annonce à tous (co
   await aCtx.close();
 });
 
+await step("santé essentielle : accueil, rubrique mariage, groupes sanguins, simulateur drépanocytose (mobile, sans compte)", async () => {
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/sante`, NI);
+  await v.getByRole("heading", { name: "Santé essentielle", level: 1 }).waitFor({ timeout: 10000 });
+  await v.getByText("Comprendre sa santé, prévenir les risques et prendre les bonnes décisions.").waitFor();
+  await v.getByText("Les fiches essentielles sont en cours de relecture").waitFor();
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (santé)");
+  await shot(v, "31-sante-accueil-mobile");
+  await v.getByRole("link", { name: /Avant le mariage : les examens de santé à connaître/ }).click();
+  await v.waitForURL(/\/sante\/mariage/);
+  await v.getByText("En cours de validation médicale").waitFor({ timeout: 10000 });
+  await v.getByText("Drépanocytose : comprendre les profils AA, AS et SS").waitFor();
+  // Groupes sanguins : transfusion puis grossesse
+  await v.getByRole("button", { name: "O-", exact: true }).first().click();
+  await v.getByText("Une personne O- peut recevoir des globules rouges de :").waitFor();
+  await v.getByRole("tab", { name: "Grossesse et Rhésus" }).click();
+  await v.getByText("Ce n'est pas une raison de ne pas se marier ni de renoncer à avoir des enfants.").waitFor();
+  // Simulateur : AS × AS par défaut, puis SS × AA
+  const sim = v.locator("section", { has: v.getByRole("heading", { name: /comment se transmet-elle/ }) });
+  await sim.getByText("SS — drépanocytose (forme SS)").waitFor();
+  const pcts = await sim.locator("li span.tabular-nums").allInnerTexts();
+  assert(pcts.join(",") === "25 %,50 %,25 %", `probabilités AS×AS inattendues : ${pcts}`);
+  await sim.getByRole("radiogroup", { name: "Profil du premier parent" }).getByText("SS", { exact: true }).click();
+  await sim.getByRole("radiogroup", { name: "Profil du second parent" }).getByText("AA", { exact: true }).click();
+  await sim.getByText("100 %").waitFor();
+  await sim.getByText("AS — porteur du trait drépanocytaire").waitFor();
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (mariage)");
+  await shot(v, "32-sante-mariage-mobile");
+  // Brouillon non publié : introuvable pour le public
+  await v.goto(`${BASE}/sante/fiche/avant-mariage-groupe-sanguin-abo`, NI);
+  await v.getByText("Page introuvable").first().waitFor({ timeout: 10000 });
+  assert(!(await v.getByText("Connaître son groupe sanguin").count()), "brouillon visible du public");
+  await c.close();
+});
+
+await step("santé essentielle : rôle validateur, soumission, validation par un médecin, publication, recherche, signalement", async () => {
+  const aCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
+  const a = await login(aCtx, "admin");
+  current = a;
+  a.on("dialog", (dlg) => dlg.accept());
+  await a.goto(`${BASE}/redaction-sante`, NI);
+  await a.fill("#hs-email", mail("doctor1"));
+  await a.fill("#hs-name", "Dr Démo Aminata, cardiologue");
+  await a.getByRole("button", { name: "Attribuer" }).click();
+  await a.getByText("Rôle attribué.").first().waitFor({ timeout: 10000 });
+  await a.goto(`${BASE}/redaction-sante?statut=draft`, NI);
+  await a.getByRole("link", { name: "Groupe sanguin ABO", exact: true }).click();
+  await a.waitForURL(/\/redaction-sante\/[0-9a-f-]{36}$/);
+  const url = a.url();
+  await a.getByRole("button", { name: "Soumettre à la validation médicale" }).click();
+  await a.getByText("Fiche soumise à la validation médicale.").first().waitFor({ timeout: 10000 });
+  await shot(a, "33-redaction-sante");
+  await aCtx.close();
+
+  const dCtx = await newCtx(mobile);
+  const d = await login(dCtx, "doctor1");
+  current = d;
+  d.on("dialog", (dlg) => dlg.accept());
+  await d.goto(`${BASE}/redaction-sante?statut=in_review`, NI);
+  await d.getByRole("link", { name: "Groupe sanguin ABO", exact: true }).click();
+  await d.waitForURL(url);
+  await d.getByRole("button", { name: "Valider la fiche" }).click();
+  await d.getByText(/Fiche validée/).first().waitFor({ timeout: 10000 });
+  await d.getByRole("button", { name: "Publier la fiche" }).click();
+  await d.getByText(/Fiche publiée/).first().waitFor({ timeout: 10000 });
+  await dCtx.close();
+
+  const c = await newCtx(mobile);
+  const v = await c.newPage();
+  current = v;
+  await v.goto(`${BASE}/sante/recherche?q=groupe%20sanguin`, NI);
+  await v.getByText("Comprendre les groupes sanguins").waitFor({ timeout: 10000 });
+  await v.getByRole("link", { name: "Groupe sanguin ABO" }).first().click();
+  await v.waitForURL(/\/sante\/fiche\/avant-mariage-groupe-sanguin-abo/);
+  await v.getByText("Validée par Dr Démo Aminata, cardiologue").waitFor({ timeout: 10000 });
+  await v.getByRole("heading", { name: "Sources médicales" }).waitFor();
+  await v.getByText("Manuel MSD").first().waitFor();
+  await v.getByText("Deux personnes de groupes sanguins différents ne peuvent pas se marier.", { exact: false }).waitFor();
+  assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (fiche)");
+  await shot(v, "34-sante-fiche-mobile");
+  await v.getByText("Signaler une information obsolète ou erronée").click();
+  await v.fill("#report-reason", "Le lien vers la deuxième source ne s'ouvre plus.");
+  await v.getByRole("button", { name: "Envoyer le signalement" }).click();
+  await v.getByText(/l'équipe éditoriale va vérifier/).first().waitFor({ timeout: 10000 });
+  await v.goto(`${BASE}/sante`, NI);
+  await v.getByRole("link", { name: "Groupe sanguin ABO" }).first().waitFor({ timeout: 10000 }); // informations essentielles
+  // Un client ne peut pas entrer dans l'espace de rédaction
+  await c.close();
+  const cu = await newCtx(mobile);
+  const cp = await login(cu, "customer");
+  current = cp;
+  await cp.goto(`${BASE}/redaction-sante`, NI);
+  await cp.waitForURL(/acces-refuse/);
+  await cu.close();
+});
+
 await step("aucune erreur JavaScript ni erreur serveur, dans tous les espaces", async () => {
   const all = [...consoleErrors, ...pageErrors];
   assert(all.length === 0, all.slice(0, 5).join(" | "));

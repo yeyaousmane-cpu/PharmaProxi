@@ -120,6 +120,12 @@ Menu **Authentication** :
 1. Dans Supabase › *SQL Editor*, exécutez **uniquement** `supabase/migrations/20261028000100_pharmacy_listings.sql`.
 2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub (*Add file › Upload files*) : le programme `.github/workflows/installer.yml` le décompresse et Vercel redéploie.
 
+### Passer à la v0.9.0 (Santé essentielle)
+
+1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.9.0.sql` (migration `20261029000500_health_library.sql` + les 15 fiches brouillons « Avant le mariage »). Contrôle attendu : `10, 15, 0`.
+2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub.
+3. Vérifiez `/sante` et `/sante/mariage`, puis attribuez le rôle de validateur médical à un professionnel de santé dans *Administration › Bibliothèque santé*.
+
 ### Envoi d'e-mails (annonces, bienvenue)
 
 Le site envoie ses e-mails par SMTP. Avec une adresse Gmail dédiée (par ex. pharmaproxi.mali@gmail.com) :
