@@ -12,6 +12,7 @@ import { humanizeError } from "@/lib/errors";
 import { allow } from "@/lib/limiter";
 import { clientIp } from "@/lib/request";
 import { cn } from "@/lib/utils";
+import { emptyAmoResults, type AmoResults } from "@/lib/amo";
 
 export const metadata = { title: "Recherche de médicaments" };
 
@@ -31,6 +32,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const lng = numOrNull(sp.lng);
 
   let rows: SearchRow[] = [];
+  let amo: AmoResults = emptyAmoResults();
   let error: string | null = null;
   if (q.length >= 2) {
     if (!(await allow(`search:${await clientIp()}`, 60, 60_000))) {
@@ -54,6 +56,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       });
       if (e) error = humanizeError(e);
       rows = (data as SearchRow[]) ?? [];
+      if (rows.length) {
+        const { data: a } = await supabase.rpc("amo_for_results", {
+          p_catalog: [...new Set(rows.map((r) => r.catalog_id))],
+          p_pharmacies: [...new Set(rows.map((r) => r.pharmacy_id))],
+        });
+        if (a) amo = a as AmoResults;
+      }
     }
   }
   const total = rows[0]?.total_count ?? 0;
@@ -128,8 +137,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <>
             <p className="mb-3 text-sm text-muted-foreground">
               {total} résultat{Number(total) > 1 ? "s" : ""} pour « {q} ». Les disponibilités sont déclarées par les pharmacies : faites-les confirmer.
+              {Object.values(amo.products).some((p) => p.amo) && <> Montants AMO : estimation, à confirmer en pharmacie (<Link prefetch={false} href="/amo" className="underline">comment c&apos;est calculé</Link>).</>}
             </p>
-            <div className="grid gap-3">{rows.map((r) => <ResultCard key={r.inventory_id} r={r} />)}</div>
+            <div className="grid gap-3">{rows.map((r) => <ResultCard key={r.inventory_id} r={r} amo={amo.products[r.catalog_id]} pharmacyAmo={amo.pharmacies[r.pharmacy_id]} />)}</div>
             {pages > 1 && (
               <nav aria-label="Pagination" className="mt-6 flex items-center justify-center gap-2">
                 {page > 1 && <Link prefetch={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href={link({ page: String(page - 1) })}>Précédent</Link>}

@@ -16,6 +16,7 @@ import { PHARMACY_STATUS_LABEL } from "@/lib/pharmacy";
 import { DOC_LABELS } from "@/lib/documents";
 import { TeamCard } from "@/components/pharmacy/team-card";
 import { requireUser } from "@/lib/auth";
+import { declarePharmacyAmo } from "@/app/actions/amo";
 
 export const metadata = { title: "Ma pharmacie" };
 
@@ -36,6 +37,7 @@ export default async function MyPharmacy({ searchParams }: { searchParams: Promi
     const { data } = await supabase.storage.from("pharmacy-documents").createSignedUrl(d.storage_path, 300);
     return { ...d, url: data?.signedUrl ?? null };
   }));
+  const { data: amo } = await supabase.from("pharmacy_amo").select("status, note, verified_at").eq("pharmacy_id", ph.id).maybeSingle();
   const { data: membership } = await supabase.from("pharmacy_members").select("member_role").eq("pharmacy_id", ph.id).eq("user_id", me.userId).maybeSingle();
   const isOwner = membership?.member_role === "owner";
   const editable = ph.status !== "suspended";
@@ -59,6 +61,31 @@ export default async function MyPharmacy({ searchParams }: { searchParams: Promi
         </Card>
         <div className="space-y-6">
           <TeamCard pharmacyId={ph.id} userId={me.userId} editable={ph.status !== "suspended"} />
+          <Card id="amo">
+            <CardHeader>
+              <CardTitle>Assurance maladie (AMO)</CardTitle>
+              <CardDescription>Si votre officine a signé la convention avec la CANAM, les patients verront le badge « Conventionnée AMO » et une estimation de leur reste à payer.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              {amo?.status === "verified" && <Alert tone="success" title="Convention vérifiée">Votre fiche affiche « Conventionnée AMO ».</Alert>}
+              {amo?.status === "declared" && <Alert tone="info" title="Déclaration en cours de vérification">Le badge est affiché avec la mention « déclarée » jusqu&apos;à la vérification.</Alert>}
+              {amo?.status === "rejected" && <Alert tone="warning" title="Déclaration non retenue">{amo.note ?? "Contactez l'équipe PharmaProxi."}</Alert>}
+              {isOwner ? (
+                amo?.status === "declared" || amo?.status === "verified" ? (
+                  <ActionForm action={declarePharmacyAmo}>
+                    <input type="hidden" name="pharmacy_id" value={ph.id} />
+                    <SubmitButton size="sm" variant="ghost" confirm="Retirer la mention « Conventionnée AMO » de votre fiche ?">Retirer la convention AMO</SubmitButton>
+                  </ActionForm>
+                ) : amo?.status !== "rejected" ? (
+                  <ActionForm action={declarePharmacyAmo} className="space-y-3">
+                    <input type="hidden" name="pharmacy_id" value={ph.id} />
+                    <label className="flex items-start gap-2 text-xs text-muted-foreground"><input type="checkbox" name="certify" required className="mt-0.5" /> Je certifie que notre pharmacie a signé la convention avec la CANAM, qu&apos;elle est en vigueur, et je pourrai fournir le justificatif (dépôt dans « Justificatifs ») si l&apos;équipe le demande.</label>
+                    <SubmitButton size="sm" variant="secondary" name="conventioned" value="on">Déclarer la convention AMO</SubmitButton>
+                  </ActionForm>
+                ) : null
+              ) : <p className="text-xs text-muted-foreground">Seul le propriétaire de la pharmacie peut modifier cette déclaration.</p>}
+            </CardContent>
+          </Card>
           <Card id="justificatifs">
             <CardHeader><CardTitle>Justificatifs</CardTitle><CardDescription>Stockage privé : seuls votre équipe et les administrateurs habilités y ont accès.</CardDescription></CardHeader>
             <CardContent className="space-y-4">

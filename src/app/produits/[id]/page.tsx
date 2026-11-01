@@ -11,7 +11,9 @@ import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { createAlert } from "@/app/actions/services";
 import { getSession } from "@/lib/auth";
 import Link from "next/link";
-import { BellRing } from "lucide-react";
+import { BellRing, ShieldPlus } from "lucide-react";
+import { emptyAmoResults, type AmoResults } from "@/lib/amo";
+import { formatXof } from "@/lib/format";
 
 export const metadata = { title: "Produit" };
 
@@ -33,6 +35,10 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
     supabase.rpc("search_inventory", { p_query: "", p_catalog: m.merged_into ?? m.id, p_region: uuid(sp.region), p_commune: uuid(sp.commune), p_sort: "freshness", p_limit: 50 }),
   ]);
   const rows = (res.data as SearchRow[]) ?? [];
+  const catalogId = m.merged_into ?? m.id;
+  const { data: amoData } = await supabase.rpc("amo_for_results", { p_catalog: [catalogId], p_pharmacies: [...new Set(rows.map((r) => r.pharmacy_id))] });
+  const amo = (amoData as AmoResults | null) ?? emptyAmoResults();
+  const amoProduct = amo.products[catalogId];
   const cat = Array.isArray(m.product_categories) ? m.product_categories[0] : m.product_categories;
   const rx = m.requires_prescription || cat?.requires_prescription;
   const details: [string, string | null][] = [
@@ -52,6 +58,19 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
             <div key={k} className="flex justify-between gap-3 border-b py-1"><dt className="text-muted-foreground">{k}</dt><dd className="text-right font-medium">{v}</dd></div>
           ))}
         </dl>
+        {amoProduct?.amo && (
+          <div className="mt-4 rounded-xl border border-emerald-200 bg-brand-mint p-4 text-sm">
+            <p className="flex items-center gap-2 font-semibold text-brand-deep"><ShieldPlus className="size-4" aria-hidden /> Figure sur la liste AMO</p>
+            <p className="mt-1">
+              Désignation officielle : <span className="font-medium">{amoProduct.name}</span>{amoProduct.code ? ` (${amoProduct.code})` : ""}
+              {amoProduct.tariff !== null && <> · tarif de référence {formatXof(amoProduct.tariff)} · prise en charge {amoProduct.rate} %</>}.
+            </p>
+            {amoProduct.tariff !== null && amoProduct.rate !== null && (
+              <p className="mt-1">Au tarif de référence, il vous resterait environ <span className="font-semibold">{formatXof(amoProduct.tariff - Math.round(amoProduct.tariff * amoProduct.rate / 100))}</span> à payer avec votre carte AMO, dans une pharmacie conventionnée et sur ordonnance.</p>
+            )}
+            <Link prefetch={false} href="/amo" className="mt-1 inline-block font-semibold text-primary underline">Comment fonctionne l&apos;AMO</Link>
+          </div>
+        )}
         <Alert tone="info" className="mt-4" title="Information, pas une recommandation">
           Cette fiche décrit le produit tel que référencé. Elle ne remplace pas la notice ni l&apos;avis d&apos;un pharmacien ou d&apos;un médecin.
         </Alert>
@@ -86,7 +105,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">Aucune pharmacie vérifiée ne déclare ce produit dans cette zone.</p>
         ) : (
-          <div className="grid gap-3">{rows.map((r) => <ResultCard key={r.inventory_id} r={r} />)}</div>
+          <div className="grid gap-3">{rows.map((r) => <ResultCard key={r.inventory_id} r={r} amo={amoProduct} pharmacyAmo={amo.pharmacies[r.pharmacy_id]} />)}</div>
         )}
       </section>
     </div>

@@ -18,6 +18,10 @@ export function SiteFooter() {
           <Link prefetch={false} href="/femme" className="hover:underline">PharmaProxi Femme</Link>
           <Link prefetch={false} href="/infirmiers" className="hover:underline">Infirmiers et soins à domicile</Link>
           <Link prefetch={false} href="/garde" className="hover:underline">Pharmacies de garde</Link>
+          <Link prefetch={false} href="/amo" className="hover:underline">AMO : médicaments pris en charge</Link>
+          <Link prefetch={false} href="/amo/guide" className="hover:underline">AMO et INPS : le guide</Link>
+          <Link prefetch={false} href="/droits" className="hover:underline">Vos droits et votre santé</Link>
+          <Link prefetch={false} href="/assurances" className="hover:underline">Assurances santé : réseaux de soins</Link>
           <Link prefetch={false} href="/laboratoires" className="hover:underline">Laboratoires et examens</Link>
           <Link prefetch={false} href="/urgences" className="hover:underline">Urgences</Link>
           <Link prefetch={false} href="/carte" className="hover:underline">Carte</Link>

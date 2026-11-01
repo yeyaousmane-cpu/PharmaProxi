@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { MapPin, MessageCircle, Navigation, Phone, ShieldCheck, Truck } from "lucide-react";
+import { BadgeCheck, MapPin, MessageCircle, Navigation, Phone, ShieldCheck, ShieldPlus, Truck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
@@ -21,6 +21,7 @@ import { RecentTracker } from "@/components/recent/recent-tracker";
 import { DutyBadge, type DutySlot } from "@/components/duty/duty-badge";
 import type { Freshness } from "@/lib/freshness";
 import { cn } from "@/lib/utils";
+import { AMO_STATUS_LABEL, amoPatientShare, emptyAmoResults, type AmoResults } from "@/lib/amo";
 
 type Inv = { inventory_id: string; catalog_id: string; brand_name: string; dosage: string | null; form: string | null; packaging: string | null;
   active_ingredient: string | null; requires_prescription: boolean; delivery_allowed: boolean; price_xof: number | null; freshness: Freshness; stock_updated_at: string; total_count: number };
@@ -54,6 +55,10 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
   ]);
   const duties = ((duty.data as DutySlot[]) ?? []).sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const items = (inv.data as Inv[]) ?? [];
+  const { data: amoData } = await supabase.rpc("amo_for_results", { p_catalog: [...new Set(items.map((i) => i.catalog_id))], p_pharmacies: [id] });
+  const amo = (amoData as AmoResults | null) ?? emptyAmoResults();
+  const amoStatus = amo.pharmacies[id];
+  const insurers = ((await supabase.rpc("pharmacy_insurers", { p_pharmacy: id })).data as { name: string; slug: string }[] | null) ?? [];
   const addresses = session
     ? ((await supabase.from("customer_addresses").select("id, label, address_line").eq("user_id", session.userId)).data ?? [])
     : [];
@@ -78,8 +83,15 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
             ) : (
               <Badge className="border-amber-200 bg-amber-50 text-amber-900">Statut : {p.status === "pending" ? "en attente de vérification" : p.status}</Badge>
             )}
+            {amoStatus && <Badge className="border-blue-200 bg-blue-50 text-brand-blue"><BadgeCheck className="size-3" aria-hidden /> {AMO_STATUS_LABEL[amoStatus]}</Badge>}
             {p.is_demo && <DemoBadge />}
           </div>
+          {insurers.length > 0 && (
+            <p className="mt-2 flex flex-wrap items-center gap-2 text-sm"><span className="text-muted-foreground">Tiers payant :</span>
+              {insurers.map((i) => <Link key={i.slug} prefetch={false} href={`/assurances/${i.slug}`}><Badge className="border-blue-200 bg-blue-50 text-brand-blue">{i.name}</Badge></Link>)}
+            </p>
+          )}
+          {amoStatus === "declared" && <p className="text-xs text-muted-foreground">Convention AMO déclarée par la pharmacie, pas encore vérifiée par PharmaProxi : confirmez avec elle avant de vous déplacer.</p>}
           <DutyBadge slots={duties} />
           {p.verified_at && <p className="text-xs text-muted-foreground">Vérifiée le {formatDate(p.verified_at)}</p>}
           <p className="mt-3 flex items-start gap-2 text-sm"><MapPin className="mt-0.5 size-4 shrink-0 text-brand-green" aria-hidden />{p.address} — {place}</p>
@@ -121,7 +133,12 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
                     {i.packaging && <span className="text-xs text-muted-foreground"> — {i.packaging}</span>}
                     <div className="mt-1"><FreshnessBadge freshness={i.freshness} updatedAt={i.stock_updated_at} /></div>
                   </div>
-                  <p className="shrink-0 font-semibold">{formatXof(i.price_xof)}</p>
+                  <div className="shrink-0 sm:text-right">
+                    <p className="font-semibold">{formatXof(i.price_xof)}</p>
+                    {amo.products[i.catalog_id]?.amo && (amoStatus && i.price_xof !== null ? (
+                      <p className="text-xs font-semibold text-brand-deep"><ShieldPlus className="mr-1 inline size-3" aria-hidden />Carte AMO : ≈ {formatXof(amoPatientShare(i.price_xof, amo.products[i.catalog_id].tariff, amo.products[i.catalog_id].rate))}</p>
+                    ) : <p className="text-xs text-brand-deep"><ShieldPlus className="mr-1 inline size-3" aria-hidden />Liste AMO</p>)}
+                  </div>
                 </li>
               ))}
             </ul>

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { FileText, MapPin, MessageCircle, Navigation, Phone, Store } from "lucide-react";
+import { BadgeCheck, FileText, MapPin, MessageCircle, Navigation, Phone, ShieldPlus, Store } from "lucide-react";
 import { FreshnessBadge } from "@/components/freshness-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDistance, formatPhone, formatXof, whatsappUrl } from "@/lib/format";
 import type { Freshness } from "@/lib/freshness";
 import { cn } from "@/lib/utils";
+import { AMO_STATUS_LABEL, amoPatientShare, type AmoPharmacyStatus, type AmoProduct } from "@/lib/amo";
 
 export type SearchRow = {
   inventory_id: string; pharmacy_id: string; pharmacy_name: string; address: string; region_name: string;
@@ -21,11 +22,13 @@ export function directionsUrl(lat: number, lng: number) {
   return `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=%3B${lat}%2C${lng}`;
 }
 
-export function ResultCard({ r }: { r: SearchRow }) {
+export function ResultCard({ r, amo, pharmacyAmo }: { r: SearchRow; amo?: AmoProduct; pharmacyAmo?: AmoPharmacyStatus }) {
   const label = [r.brand_name, r.dosage, r.form].filter(Boolean).join(" · ");
   const place = [r.locality_name, r.commune_name, r.region_name].filter(Boolean).join(", ");
   const dist = formatDistance(r.distance_km);
   const wa = whatsappUrl(r.whatsapp, `Bonjour, avez-vous ${[r.brand_name, r.dosage].filter(Boolean).join(" ")} disponible ? (vu sur PharmaProxi)`);
+  const listed = amo?.amo === true;
+  const share = listed && pharmacyAmo && r.price_xof !== null ? amoPatientShare(r.price_xof, amo!.tariff, amo!.rate) : null;
   return (
     <article className="rounded-xl border bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -44,12 +47,26 @@ export function ResultCard({ r }: { r: SearchRow }) {
         <div className="shrink-0 text-left sm:text-right">
           <p className="text-lg font-bold">{formatXof(r.price_xof)}</p>
           <p className="text-xs text-muted-foreground">prix déclaré</p>
+          {share !== null && (
+            <p className="mt-1 rounded-lg bg-brand-mint px-2 py-1 text-sm font-semibold text-brand-deep" title={`Part AMO : ${amo!.rate} % du tarif de référence${amo!.tariff !== null ? ` (${formatXof(amo!.tariff)})` : ""}`}>
+              Avec la carte AMO : ≈ {formatXof(share)}
+            </p>
+          )}
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <FreshnessBadge freshness={r.freshness} updatedAt={r.stock_updated_at} />
         {r.requires_prescription && (
           <Badge className="border-sky-200 bg-sky-50 text-sky-800"><FileText className="size-3" aria-hidden /> Sur ordonnance</Badge>
+        )}
+        {listed && (
+          <Link prefetch={false} href="/amo" className="inline-flex"><Badge className="border-emerald-200 bg-brand-mint text-brand-deep"><ShieldPlus className="size-3" aria-hidden /> Liste AMO</Badge></Link>
+        )}
+        {pharmacyAmo && (
+          <Badge className="border-blue-200 bg-blue-50 text-brand-blue"><BadgeCheck className="size-3" aria-hidden /> {AMO_STATUS_LABEL[pharmacyAmo]}</Badge>
+        )}
+        {listed && !pharmacyAmo && (
+          <span className="text-xs text-muted-foreground">Pris en charge dans les pharmacies conventionnées</span>
         )}
         {r.hours_verified && r.is_open !== null && (
           <Badge className={r.is_open ? "border-emerald-200 bg-white text-emerald-700" : "border-slate-200 bg-white text-slate-600"}>
