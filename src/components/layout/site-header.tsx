@@ -25,6 +25,9 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
       { href: "/femme", label: "PharmaProxi Femme", hint: "Cycle, fertilité, grossesse — espace privé", tone: "pink" },
       { href: "/sante/mariage", label: "Avant le mariage", hint: "Examens, groupes sanguins, drépanocytose" },
       { href: "/droits", label: "Vos droits et votre santé", hint: "Maternité, allocations, retraite, soins gratuits" },
+      { href: "/ma-sante", label: "Ma santé", hint: "Vaccins des enfants, traitements, tension" },
+      { href: "/don-de-sang", label: "Don de sang", hint: "Où donner, besoins urgents", tone: "red" },
+      { href: "/alertes", label: "Alertes sanitaires", hint: "Faux médicaments, campagnes, épidémies" },
     ] },
     { label: "Services", links: [
       { href: "/garde", label: "Pharmacies de garde", hint: "Ouvertes la nuit et le week-end" },
@@ -42,6 +45,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
     ? ([
         { href: "/compte", label: "Mon compte" },
         { href: "/compte/rendez-vous", label: "Mes rendez-vous" },
+        { href: "/ma-sante", label: "Ma santé" },
         { href: "/compte/notifications", label: `Notifications${session.unread ? ` (${session.unread})` : ""}` },
         roles.includes("pharmacist") && { href: "/pharmacien", label: "Espace pharmacien" },
         session.doctor && { href: "/medecin", label: "Espace médecin" },
