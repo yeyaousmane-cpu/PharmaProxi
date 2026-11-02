@@ -14,6 +14,14 @@ export default function Offline() {
         n&apos;est conservée hors ligne, mais vous retrouvez ci-dessous les coordonnées que vous avez consultées. Réessayez dès que la connexion revient.
       </p>
       <Link prefetch={false} href="/" className="mt-6 inline-block font-semibold text-primary underline">Réessayer</Link>
+      <div className="mx-auto mt-8 max-w-md rounded-2xl border bg-white p-4 text-left text-sm">
+        <p className="font-semibold">Disponible sans connexion (si vous les avez déjà ouvertes une fois) :</p>
+        <ul className="mt-2 space-y-1">
+          {[["/premiers-secours", "Premiers secours"], ["/urgences", "Urgences"], ["/droits", "Vos droits et votre santé"], ["/don-de-sang", "Don de sang"], ["/amo/guide", "Guide AMO et INPS"]].map(([h, l]) => (
+            <li key={h}><a href={h} className="font-medium text-primary underline">{l}</a></li>
+          ))}
+        </ul>
+      </div>
       <div className="mx-auto mt-10 max-w-4xl"><RecentList title="Vos contacts consultés récemment" /></div>
     </div>
   );

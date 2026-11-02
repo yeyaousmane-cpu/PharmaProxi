@@ -15,6 +15,9 @@ export function SiteFooter() {
           <Link prefetch={false} href="/pharmacies" className="hover:underline">Annuaire des pharmacies</Link>
           <Link prefetch={false} href="/sante" className="hover:underline">Santé essentielle</Link>
           <Link prefetch={false} href="/assistant" className="hover:underline">Assistant santé</Link>
+          <Link prefetch={false} href="/questions-pharmacien" className="hover:underline">Questions à un pharmacien</Link>
+          <Link prefetch={false} href="/premiers-secours" className="hover:underline">Premiers secours</Link>
+          <Link prefetch={false} href="/comparer" className="hover:underline">Génériques et prix</Link>
           <Link prefetch={false} href="/femme" className="hover:underline">PharmaProxi Femme</Link>
           <Link prefetch={false} href="/infirmiers" className="hover:underline">Infirmiers et soins à domicile</Link>
           <Link prefetch={false} href="/garde" className="hover:underline">Pharmacies de garde</Link>

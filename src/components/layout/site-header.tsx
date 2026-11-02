@@ -22,6 +22,8 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
     { label: "Santé", links: [
       { href: "/sante", label: "Santé essentielle", hint: "Fiches validées par des professionnels" },
       { href: "/assistant", label: "Assistant santé", hint: "Posez votre question, réponse immédiate" },
+      { href: "/questions-pharmacien", label: "Questions à un pharmacien", hint: "Un vrai pharmacien vous répond" },
+      { href: "/premiers-secours", label: "Premiers secours", hint: "Les gestes qui sauvent, même hors connexion", tone: "red" },
       { href: "/femme", label: "PharmaProxi Femme", hint: "Cycle, fertilité, grossesse — espace privé", tone: "pink" },
       { href: "/sante/mariage", label: "Avant le mariage", hint: "Examens, groupes sanguins, drépanocytose" },
       { href: "/droits", label: "Vos droits et votre santé", hint: "Maternité, allocations, retraite, soins gratuits" },
@@ -32,6 +34,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
     { label: "Services", links: [
       { href: "/garde", label: "Pharmacies de garde", hint: "Ouvertes la nuit et le week-end" },
       { href: "/amo", label: "AMO : médicaments remboursés", hint: "Liste officielle et reste à payer" },
+      { href: "/comparer", label: "Génériques et prix", hint: "Le même médicament, moins cher" },
       { href: "/amo/guide", label: "AMO et INPS : le guide", hint: "Droits, cotisations, assurance volontaire" },
       { href: "/assurances", label: "Assurances : où aller avec ma carte", hint: "Pharmacies et cliniques partenaires" },
       { href: "/laboratoires", label: "Laboratoires et examens", hint: "Où faire une analyse, tarifs" },

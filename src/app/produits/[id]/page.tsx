@@ -39,6 +39,8 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   const { data: amoData } = await supabase.rpc("amo_for_results", { p_catalog: [catalogId], p_pharmacies: [...new Set(rows.map((r) => r.pharmacy_id))] });
   const amo = (amoData as AmoResults | null) ?? emptyAmoResults();
   const amoProduct = amo.products[catalogId];
+  type Eq = { catalog_id: string; brand_name: string; dosage: string | null; form: string | null; packaging: string | null; manufacturer: string | null; is_same: boolean; min_price: number | null; max_price: number | null; pharmacies: number };
+  const equivalents = (((await supabase.rpc("equivalent_products", { p_catalog: catalogId })).data as Eq[] | null) ?? []);
   const cat = Array.isArray(m.product_categories) ? m.product_categories[0] : m.product_categories;
   const rx = m.requires_prescription || cat?.requires_prescription;
   const details: [string, string | null][] = [
@@ -75,6 +77,21 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
           Cette fiche décrit le produit tel que référencé. Elle ne remplace pas la notice ni l&apos;avis d&apos;un pharmacien ou d&apos;un médecin.
         </Alert>
       </header>
+      {equivalents.filter((e) => !e.is_same).length > 0 && (
+        <section id="equivalents" aria-labelledby="eq-title" className="scroll-mt-24 space-y-3 rounded-2xl border bg-white p-5">
+          <h2 id="eq-title" className="text-lg font-bold">Même principe actif, même dosage</h2>
+          <p className="text-sm text-muted-foreground">Produits équivalents et prix déclarés par les pharmacies vérifiées (30 derniers jours). Demandez toujours l&apos;avis du pharmacien avant de changer de médicament.</p>
+          <ul className="divide-y text-sm">
+            {equivalents.map((e) => (
+              <li key={e.catalog_id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span>{e.is_same ? <strong>{e.brand_name} (ce produit)</strong> : <Link prefetch={false} href={`/produits/${e.catalog_id}`} className="font-medium text-primary hover:underline">{e.brand_name}</Link>}
+                  <span className="text-muted-foreground">{[e.form, e.packaging, e.manufacturer].filter(Boolean).length ? ` · ${[e.form, e.packaging, e.manufacturer].filter(Boolean).join(" · ")}` : ""}</span></span>
+                <span className="text-right">{e.min_price !== null ? <><strong>{e.min_price === e.max_price ? formatXof(e.min_price) : `${formatXof(e.min_price)} – ${formatXof(e.max_price)}`}</strong> <span className="text-xs text-muted-foreground">· {e.pharmacies} pharmacie(s)</span></> : <span className="text-xs text-muted-foreground">prix non déclaré</span>}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section aria-labelledby="dispo-title" className="space-y-3">
         <h2 id="dispo-title" className="text-lg font-bold">Pharmacies qui déclarent ce produit</h2>
         <form method="get" className="flex flex-col gap-2 rounded-xl border bg-white p-3 sm:flex-row sm:items-end">

@@ -22,6 +22,8 @@ export const HEALTH_STATUS: Record<string, { label: string; className: string }>
 /** Ordre et titres des sections du modèle standard de fiche. */
 export const HEALTH_SECTIONS: [string, string][] = [
   ["definition", "Définition"],
+  ["gestes", "Que faire, étape par étape"],
+  ["a_eviter", "À ne pas faire"],
   ["importance", "Pourquoi c'est important"],
   ["situations", "Situations ou signes concernés"],
   ["prevention", "Prévention"],

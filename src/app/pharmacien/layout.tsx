@@ -5,6 +5,7 @@ const NAV = [
   { href: "/pharmacien", label: "Tableau de bord" },
   { href: "/pharmacien/stocks", label: "Stocks" },
   { href: "/pharmacien/commandes", label: "Commandes" },
+  { href: "/pharmacien/questions", label: "Questions des patients" },
   { href: "/pharmacien/mouvements", label: "Mouvements" },
   { href: "/pharmacien/ma-pharmacie", label: "Ma pharmacie" },
 ];
