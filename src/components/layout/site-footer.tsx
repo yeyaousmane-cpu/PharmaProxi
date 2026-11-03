@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t bg-white pb-20 md:pb-0">
+    <footer className="mt-16 border-t bg-white pb-20 md:pb-0 print:hidden">
       <div className="container-page grid gap-6 py-8 text-sm sm:grid-cols-3">
         <div>
           <p className="font-bold text-brand-deep">PharmaProxi</p>
@@ -26,6 +26,7 @@ export function SiteFooter() {
           <Link prefetch={false} href="/droits" className="hover:underline">Vos droits et votre santé</Link>
           <Link prefetch={false} href="/assurances" className="hover:underline">Assurances santé : réseaux de soins</Link>
           <Link prefetch={false} href="/ma-sante" className="hover:underline">Ma santé : vaccins, traitements, tension</Link>
+          <Link prefetch={false} href="/ma-sante/dossier" className="hover:underline">Mon dossier santé</Link>
           <Link prefetch={false} href="/don-de-sang" className="hover:underline">Don de sang</Link>
           <Link prefetch={false} href="/alertes" className="hover:underline">Alertes sanitaires</Link>
           <Link prefetch={false} href="/laboratoires" className="hover:underline">Laboratoires et examens</Link>

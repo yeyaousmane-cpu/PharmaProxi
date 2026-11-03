@@ -16,7 +16,7 @@ const items = [
 export function MobileNav() {
   const path = usePathname();
   return (
-    <nav aria-label="Navigation mobile" className="fixed inset-x-0 bottom-0 z-40 border-t bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav aria-label="Navigation mobile" className="fixed inset-x-0 bottom-0 z-40 border-t bg-white pb-[env(safe-area-inset-bottom)] md:hidden print:hidden">
       <ul className="grid grid-cols-5">
         {items.map(({ href, label, Icon }) => {
           const active = href === "/" ? path === "/" : path.startsWith(href);

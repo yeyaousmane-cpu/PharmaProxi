@@ -28,6 +28,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
       { href: "/sante/mariage", label: "Avant le mariage", hint: "Examens, groupes sanguins, drépanocytose" },
       { href: "/droits", label: "Vos droits et votre santé", hint: "Maternité, allocations, retraite, soins gratuits" },
       { href: "/ma-sante", label: "Ma santé", hint: "Vaccins des enfants, traitements, tension" },
+      { href: "/ma-sante/dossier", label: "Mon dossier santé", hint: "Allergies, maladies, analyses : à montrer au médecin" },
       { href: "/don-de-sang", label: "Don de sang", hint: "Où donner, besoins urgents", tone: "red" },
       { href: "/alertes", label: "Alertes sanitaires", hint: "Faux médicaments, campagnes, épidémies" },
     ] },
@@ -49,6 +50,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
         { href: "/compte", label: "Mon compte" },
         { href: "/compte/rendez-vous", label: "Mes rendez-vous" },
         { href: "/ma-sante", label: "Ma santé" },
+        { href: "/ma-sante/dossier", label: "Mon dossier santé" },
         { href: "/compte/notifications", label: `Notifications${session.unread ? ` (${session.unread})` : ""}` },
         roles.includes("pharmacist") && { href: "/pharmacien", label: "Espace pharmacien" },
         session.doctor && { href: "/medecin", label: "Espace médecin" },
@@ -60,7 +62,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
   const firstName = session?.fullName?.split(" ")[0] ?? "Mon compte";
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+    <header className="sticky top-0 z-40 print:hidden border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mali-stripe h-1" aria-hidden />
       <div className="container-page flex h-14 items-center gap-2 sm:h-16 xl:max-w-7xl">
         <Logo />
