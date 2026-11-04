@@ -73,6 +73,7 @@ export async function updateSampling(_: ActionState, fd: FormData): Promise<Acti
 // ---------------- Patient ----------------
 export async function requestSampling(_: ActionState, fd: FormData): Promise<ActionState> {
   await requireUser("/laboratoires/domicile");
+  const mode = str(fd, "mode") === "laboratoire" ? "laboratoire" : "domicile";
   const fac = uuid.safeParse(fd.get("facility_id"));
   if (!fac.success) return { error: "Requête invalide" };
   const phone = normalizePhone(str(fd, "phone"));
@@ -80,7 +81,7 @@ export async function requestSampling(_: ActionState, fd: FormData): Promise<Act
   const fe: Record<string, string> = {};
   if (!exams.length && !str(fd, "other_exams")) fe.exam_ids = "Choisissez au moins une analyse";
   if (str(fd, "patient_name").length < 2) fe.patient_name = "Obligatoire";
-  if (str(fd, "address").length < 5) fe.address = "Indiquez l'adresse précise (quartier, rue, porte, repère)";
+  if (mode === "domicile" && str(fd, "address").length < 5) fe.address = "Indiquez l'adresse précise (quartier, rue, porte, repère)";
   if (!phone) fe.phone = "Numéro invalide";
   const d = str(fd, "preferred_date");
   if (!isoDate(d) || d < new Date().toISOString().slice(0, 10)) fe.preferred_date = "Date invalide";
@@ -89,13 +90,13 @@ export async function requestSampling(_: ActionState, fd: FormData): Promise<Act
   if (Object.keys(fe).length) return { error: "Vérifiez le formulaire.", fieldErrors: fe };
   const supabase = await createClient();
   const { error } = await supabase.rpc("request_home_sampling", { p: {
-    facility_id: fac.data, exam_ids: exams, other_exams: str(fd, "other_exams").slice(0, 300), patient_name: str(fd, "patient_name").slice(0, 120),
+    facility_id: fac.data, mode, results_consent: fd.get("results_consent") === "on", exam_ids: exams, other_exams: str(fd, "other_exams").slice(0, 300), patient_name: str(fd, "patient_name").slice(0, 120),
     patient_age: age, for_relative: fd.get("for_relative") === "on", address: str(fd, "address").slice(0, 300), region_id: str(fd, "region_id"), phone,
     preferred_date: d, slot: ["matin", "midi", "apres_midi"].includes(str(fd, "slot")) ? str(fd, "slot") : "matin",
     has_prescription: fd.get("has_prescription") === "on", fasting_known: fd.get("fasting_known") === "on", notes: str(fd, "notes").slice(0, 500),
   } });
   if (error) return { error: humanizeError(error) };
-  await setFlash("Demande envoyée au laboratoire. Vous serez prévenu(e) dès qu'il répond.");
+  await setFlash(mode === "laboratoire" ? "Demande de rendez-vous envoyée. Le laboratoire vous confirme l'heure." : "Demande envoyée au laboratoire. Vous serez prévenu(e) dès qu'il répond.");
   redirect("/compte/prelevements");
 }
 
@@ -118,4 +119,16 @@ export async function grantLab(_: ActionState, fd: FormData): Promise<ActionStat
   if (error) return { error: humanizeError(error) };
   revalidatePath("/admin/laboratoires");
   return { ok: true, message: "Accès accordé." };
+}
+
+// ---------------- 0.23 : rendez-vous au laboratoire et résultats ----------------
+export async function saveLabOptions(_: ActionState, fd: FormData): Promise<ActionState> {
+  const fac = uuid.safeParse(fd.get("facility_id"));
+  if (!fac.success) return { error: "Requête invalide" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("lab_save_options", { p_facility: fac.data, p_appointments: fd.get("appointments_enabled") === "on",
+    p_hours: str(fd, "appointment_hours").slice(0, 200), p_results: fd.get("results_enabled") === "on" });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/laboratoire/domicile"); revalidatePath("/laboratoires");
+  return { ok: true, message: "Enregistré." };
 }

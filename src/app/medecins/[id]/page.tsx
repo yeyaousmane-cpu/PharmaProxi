@@ -1,3 +1,5 @@
+import { trackView } from "@/lib/listing-stats";
+import { TrackClicks } from "@/components/stats/track";
 import { RecentTracker } from "@/components/recent/recent-tracker";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -38,6 +40,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
     .eq("id", id)
     .maybeSingle();
   if (!d) notFound();
+  trackView("medecin", id);
   const [session, settings, sitesRes, absRes, nextRes] = await Promise.all([
     getSession(),
     getSettings(),
@@ -63,6 +66,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="container-page grid gap-6 py-6 lg:grid-cols-[1fr_360px]">
+      <TrackClicks kind={"medecin"} id={id} />
       <div className="space-y-6">
         {!isPublic && (
           <Alert tone="warning" title="Aperçu : cette fiche n'est pas publiée">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SimpleToggle } from "@/components/simple/simple-toggle";
+import { LanguageSwitch } from "@/components/layout/language-switch";
 
 export function SiteFooter({ simple = false }: { simple?: boolean }) {
   return (
@@ -12,6 +13,7 @@ export function SiteFooter({ simple = false }: { simple?: boolean }) {
             Service de mise en relation. Ne remplace pas l&apos;avis d&apos;un professionnel de santé. En cas d&apos;urgence, contactez les services d&apos;urgence.
           </p>
           <SimpleToggle on={simple} className="mt-3" />
+          <LanguageSwitch />
         </div>
         <nav aria-label="Informations" className="flex flex-col gap-2">
           <Link prefetch={false} href="/pharmacies" className="hover:underline">Annuaire des pharmacies</Link>
@@ -29,6 +31,11 @@ export function SiteFooter({ simple = false }: { simple?: boolean }) {
           <Link prefetch={false} href="/assurances" className="hover:underline">Assurances santé : réseaux de soins</Link>
           <Link prefetch={false} href="/ma-sante" className="hover:underline">Ma santé : vaccins, traitements, tension</Link>
           <Link prefetch={false} href="/ma-sante/dossier" className="hover:underline">Mon dossier santé</Link>
+          <Link prefetch={false} href="/sos" className="hover:underline">SOS Santé</Link>
+          <Link prefetch={false} href="/centres-specialises" className="hover:underline">Centres spécialisés</Link>
+          <Link prefetch={false} href="/sante-mentale" className="hover:underline">Santé mentale</Link>
+          <Link prefetch={false} href="/laboratoires/lexique" className="hover:underline">Lexique des analyses</Link>
+          <Link prefetch={false} href="/scanner" className="hover:underline">Scanner un médicament</Link>
           <Link prefetch={false} href="/signaler" className="hover:underline">Signaler un médicament suspect</Link>
           <Link prefetch={false} href="/avis" className="hover:underline">Donner mon avis</Link>
           <Link prefetch={false} href="/don-de-sang" className="hover:underline">Don de sang</Link>

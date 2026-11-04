@@ -7,9 +7,9 @@
  * droits, don de sang, guide AMO) sont gardées pour être lisibles sans réseau. Elles sont
  * enregistrées dans leur version anonyme (sans cookie de connexion).
  */
-const VERSION = "sp-v4";
+const VERSION = "sp-v5";
 const STATIC = ["/offline", "/logo-santeproxi.webp", "/emblem.webp", "/icons/icon-192.png"];
-const OFFLINE_PAGES = ["/premiers-secours", "/urgences", "/droits", "/don-de-sang", "/amo/guide"];
+const OFFLINE_PAGES = ["/sos", "/premiers-secours", "/urgences", "/droits", "/don-de-sang", "/amo/guide", "/sante-mentale", "/laboratoires/lexique"];
 const OFFLINE_PREFIXES = ["/premiers-secours", "/sante/fiche/", "/droits/", "/sante/urgences"];
 
 const offlineAllowed = (path) => OFFLINE_PAGES.includes(path) || OFFLINE_PREFIXES.some((p) => path.startsWith(p));

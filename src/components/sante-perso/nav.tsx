@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Activity, Baby, BellRing, FolderHeart, HeartPulse, Lock, Pill } from "lucide-react";
+import { Activity, Baby, BellRing, FolderHeart, HeartPulse, Lock, Pill, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { href: "/ma-sante", label: "Accueil", icon: HeartPulse },
+  { href: "/ma-sante", label: "Mon espace", icon: HeartPulse },
+  { href: "/ma-sante/famille", label: "Ma famille", icon: Users },
   { href: "/ma-sante/dossier", label: "Mon dossier", icon: FolderHeart },
   { href: "/ma-sante/enfants", label: "Vaccins des enfants", icon: Baby },
   { href: "/ma-sante/traitements", label: "Traitements", icon: Pill },

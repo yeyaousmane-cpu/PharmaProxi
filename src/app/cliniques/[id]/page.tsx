@@ -1,3 +1,5 @@
+import { trackView } from "@/lib/listing-stats";
+import { TrackClicks } from "@/components/stats/track";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Building2, MapPin, MessageCircle, Navigation, Phone, Pill, Siren, Store } from "lucide-react";
@@ -40,6 +42,7 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
     .eq("id", id)
     .maybeSingle();
   if (!c) notFound();
+  trackView("clinique", id);
   const [session, settings, sitesRes, nearbyRes] = await Promise.all([
     getSession(),
     getSettings(),
@@ -65,6 +68,7 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="container-page grid gap-6 py-6 lg:grid-cols-[1fr_360px]">
+      <TrackClicks kind={"clinique"} id={id} />
       <div className="space-y-6">
         {c.status !== "verified" && <Alert tone="warning" title="Aperçu : cet établissement n'est pas encore publié." />}
         <header className="rounded-2xl border bg-white p-5">

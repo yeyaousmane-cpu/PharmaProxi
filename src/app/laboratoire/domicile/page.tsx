@@ -2,7 +2,7 @@ import { labContext } from "@/lib/lab-server";
 import { LabShell, NoLab } from "@/components/lab/lab-shell";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
-import { saveHomeService } from "@/app/actions/labs";
+import { saveHomeService, saveLabOptions } from "@/app/actions/labs";
 
 export const metadata = { title: "Espace laboratoire — prélèvement à domicile", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -32,6 +32,17 @@ export default async function LabHome({ searchParams }: { searchParams: Promise<
           </Field>
           <Field label="Nom du partenaire (s'il n'est pas dans la liste)" htmlFor="pn"><Input id="pn" name="partner_name" maxLength={120} defaultValue={svc?.partner_name ?? ""} /></Field>
           <Field label="Conditions à connaître (ordonnance, jeûne…)" htmlFor="cd" className="sm:col-span-2"><Textarea id="cd" name="conditions" rows={2} maxLength={500} defaultValue={svc?.conditions ?? ""} /></Field>
+          <SubmitButton size="sm" className="w-fit">Enregistrer</SubmitButton>
+        </ActionForm>
+      </section>
+      <section className="space-y-3 rounded-2xl border bg-white p-4 sm:p-5">
+        <h2 className="text-lg font-bold text-brand-deep">Rendez-vous au laboratoire et envoi des résultats</h2>
+        <ActionForm action={saveLabOptions} className="grid gap-3 sm:grid-cols-2">
+          <input type="hidden" name="facility_id" value={fid} />
+          <label className="flex items-center gap-2 text-sm font-semibold sm:col-span-2"><input type="checkbox" name="appointments_enabled" defaultChecked={svc?.appointments_enabled} className="size-4" /> Les patients peuvent demander un rendez-vous au laboratoire</label>
+          <Field label="Jours et heures d'accueil" htmlFor="ah" className="sm:col-span-2"><Input id="ah" name="appointment_hours" maxLength={200} defaultValue={svc?.appointment_hours ?? ""} placeholder="ex. lundi au vendredi 7 h – 16 h, samedi 7 h – 12 h" /></Field>
+          <label className="flex items-start gap-2 text-sm sm:col-span-2"><input type="checkbox" name="results_enabled" defaultChecked={svc?.results_enabled} className="mt-0.5 size-4" />
+            <span><strong>Nous envoyons les résultats sur SantéProxi</strong> aux patients qui l&apos;ont accepté. Le fichier est chiffré et visible seulement par le patient et votre laboratoire. Votre laboratoire reste responsable de l&apos;exactitude du résultat et du bon destinataire.</span></label>
           <SubmitButton size="sm" className="w-fit">Enregistrer</SubmitButton>
         </ActionForm>
       </section>

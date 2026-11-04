@@ -32,7 +32,7 @@ export default async function Request({ params }: { params: Promise<{ id: string
       <h1 className="text-2xl font-bold text-brand-deep">Prise de sang à domicile — {f.name}</h1>
       <p className="text-sm text-muted-foreground">{[svc.fee_xof !== null && `Frais de déplacement : ${formatXof(svc.fee_xof)}`, svc.areas && `Zones : ${svc.areas}`, svc.hours && `Passages : ${svc.hours}`].filter(Boolean).join(" · ")}</p>
       {svc.conditions && <p className="rounded-xl bg-blue-50 p-3 text-sm">{svc.conditions}</p>}
-      <section className="rounded-2xl border bg-white p-4 sm:p-5"><SamplingForm facilityId={f.id} exams={exams} regions={geo.regions} tomorrow={tomorrow} /></section>
+      <section className="rounded-2xl border bg-white p-4 sm:p-5"><SamplingForm facilityId={f.id} exams={exams} regions={geo.regions} tomorrow={tomorrow} resultsEnabled={Boolean(svc.results_enabled)} /></section>
     </div>
   );
 }

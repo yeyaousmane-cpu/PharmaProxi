@@ -1,6 +1,8 @@
+import { trackView } from "@/lib/listing-stats";
+import { TrackClicks } from "@/components/stats/track";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FlaskConical, Home, MapPin, Phone } from "lucide-react";
+import { CalendarCheck, FlaskConical, Home, MapPin, Phone } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { FACILITY_KINDS } from "@/lib/directory";
@@ -23,16 +25,19 @@ export default async function LabPage({ params }: { params: Promise<{ id: string
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const supabase = await createClient();
-  const [{ data: f }, { data: ex }, { data: home }] = await Promise.all([
+  const [{ data: f }, { data: ex }, { data: svc }] = await Promise.all([
     supabase.from("facility_listings").select("id, name, kind, address, city_label, phone, phone2, public_code, regions(name)").eq("id", id).maybeSingle(),
     supabase.from("facility_exams").select("price_xof, price_note, delay, source, verified_at, medical_exams(name, category)").eq("facility_id", id),
-    supabase.from("lab_home_service").select("*").eq("facility_id", id).eq("enabled", true).maybeSingle(),
+    supabase.from("lab_home_service").select("*").eq("facility_id", id).maybeSingle(),
   ]);
   if (!f) notFound();
+  const home = svc?.enabled ? svc : null;
+  trackView(f.kind === "laboratoire" ? "laboratoire" : "etablissement", id);
   const exams = ((ex ?? []) as unknown as E[]).filter((e) => e.medical_exams).sort((a, b) => a.medical_exams!.name.localeCompare(b.medical_exams!.name, "fr"));
   const region = Array.isArray(f.regions) ? f.regions[0] : f.regions;
   return (
     <div className="container-page max-w-3xl space-y-4 py-6">
+      <TrackClicks kind={f.kind === "laboratoire" ? "laboratoire" : "etablissement"} id={id} />
       <p className="text-sm"><Link prefetch={false} href="/laboratoires" className="text-primary underline">Laboratoires et examens</Link> › {f.name}</p>
       <header className="space-y-1">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><FlaskConical className="size-7 text-brand-blue" aria-hidden /> {f.name}</h1>
@@ -40,9 +45,11 @@ export default async function LabPage({ params }: { params: Promise<{ id: string
         {f.address && <p className="flex items-start gap-2 text-sm"><MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />{f.address}</p>}
         <div className="flex flex-wrap gap-2 pt-1">
           {f.phone && <a href={`tel:${f.phone}`} className={cn(buttonVariants({ size: "sm" }))}><Phone aria-hidden /> {formatPhone(f.phone)}</a>}
+          {svc?.appointments_enabled && <Link prefetch={false} href={`/laboratoires/rendez-vous/${f.id}`} className={cn(buttonVariants({ size: "sm" }))}><CalendarCheck aria-hidden /> Prendre rendez-vous</Link>}
           {home && <Link prefetch={false} href={`/laboratoires/domicile/${f.id}`} className={cn(buttonVariants({ size: "sm", variant: "secondary" }))}><Home aria-hidden /> Demander une prise de sang à domicile</Link>}
         </div>
       </header>
+      {svc?.appointments_enabled && svc.appointment_hours && <p className="rounded-xl bg-muted/50 p-3 text-sm"><strong>Accueil au laboratoire :</strong> {svc.appointment_hours}</p>}
       {home && (
         <section className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm">
           <p className="font-semibold text-brand-blue">Prélèvement à domicile{home.fee_xof !== null ? ` · frais de déplacement : ${formatXof(home.fee_xof)}` : ""}</p>

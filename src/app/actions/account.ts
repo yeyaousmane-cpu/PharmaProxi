@@ -61,6 +61,13 @@ export async function markAllNotificationsRead() {
 export async function deleteAccount(_: ActionState, fd: FormData): Promise<ActionState> {
   if (fd.get("confirm") !== "SUPPRIMER") return { error: "Tapez SUPPRIMER pour confirmer." };
   const { supabase, id } = await uid();
+  // Fichiers de santé chiffrés (documents personnels, résultats d'analyses) : effacés avant le compte
+  const [{ data: docs }, { data: results }] = await Promise.all([
+    supabase.from("record_documents").select("storage_path").eq("user_id", id),
+    supabase.from("lab_results").select("storage_path").eq("user_id", id),
+  ]);
+  if (docs?.length) await supabase.storage.from("personal-documents").remove(docs.map((d) => d.storage_path));
+  if (results?.length) await supabase.storage.from("lab-results").remove(results.map((r) => r.storage_path));
   const { error } = await supabase.rpc("request_account_deletion");
   if (error) return { error: humanizeError(error) };
   // Suppression de l'identifiant de connexion si la clé de service est configurée ;

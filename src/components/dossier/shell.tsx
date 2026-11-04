@@ -13,7 +13,7 @@ export const DOSSIER_PRIVACY = "Votre dossier est visible par vous seul : ni mé
 
 const NAV = [
   ["", "Essentiel"], ["/antecedents", "Antécédents et vaccins"], ["/analyses", "Analyses"], ["/consultations", "Consultations"],
-  ["/journal", "Symptômes"], ["/contacts", "Couverture et soignants"], ["/proches", "Mes proches"],
+  ["/journal", "Symptômes"], ["/documents", "Documents 🔒"], ["/contacts", "Couverture et soignants"], ["/proches", "Mes proches"],
 ] as const;
 
 export function DossierGate({ status, path }: { status: DossierStatus; path: string }) {

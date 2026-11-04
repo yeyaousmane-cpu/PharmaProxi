@@ -5,6 +5,8 @@ import { getGeo } from "@/lib/geo";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { CAN, PERIODS, QUESTION_ABOUT, fmtN } from "@/lib/authorities";
+import { DataBadge, DataLegend, type DataKind } from "@/components/authorities/data-badge";
+import { RegistryTrend } from "@/components/authorities/registry-trend";
 import { formatXof } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -33,10 +35,10 @@ function Tile({ icon: Icon, label, value, hint, tone }: { icon: typeof Search; l
 const Bar = ({ v, max, tone = "bg-primary" }: { v: number; max: number; tone?: string }) => (
   <span className="block h-2 rounded-full bg-muted"><span className={cn("block h-2 rounded-full", tone)} style={{ width: `${Math.max(3, Math.round((100 * v) / Math.max(1, max)))}%` }} /></span>
 );
-function Section({ id, title, icon: Icon, children, note }: { id: string; title: string; icon: typeof Search; children: React.ReactNode; note?: string }) {
+function Section({ id, title, icon: Icon, children, note, data }: { id: string; title: string; icon: typeof Search; children: React.ReactNode; note?: string; data?: DataKind[] }) {
   return (
     <section id={id} className="scroll-mt-24 space-y-3 rounded-2xl border bg-white p-4 sm:p-5">
-      <h2 className="flex items-center gap-2 text-lg font-bold text-brand-deep"><Icon className="size-5 text-primary" aria-hidden />{title}</h2>
+      <h2 className="flex flex-wrap items-center gap-2 text-lg font-bold text-brand-deep"><Icon className="size-5 text-primary" aria-hidden />{title}{(data ?? []).map((d) => <DataBadge key={d} kind={d} />)}</h2>
       {note && <p className="text-xs text-muted-foreground">{note}</p>}
       {children}
     </section>
@@ -94,6 +96,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
         <span className="ml-auto text-xs text-muted-foreground">{regionName} · du {new Date(from).toLocaleDateString("fr-FR")} au {new Date(to).toLocaleDateString("fr-FR")}</span>
       </form>
 
+      <DataLegend />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tile icon={Search} label="Recherches de médicaments" value={fmtN(o.searches)} />
         <Tile icon={TriangleAlert} tone="text-amber-600" label="Recherches sans résultat" value={o.unfound_rate !== null && o.unfound_rate !== undefined ? `${o.unfound_rate} %` : "—"} hint={o.searches_unfound !== null ? `${fmtN(o.searches_unfound)} recherches` : undefined} />
@@ -101,7 +104,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
         <Tile icon={MessageCircleQuestion} label="Questions aux pharmaciens" value={fmtN(o.questions)} hint={`Signalements de médicaments : ${fmtN(o.reports)}`} />
       </div>
 
-      <Section id="introuvables" title="Médicaments cherchés sans résultat" icon={TriangleAlert}
+      <Section id="introuvables" data={["estimation"]} title="Médicaments cherchés sans résultat" icon={TriangleAlert}
         note="Signal précoce de rupture à vérifier sur le terrain : une recherche peut aussi échouer parce qu'une pharmacie n'a pas mis ses stocks à jour, ou à cause d'une faute de frappe.">
         {uf.length ? (
           <>
@@ -116,12 +119,12 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
       </Section>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Section id="cherches" title="Médicaments les plus cherchés" icon={Search}>
+        <Section id="cherches" data={["mesure"]} title="Médicaments les plus cherchés" icon={Search}>
           {tp.length ? <ol className="space-y-2 text-sm">{tp.map((r) => (
             <li key={r.query} className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1"><span className="font-medium">{r.query}</span><span className="tabular-nums">{fmtN(r.searches)}</span>
               <span className="col-span-2"><Bar v={Number(r.searches)} max={Number(tp[0].searches)} /></span></li>))}</ol> : <Empty />}
         </Section>
-        <Section id="tendance" title={`Évolution des recherches : « ${term} »`} icon={TrendingUp} note="Recherches par semaine sur 12 semaines. Utile pour repérer un pic saisonnier (paludisme en saison des pluies, méningite…).">
+        <Section id="tendance" data={["mesure"]} title={`Évolution des recherches : « ${term} »`} icon={TrendingUp} note="Recherches par semaine sur 12 semaines. Utile pour repérer un pic saisonnier (paludisme en saison des pluies, méningite…).">
           {tr.some((t) => t.searches !== null) ? (
             <div className="flex h-40 items-end gap-1" role="img" aria-label={`Recherches hebdomadaires pour ${term}`}>
               {tr.map((t) => <div key={t.week} className="flex flex-1 flex-col items-center gap-1"><div className="w-full rounded-t bg-brand-blue" style={{ height: `${t.searches === null ? 2 : Math.max(4, (130 * Number(t.searches)) / trMax)}px`, opacity: t.searches === null ? 0.25 : 1 }} title={`Semaine du ${t.week} : ${fmtN(t.searches)}`} /><span className="text-[10px] text-muted-foreground">{t.week.slice(8, 10)}/{t.week.slice(5, 7)}</span></div>)}
@@ -130,7 +133,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
         </Section>
       </div>
 
-      <Section id="regions" title="Par région" icon={Store} note="Recherches et taux d'échec sur la période ; pharmacies vérifiées, avec stocks mis à jour depuis moins de 30 jours, et de garde en ce moment.">
+      <Section id="regions" data={["mesure", "administratif"]} title="Par région" icon={Store} note="Recherches et taux d'échec sur la période ; pharmacies vérifiées, avec stocks mis à jour depuis moins de 30 jours, et de garde en ce moment.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="py-2">Région</th><th>Recherches</th><th>Sans résultat</th><th>Pharmacies</th><th>Stocks à jour</th><th>De garde maintenant</th></tr></thead>
@@ -139,7 +142,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
         </div>
       </Section>
 
-      <Section id="gardes" title="Couverture des gardes (prochaines 24 heures)" icon={Store} note="Communes ayant des pharmacies vérifiées mais aucune garde enregistrée sur SantéProxi dans les 24 heures. Cela peut venir d'un tableau de garde non saisi : à vérifier avec l'Ordre des pharmaciens.">
+      <Section id="gardes" data={["declare", "estimation"]} title="Couverture des gardes (prochaines 24 heures)" icon={Store} note="Communes ayant des pharmacies vérifiées mais aucune garde enregistrée sur SantéProxi dans les 24 heures. Cela peut venir d'un tableau de garde non saisi : à vérifier avec l'Ordre des pharmaciens.">
         {gp.length ? (
           <ul className="grid gap-2 text-sm sm:grid-cols-2">{gp.slice(0, 20).map((g) => (
             <li key={`${g.region}-${g.commune}`} className={cn("flex justify-between rounded-lg border px-3 py-2", Number(g.on_duty_24h) === 0 && "border-amber-300 bg-amber-50")}>
@@ -147,7 +150,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
         ) : <p className="text-sm text-muted-foreground">Aucune pharmacie vérifiée dans cette zone pour le moment.</p>}
       </Section>
 
-      <Section id="amo" title="AMO : prix déclarés comparés au tarif de référence" icon={Pill} note="Prix déclarés par les pharmacies vérifiées au cours des 30 derniers jours, pour les médicaments de la liste AMO (au moins 3 prix). Le tarif de référence vient de la liste AMO intégrée, qui doit être mise à jour avec la CANAM.">
+      <Section id="amo" data={["declare"]} title="AMO : prix déclarés comparés au tarif de référence" icon={Pill} note="Prix déclarés par les pharmacies vérifiées au cours des 30 derniers jours, pour les médicaments de la liste AMO (au moins 3 prix). Le tarif de référence vient de la liste AMO intégrée, qui doit être mise à jour avec la CANAM.">
         {am.length ? (
           <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="py-2">Médicament</th><th>Tarif AMO</th><th>Prix déclarés (min – moy. – max)</th><th>Écart moyen</th></tr></thead>
@@ -158,7 +161,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
       </Section>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Section id="sujets" title="Sujets qui préoccupent" icon={MessageCircleQuestion}>
+        <Section id="sujets" data={["mesure"]} title="Sujets qui préoccupent" icon={MessageCircleQuestion}>
           <p className="text-sm font-semibold">Questions aux pharmaciens, par public</p>
           {tc?.questions?.length ? <ul className="space-y-1 text-sm">{tc.questions.map((x) => <li key={x.about} className="flex justify-between"><span>{QUESTION_ABOUT[x.about] ?? x.about}</span><span>{fmtN(x.n)}</span></li>)}</ul> : <Empty />}
           {tc?.urgent_questions !== null && tc?.urgent_questions !== undefined && <p className="text-sm">Questions avec signes d&apos;urgence possibles : <strong>{fmtN(tc.urgent_questions)}</strong></p>}
@@ -166,7 +169,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
           {tc?.articles?.length ? <ol className="list-decimal space-y-1 pl-5 text-sm">{tc.articles.map((a) => <li key={a.slug}><Link prefetch={false} href={`/sante/fiche/${a.slug}`} className="underline">{a.title}</Link> · {fmtN(a.n)}</li>)}</ol> : <Empty />}
         </Section>
         {bl ? (
-          <Section id="sang" title="Mobilisation pour le don de sang" icon={Droplet} note="Personnes inscrites pour être prévenues des besoins en sang (volontaires).">
+          <Section id="sang" data={["mesure"]} title="Mobilisation pour le don de sang" icon={Droplet} note="Personnes inscrites pour être prévenues des besoins en sang (volontaires).">
             <div className="grid grid-cols-4 gap-2 text-center text-sm">{bl.by_group.map((g) => <div key={g.group} className="rounded-lg bg-red-50 p-2"><p className="font-bold text-red-700">{g.group === "inconnu" ? "?" : g.group}</p><p>{fmtN(g.n)}</p></div>)}</div>
             {bl.by_group.length === 0 && <Empty />}
             <p className="text-sm">Besoins publiés ces 30 derniers jours : <strong>{bl.needs_30d}</strong></p>
@@ -176,7 +179,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
       </div>
 
       {sp2 && (
-        <Section id="offre" title="Offre de soins référencée" icon={Building2} note={`Structures publiées sur SantéProxi (pharmacies inscrites et vérifiées, autres officines de l'annuaire, établissements et laboratoires référencés, soins à domicile) et médecins du tableau de l'Ordre${sp2.register_year ? ` ${sp2.register_year}` : ""}. Ce sont des comptes d'établissements publics, pas de personnes. Le référencement n'est pas encore complet : un chiffre bas peut signaler un manque de référencement autant qu'un manque de structures.`}>
+        <Section id="offre" data={["administratif", "declare"]} title="Offre de soins référencée" icon={Building2} note={`Structures publiées sur SantéProxi (pharmacies inscrites et vérifiées, autres officines de l'annuaire, établissements et laboratoires référencés, soins à domicile) et médecins du tableau de l'Ordre${sp2.register_year ? ` ${sp2.register_year}` : ""}. Ce sont des comptes d'établissements publics, pas de personnes. Le référencement n'est pas encore complet : un chiffre bas peut signaler un manque de référencement autant qu'un manque de structures.`}>
           <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead><tr className="text-left text-xs text-muted-foreground"><th className="py-1">Région</th><th>Pharmacies inscrites</th><th>Autres officines</th><th>Médecins (tableau)</th><th>Établissements</th><th>Laboratoires</th><th>Prise de sang à domicile</th><th>Soins à domicile</th></tr></thead>
             <tbody>{sp2.by_region.map((r) => (
@@ -196,6 +199,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
           </div>
         </Section>
       )}
+      <RegistryTrend region={region} />
       <p className="text-xs text-muted-foreground">Ces chiffres viennent des usages de SantéProxi (surtout des utilisateurs de smartphone, plutôt en ville) : ce sont des signaux d&apos;alerte, pas des statistiques officielles. Ils complètent le système national d&apos;information sanitaire, ils ne le remplacent pas. <Link prefetch={false} href="/autorites/methode" className="underline">Méthode</Link>.</p>
     </div>
   );

@@ -1,3 +1,5 @@
+import { trackView } from "@/lib/listing-stats";
+import { TrackClicks } from "@/components/stats/track";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { BadgeCheck, MapPin, MessageCircle, Navigation, Phone, ShieldCheck, ShieldPlus, Truck } from "lucide-react";
@@ -45,6 +47,7 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
     .eq("id", id)
     .maybeSingle();
   if (!p) notFound();
+  trackView("pharmacie", id);
 
   const nowIso = new Date().toISOString();
   const [session, settings, inv, duty] = await Promise.all([
@@ -73,6 +76,7 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
 
   return (
     <div className="container-page grid gap-6 py-6 lg:grid-cols-[1fr_400px]">
+      <TrackClicks kind={"pharmacie"} id={id} />
       <div className="space-y-6">
         <RecentTracker kind="pharmacie" id={p.id} name={p.name} phone={p.phone} place={place} href={`/pharmacies/${p.id}`} />
         <header className="rounded-2xl border bg-white p-5">

@@ -4,22 +4,24 @@ import { Logo } from "@/components/layout/logo";
 import { AccountMenu, DesktopNav, MobileMenu, type NavGroup, type NavLink } from "@/components/layout/header-nav";
 import type { SessionInfo } from "@/lib/auth";
 import { signOut } from "@/app/actions/auth";
+import { getT } from "@/lib/i18n";
 
 /**
  * En-tête : 4 accès directs + menus « Santé » et « Services » + Urgences ;
  * les espaces professionnels et l'administration sont dans le menu du compte.
  * Sous 1280 px, un bouton « Menu » ouvre toutes les rubriques classées par section.
  */
-export function SiteHeader({ session }: { session: SessionInfo | null }) {
+export async function SiteHeader({ session }: { session: SessionInfo | null }) {
+  const t = await getT();
   const roles = session?.roles ?? [];
   const primary: NavLink[] = [
-    { href: "/recherche", label: "Médicaments", hint: "Quelle pharmacie a mon médicament ?" },
-    { href: "/pharmacies", label: "Pharmacies", hint: "Annuaire, horaires, itinéraire" },
-    { href: "/medecins", label: "Médecins", hint: "Par spécialité et par quartier" },
-    { href: "/rendez-vous", label: "Rendez-vous", hint: "Réserver un créneau en ligne" },
+    { href: "/recherche", label: t("nav.medicaments"), hint: "Quelle pharmacie a mon médicament ?" },
+    { href: "/pharmacies", label: t("nav.pharmacies"), hint: "Annuaire, horaires, itinéraire" },
+    { href: "/medecins", label: t("nav.medecins"), hint: "Par spécialité et par quartier" },
+    { href: "/rendez-vous", label: t("nav.rendez_vous"), hint: "Réserver un créneau en ligne" },
   ];
   const groups: NavGroup[] = [
-    { label: "Santé", links: [
+    { label: t("nav.sante"), links: [
       { href: "/sante", label: "Santé essentielle", hint: "Fiches validées par des professionnels" },
       { href: "/assistant", label: "Assistant santé", hint: "Posez votre question, réponse immédiate" },
       { href: "/questions-pharmacien", label: "Questions à un pharmacien", hint: "Un vrai pharmacien vous répond" },
@@ -27,19 +29,25 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
       { href: "/femme", label: "SantéProxi Femme", hint: "Cycle, fertilité, grossesse — espace privé", tone: "pink" },
       { href: "/sante/mariage", label: "Avant le mariage", hint: "Examens, groupes sanguins, drépanocytose" },
       { href: "/droits", label: "Vos droits et votre santé", hint: "Maternité, allocations, retraite, soins gratuits" },
-      { href: "/ma-sante", label: "Ma santé", hint: "Vaccins des enfants, traitements, tension" },
+      { href: "/ma-sante", label: "Mon espace santé", hint: "Dossier, rendez-vous, résultats, traitements, famille" },
+      { href: "/ma-sante/famille", label: "Santé de ma famille", hint: "Proches, enfants, vaccins" },
+      { href: "/sos", label: "SOS Santé", hint: "Urgences, premiers secours, garde, fiche d'urgence", tone: "red" },
+      { href: "/centres-specialises", label: "Centres spécialisés", hint: "Diabète, drépanocytose, maternité…" },
+      { href: "/sante-mentale", label: "Santé mentale", hint: "Parler à quelqu'un, trouver de l'aide" },
+      { href: "/scanner", label: "Scanner un médicament", hint: "Code-barres de la boîte" },
       { href: "/ma-sante/dossier", label: "🔒 Mon dossier santé", hint: "Protégé par votre code : allergies, maladies, analyses" },
       { href: "/signaler", label: "Signaler un médicament suspect", hint: "Faux médicament, mauvaise réaction : prévenir les autorités" },
       { href: "/don-de-sang", label: "Don de sang", hint: "Où donner, besoins urgents", tone: "red" },
       { href: "/alertes", label: "Alertes sanitaires", hint: "Faux médicaments, campagnes, épidémies" },
     ] },
-    { label: "Services", links: [
+    { label: t("nav.services"), links: [
       { href: "/garde", label: "Pharmacies de garde", hint: "Ouvertes la nuit et le week-end" },
       { href: "/amo", label: "AMO : médicaments remboursés", hint: "Liste officielle et reste à payer" },
       { href: "/comparer", label: "Génériques et prix", hint: "Le même médicament, moins cher" },
       { href: "/amo/guide", label: "AMO et INPS : le guide", hint: "Droits, cotisations, assurance volontaire" },
       { href: "/assurances", label: "Assurances : où aller avec ma carte", hint: "Pharmacies et cliniques partenaires" },
       { href: "/laboratoires", label: "Laboratoires et examens", hint: "Où faire une analyse, tarifs" },
+      { href: "/laboratoires/lexique", label: "Lexique des analyses", hint: "Comprendre une analyse, simplement" },
       { href: "/infirmiers", label: "Infirmiers et soins à domicile", hint: "Pansements, injections, perfusions chez vous" },
       { href: "/cliniques", label: "Cliniques et hôpitaux", hint: "Établissements de santé" },
       { href: "/carte", label: "Carte", hint: "Tout autour de moi" },
@@ -50,7 +58,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
     ? ([
         { href: "/compte", label: "Mon compte" },
         { href: "/compte/rendez-vous", label: "Mes rendez-vous" },
-        { href: "/ma-sante", label: "Ma santé" },
+        { href: "/ma-sante", label: "Mon espace santé" },
         { href: "/ma-sante/dossier", label: "🔒 Mon dossier santé" },
         { href: "/compte/notifications", label: `Notifications${session.unread ? ` (${session.unread})` : ""}` },
         roles.includes("pharmacist") && { href: "/pharmacien", label: "Espace pharmacien" },
@@ -68,7 +76,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
       <div className="mali-stripe h-1" aria-hidden />
       <div className="container-page flex h-14 items-center gap-2 sm:h-16 xl:max-w-7xl">
         <Logo />
-        <DesktopNav primary={primary} groups={groups} trailing={{ href: "/urgences", label: "Urgences", tone: "red" }} />
+        <DesktopNav primary={primary} groups={groups} trailing={{ href: "/sos", label: t("nav.sos"), tone: "red" }} />
         <div className="ml-auto flex items-center gap-1">
           {session ? (
             <>

@@ -1,3 +1,4 @@
+import { ListingStats } from "@/components/stats/listing-stats";
 import { labContext } from "@/lib/lab-server";
 import { LabShell, NoLab } from "@/components/lab/lab-shell";
 import { ProGuard } from "@/components/security/pro-guard";
@@ -30,6 +31,7 @@ export default async function LabHome({ searchParams }: { searchParams: Promise<
   return (
     <LabShell labs={ctx.labs} current={ctx.current} active="">
       <ProGuard path="/laboratoire" />
+      <ListingStats kind="laboratoire" id={fid} />
       <p className="text-sm text-muted-foreground">Indiquez les analyses que vous réalisez, avec le prix et le délai de résultat. Elles apparaissent sur la page Laboratoires, avec la mention « Déclaré par le laboratoire » et la date. Mettez-les à jour dès qu&apos;un prix change.</p>
       <section className="space-y-3 rounded-2xl border bg-white p-4 sm:p-5">
         <h2 className="text-lg font-bold text-brand-deep">Ajouter une analyse</h2>

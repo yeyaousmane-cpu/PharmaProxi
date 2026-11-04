@@ -127,3 +127,58 @@ export async function setSimpleMode(fd: FormData) {
   const back = String(fd.get("back") ?? "/");
   redirect(back.startsWith("/") && !back.startsWith("//") ? back : "/");
 }
+
+// ---------------- Portail institutionnel (0.23) ----------------
+export async function publishCommunique(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireUser("/autorites/communiques");
+  const region = z.uuid().safeParse(fd.get("region_id"));
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("authority_publish", {
+    p_title: String(fd.get("title") ?? "").slice(0, 160), p_body: String(fd.get("body") ?? "").slice(0, 4000),
+    p_link: String(fd.get("link") ?? "").trim() || null, p_region: region.success ? region.data : null,
+  });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/autorites/communiques"); revalidatePath("/alertes");
+  return { ok: true, message: "Communiqué publié sur SantéProxi." };
+}
+
+export async function withdrawCommunique(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = z.uuid().safeParse(fd.get("id"));
+  if (!id.success) return { error: "Communiqué invalide" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("withdraw_communique", { p_id: id.data });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/autorites/communiques"); revalidatePath("/alertes");
+  return { ok: true, message: "Communiqué retiré." };
+}
+
+export async function validateData(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireUser("/autorites/validation");
+  const verdict = z.enum(["confirme", "a_corriger", "ferme", "inconnu"]).safeParse(fd.get("verdict"));
+  if (!verdict.success) return { error: "Choisissez votre avis." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("authority_validate_data", { p_code: String(fd.get("code") ?? ""), p_verdict: verdict.data, p_comment: String(fd.get("comment") ?? "").slice(0, 1000) || null });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/autorites/validation"); revalidatePath("/admin/donnees");
+  return { ok: true, message: "Merci : votre avis est transmis à l'équipe SantéProxi, qui corrige la fiche si besoin." };
+}
+
+export async function setCanPublish(_: ActionState, fd: FormData): Promise<ActionState> {
+  const user = z.uuid().safeParse(fd.get("user_id"));
+  if (!user.success) return { error: "Compte invalide" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_can_publish", { p_user: user.data, p_value: fd.get("value") === "1" });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/admin/autorites");
+  return { ok: true, message: "Droit de publication mis à jour." };
+}
+
+export async function closeDataReport(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = z.uuid().safeParse(fd.get("id"));
+  if (!id.success) return { error: "Demande invalide" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_close_data_report", { p_id: id.data });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/admin/donnees");
+  return { ok: true, message: "Marqué comme traité." };
+}

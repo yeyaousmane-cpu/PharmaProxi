@@ -1,3 +1,4 @@
+import { ListingStats } from "@/components/stats/listing-stats";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Eye, FileText, Flag, Search, Stethoscope, Trash2, Users } from "lucide-react";
@@ -75,6 +76,7 @@ export default async function ManageClinic({ params, searchParams }: { params: P
           <Link prefetch={false} href={`/cliniques/${c.id}`} className={cn(buttonVariants({ variant: "outline" }))}><Eye aria-hidden /> Voir la fiche publique</Link>
         </div>
       </header>
+      <ListingStats kind="clinique" id={id} />
       {sp.inscrite && <Alert tone="success" title="Demande enregistrée">Étape suivante : déposez vos justificatifs ci-dessous pour permettre la vérification.</Alert>}
       {toAccept.length > 0 && <Alert tone="info" title={`${toAccept.length} médecin(s) demande(nt) à être rattaché(s) à l'établissement`}>Vérifiez puis acceptez leur planning dans la section « Médecins ».</Alert>}
 

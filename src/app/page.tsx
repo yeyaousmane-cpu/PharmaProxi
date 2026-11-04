@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getT } from "@/lib/i18n";
 import { AudioGuide } from "@/components/audio/audio-guide";
 import Link from "next/link";
 import { ProOnly } from "@/components/pro/pro-only";
@@ -22,7 +23,7 @@ export const revalidate = 0;
 type Recent = { id: string; name: string; address: string; region_name: string; commune_name: string | null; last_stock_update: string | null; products_count: number; is_demo: boolean };
 
 export default async function Home() {
-  const [geo, specialties, simple] = await Promise.all([getGeo(), getSpecialties(), isSimpleMode()]);
+  const [geo, specialties, simple, t] = await Promise.all([getGeo(), getSpecialties(), isSimpleMode(), getT()]);
   if (simple) return <SimpleHome geo={geo} />;
   const popular = ["medecine_generale", "pediatrie", "gynecologie", "cardiologie", "ophtalmologie", "dermatologie", "orl", "chirurgie_dentaire"]
     .map((c) => specialties.find((s) => s.code === c)).filter(Boolean) as typeof specialties;
@@ -40,11 +41,11 @@ export default async function Home() {
           <div className="flex flex-col items-center text-center md:items-start md:text-left">
             <Image src="/logo-santeproxi-320.webp" alt="SantéProxi — Toute la santé, près de chez vous." width={320} height={320} priority className="h-40 w-40 rounded-3xl bg-white p-2 shadow-sm md:h-64 md:w-64" />
             <p className="mt-2 max-w-md text-muted-foreground">
-              Pharmacies et médicaments, médecins, laboratoires, urgences et votre dossier santé : trouvez le bon soin près de chez vous.
+              {t("home.intro")}
             </p>
           </div>
           <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6">
-            <h1 className="mb-4 text-2xl font-bold text-brand-deep sm:text-3xl">Quel médicament recherchez-vous ?</h1>
+            <h1 className="mb-4 text-2xl font-bold text-brand-deep sm:text-3xl">{t("home.question")}</h1>
             <SearchBar geo={geo} large />
             <AudioGuide target="accueil" className="mt-4" />
             <SimpleToggle on={false} className="mt-3" />

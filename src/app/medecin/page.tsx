@@ -1,3 +1,4 @@
+import { ListingStats } from "@/components/stats/listing-stats";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Building2, CalendarClock, CheckCircle2, Eye, FileText, Flag, MapPin, Trash2 } from "lucide-react";
@@ -70,6 +71,7 @@ export default async function DoctorSpace({ searchParams }: { searchParams: Prom
           <Link prefetch={false} href={`/medecins/${d.id}`} className={cn(buttonVariants({ variant: "outline" }))}><Eye aria-hidden /> Voir ma fiche publique</Link>
         </div>
       </header>
+      <ListingStats kind="medecin" id={d.id} />
       {sp.inscrit && <Alert tone="success" title="Demande enregistrée">Étape suivante : déposez vos justificatifs, puis indiquez vos lieux de consultation.</Alert>}
       {pendingInvites.length > 0 && (
         <Alert tone="info" title={`${pendingInvites.length} établissement(s) vous propose(nt) un planning`}>Acceptez-le dans « Mes lieux de consultation » pour le publier.</Alert>

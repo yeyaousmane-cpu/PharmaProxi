@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Field, Input, Select } from "@/components/ui/input";
-import { setAuthority } from "@/app/actions/authorities";
+import { setAuthority, setCanPublish } from "@/app/actions/authorities";
 import { SCOPES } from "@/lib/authorities";
 import { formatDateTime } from "@/lib/format";
 
@@ -10,7 +10,7 @@ export const metadata = { title: "Autorités — administration" };
 export default async function AdminAuthorities() {
   const supabase = await createClient();
   const [{ data: members }, { data: log }] = await Promise.all([
-    supabase.from("authority_members").select("user_id, scope, organisation, title, active, created_at, profiles!authority_members_user_id_fkey(full_name)").order("created_at", { ascending: false }),
+    supabase.from("authority_members").select("user_id, scope, organisation, title, active, can_publish, created_at, profiles!authority_members_user_id_fkey(full_name)").order("created_at", { ascending: false }),
     supabase.from("authority_access_log").select("id, scope, action, params, at, profiles(full_name)").order("at", { ascending: false }).limit(100),
   ]);
   type P = { full_name: string | null } | { full_name: string | null }[] | null;
@@ -33,7 +33,13 @@ export default async function AdminAuthorities() {
         <ul className="divide-y rounded-2xl border bg-white text-sm">{(members ?? []).map((m) => (
           <li key={m.user_id} className="flex flex-wrap items-center justify-between gap-2 p-3">
             <span><strong>{nm(m.profiles as P)}</strong> · {SCOPES[m.scope]} · {m.organisation}{m.title ? ` · ${m.title}` : ""} {!m.active && <em className="text-muted-foreground">(accès retiré)</em>}</span>
-            {m.active && <span className="text-xs text-muted-foreground">Pour retirer l&apos;accès, saisissez de nouveau l&apos;e-mail ci-dessous.</span>}
+            {m.active && (
+              <ActionForm action={setCanPublish} className="flex items-center gap-2">
+                <input type="hidden" name="user_id" value={m.user_id} /><input type="hidden" name="value" value={m.can_publish ? "0" : "1"} />
+                <span className="text-xs text-muted-foreground">{m.can_publish ? "Peut publier des communiqués" : "Ne publie pas"}</span>
+                <SubmitButton size="sm" variant="outline" confirm={m.can_publish ? "Retirer le droit de publier ?" : "Autoriser la publication de communiqués ? À faire seulement après la signature de la convention."}>{m.can_publish ? "Retirer la publication" : "Autoriser à publier"}</SubmitButton>
+              </ActionForm>
+            )}
           </li>))}</ul>
         <ActionForm action={setAuthority} className="flex flex-wrap items-end gap-2">
           <input type="hidden" name="revoke" value="1" /><input type="hidden" name="scope" value="autre" /><input type="hidden" name="organisation" value="Accès retiré" />

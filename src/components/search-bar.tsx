@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
+import { VoiceSearch } from "@/components/voice-search";
 import { useRouter } from "next/navigation";
 import { LocateFixed, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -92,10 +93,11 @@ export function SearchBar({
               if (e.key === "Escape") setOpen(false);
             }}
             className={cn(
-              "w-full rounded-xl border-2 border-primary/30 bg-white pl-11 pr-3 shadow-sm outline-none focus:border-primary",
+              "w-full rounded-xl border-2 border-primary/30 bg-white pl-11 pr-14 shadow-sm outline-none focus:border-primary",
               large ? "h-14 text-lg" : "h-12 text-base",
             )}
           />
+          <VoiceSearch className="absolute right-2 top-1/2 -translate-y-1/2" onText={(t) => { setQ(t); setOpen(false); setTimeout(() => formRef.current?.requestSubmit(), 0); }} />
           {open && items.length > 0 && (
             <ul id={listId} role="listbox" className="absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-xl border bg-white py-1 shadow-lg">
               {items.map((s, i) => (

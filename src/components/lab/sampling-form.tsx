@@ -5,7 +5,7 @@ import { Field, Input, Select, Textarea } from "@/components/ui/input";
 import { requestSampling } from "@/app/actions/labs";
 
 type Exam = { id: string; name: string; price: number | null };
-export function SamplingForm({ facilityId, exams, regions, tomorrow }: { facilityId: string; exams: Exam[]; regions: { id: string; name: string }[]; tomorrow: string }) {
+export function SamplingForm({ facilityId, exams, regions, tomorrow, mode = "domicile", resultsEnabled = false }: { facilityId: string; exams: Exam[]; regions: { id: string; name: string }[]; tomorrow: string; mode?: "domicile" | "laboratoire"; resultsEnabled?: boolean }) {
   const [q, setQ] = useState("");
   const [picked, setPicked] = useState<string[]>([]);
   const shown = useMemo(() => exams.filter((e) => !q || e.name.toLowerCase().includes(q.toLowerCase())), [q, exams]);
@@ -13,6 +13,7 @@ export function SamplingForm({ facilityId, exams, regions, tomorrow }: { facilit
   return (
     <ActionForm action={requestSampling} className="space-y-4" labels={{ exam_ids: "Analyses", patient_name: "Nom", address: "Adresse", phone: "Téléphone", preferred_date: "Date", patient_age: "Âge" }}>
       <input type="hidden" name="facility_id" value={facilityId} />
+      <input type="hidden" name="mode" value={mode} />
       <fieldset className="space-y-2">
         <legend className="text-sm font-semibold">Analyses demandées par le médecin</legend>
         {exams.length > 8 && <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher une analyse" aria-label="Rechercher une analyse" />}
@@ -31,15 +32,16 @@ export function SamplingForm({ facilityId, exams, regions, tomorrow }: { facilit
         <Field label="Nom de la personne à prélever" htmlFor="pn" required><Input id="pn" name="patient_name" maxLength={120} required /></Field>
         <Field label="Âge" htmlFor="pa"><Input id="pa" name="patient_age" inputMode="numeric" maxLength={3} /></Field>
         <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="for_relative" className="size-4" /> Je fais la demande pour un proche (parent âgé, enfant…)</label>
-        <Field label="Adresse précise (quartier, rue, porte, repère)" htmlFor="ad" required className="sm:col-span-2"><Textarea id="ad" name="address" rows={2} maxLength={300} required /></Field>
+        {mode === "domicile" && <Field label="Adresse précise (quartier, rue, porte, repère)" htmlFor="ad" required className="sm:col-span-2"><Textarea id="ad" name="address" rows={2} maxLength={300} required /></Field>}
         <Field label="Région" htmlFor="rg"><Select id="rg" name="region_id" defaultValue=""><option value="">—</option>{regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</Select></Field>
         <Field label="Téléphone à appeler" htmlFor="ph" required><Input id="ph" name="phone" type="tel" inputMode="tel" required placeholder="+223 70 00 00 00" /></Field>
-        <Field label="Jour souhaité" htmlFor="dt" required><Input id="dt" name="preferred_date" type="date" min={tomorrow} defaultValue={tomorrow} required /></Field>
+        <Field label={mode === "laboratoire" ? "Jour du rendez-vous souhaité" : "Jour souhaité"} htmlFor="dt" required><Input id="dt" name="preferred_date" type="date" min={tomorrow} defaultValue={tomorrow} required /></Field>
         <Field label="Moment" htmlFor="sl"><Select id="sl" name="slot" defaultValue="matin"><option value="matin">Le matin</option><option value="midi">Vers midi</option><option value="apres_midi">L&apos;après-midi</option></Select></Field>
       </div>
       <div className="space-y-1 text-sm">
         <label className="flex items-center gap-2"><input type="checkbox" name="has_prescription" className="size-4" /> J&apos;ai l&apos;ordonnance du médecin</label>
         <label className="flex items-center gap-2"><input type="checkbox" name="fasting_known" className="size-4" /> Je sais que certaines analyses se font à jeun ; le laboratoire me le confirmera</label>
+        {resultsEnabled && <label className="flex items-start gap-2"><input type="checkbox" name="results_consent" className="mt-0.5 size-4" /> <span>J&apos;accepte de recevoir les résultats sur SantéProxi. Ils sont chiffrés et visibles seulement par moi et ce laboratoire ; je peux les supprimer à tout moment.</span></label>}
       </div>
       <Field label="Précisions pour le laboratoire (facultatif)" htmlFor="nt"><Textarea id="nt" name="notes" rows={2} maxLength={500} placeholder="ex. personne alitée, appeler avant de venir" /></Field>
       <p className="text-xs text-muted-foreground">Ces informations sont transmises uniquement à ce laboratoire. Elles sont effacées si vous supprimez votre compte.</p>

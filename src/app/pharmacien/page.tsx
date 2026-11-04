@@ -1,3 +1,4 @@
+import { ListingStats } from "@/components/stats/listing-stats";
 import Link from "next/link";
 import { AlertTriangle, BellRing, Clock, Moon, Package, PackageX, ShoppingBag } from "lucide-react";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
@@ -48,6 +49,7 @@ export default async function PharmacistDashboard() {
   return (
     <>
       <PharmacyHeader current={ph} title="Tableau de bord" />
+      <div className="mb-4"><ListingStats kind="pharmacie" id={ph.id} /></div>
       <section aria-label="Stocks" className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Stat label="Produits référencés" value={rows.length} href="/pharmacien/stocks" Icon={Package} />
         <Stat label="Disponibles" value={available} href="/pharmacien/stocks?vue=disponibles" Icon={Package} />

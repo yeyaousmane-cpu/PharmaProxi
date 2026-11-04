@@ -17,7 +17,7 @@ export default function Offline() {
       <div className="mx-auto mt-8 max-w-md rounded-2xl border bg-white p-4 text-left text-sm">
         <p className="font-semibold">Disponible sans connexion (si vous les avez déjà ouvertes une fois) :</p>
         <ul className="mt-2 space-y-1">
-          {[["/premiers-secours", "Premiers secours"], ["/urgences", "Urgences"], ["/droits", "Vos droits et votre santé"], ["/don-de-sang", "Don de sang"], ["/amo/guide", "Guide AMO et INPS"]].map(([h, l]) => (
+          {[["/sos", "SOS Santé"], ["/premiers-secours", "Premiers secours"], ["/sante-mentale", "Santé mentale : trouver de l'aide"], ["/laboratoires/lexique", "Lexique des analyses"], ["/urgences", "Urgences"], ["/droits", "Vos droits et votre santé"], ["/don-de-sang", "Don de sang"], ["/amo/guide", "Guide AMO et INPS"]].map(([h, l]) => (
             <li key={h}><a href={h} className="font-medium text-primary underline">{l}</a></li>
           ))}
         </ul>
