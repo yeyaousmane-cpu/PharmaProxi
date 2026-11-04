@@ -222,3 +222,30 @@ export async function saveHealthAlert(_: ActionState, fd: FormData): Promise<Act
   revalidatePath("/alertes"); revalidatePath("/admin/alertes"); revalidatePath("/");
   return { ok: true, message: "Alerte enregistrée." };
 }
+
+// ---------------- Croissance (pesées) ----------------
+export async function saveGrowth(_: ActionState, fd: FormData): Promise<ActionState> {
+  const child = uuid.safeParse(fd.get("child_id"));
+  if (!child.success) return { error: "Requête invalide" };
+  const supabase = await createClient();
+  if (fd.get("delete")) {
+    const id = uuid.safeParse(fd.get("delete"));
+    if (!id.success) return { error: "Requête invalide" };
+    const { error } = await supabase.from("child_growth").delete().eq("id", id.data).eq("child_id", child.data);
+    if (error) return { error: humanizeError(error) };
+    revalidatePath(`/ma-sante/enfants/${child.data}`);
+    return { ok: true, message: "Mesure supprimée." };
+  }
+  const on = str(fd, "measured_on") || new Date().toISOString().slice(0, 10);
+  const w = num(str(fd, "weight_kg")), h = num(str(fd, "height_cm"));
+  const fe: Record<string, string> = {};
+  if (!isoDate(on) || on > new Date().toISOString().slice(0, 10)) fe.measured_on = "Date invalide";
+  if (w === null && h === null) fe.weight_kg = "Indiquez le poids ou la taille";
+  if (w !== null && (w < 0.5 || w > 40)) fe.weight_kg = "Entre 0,5 et 40 kg";
+  if (h !== null && (h < 35 || h > 130)) fe.height_cm = "Entre 35 et 130 cm";
+  if (Object.keys(fe).length) return { error: "Vérifiez la mesure.", fieldErrors: fe };
+  const { error } = await supabase.from("child_growth").upsert({ child_id: child.data, measured_on: on, weight_kg: w, height_cm: h, place: str(fd, "place").slice(0, 100) || null }, { onConflict: "child_id,measured_on" });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath(`/ma-sante/enfants/${child.data}`);
+  return { ok: true, message: "Mesure enregistrée." };
+}

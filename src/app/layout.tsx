@@ -9,6 +9,7 @@ import { isSupabaseConfigured, SITE_URL } from "@/lib/env";
 import { Alert } from "@/components/ui/alert";
 import { FlashToast } from "@/components/flash-toast";
 import { readFlash } from "@/lib/flash";
+import { isSimpleMode } from "@/lib/simple-mode";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -28,9 +29,9 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [session, flash] = await Promise.all([getSession(), readFlash()]);
+  const [session, flash, simple] = await Promise.all([getSession(), readFlash(), isSimpleMode()]);
   return (
-    <html lang="fr">
+    <html lang="fr" className={simple ? "simple" : undefined}>
       <body className="min-h-dvh">
         <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:p-2">
           Aller au contenu
@@ -45,7 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </div>
         )}
         <main id="contenu" className="pb-20 md:pb-0">{children}</main>
-        <SiteFooter />
+        <SiteFooter simple={simple} />
         <MobileNav />
         <FlashToast message={flash} />
       </body>

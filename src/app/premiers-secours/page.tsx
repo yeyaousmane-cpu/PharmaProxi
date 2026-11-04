@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { Clock, Phone, Siren, WifiOff } from "lucide-react";
 import { ArticleCard, MedicalDisclaimer, type ArticleRow } from "@/components/health/health-bits";
 import { createClient } from "@/lib/supabase/server";
@@ -27,6 +28,7 @@ export default async function FirstAid() {
       <header className="space-y-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Siren className="size-7 text-red-600" aria-hidden /> Premiers secours : les gestes qui sauvent</h1>
         <p className="max-w-3xl text-muted-foreground">Avant l&apos;arrivée au centre de santé, quelques gestes simples peuvent sauver une vie. Chaque fiche est relue et validée par un professionnel de santé avant d&apos;être publiée.</p>
+        <AudioGuide target="premiers-secours" />
       </header>
       <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-950">
         <p className="text-lg font-bold">En cas d&apos;urgence, d&apos;abord : appelez les secours ou partez vers le centre de santé le plus proche.</p>

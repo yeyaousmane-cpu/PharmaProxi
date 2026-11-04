@@ -6,6 +6,7 @@ import { SanteNav } from "@/components/sante-perso/nav";
 import { RELATIONS } from "@/lib/dossier/config";
 import type { DossierStatus, Person } from "@/lib/dossier/server";
 import { cn } from "@/lib/utils";
+import { AudioGuide } from "@/components/audio/audio-guide";
 
 export const DOSSIER_PRIVACY = "Votre dossier est visible par vous seul : ni médecin, ni pharmacie, ni assureur, ni PharmaProxi n'y ont accès. C'est vous qui le montrez, sur votre téléphone. Rien n'est utilisé pour de la publicité ni par l'assistant. Tout est effacé si vous supprimez votre compte.";
 
@@ -49,6 +50,7 @@ export function DossierShell({ persons, person, status, current, children }: {
             ? <form action={lockDossier}><button className="flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-sm font-semibold hover:border-primary"><Lock className="size-4" aria-hidden /> Verrouiller</button></form>
             : <Link prefetch={false} href="/ma-sante/dossier/code" className="flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-900"><Lock className="size-4" aria-hidden /> Protéger par un code</Link>}
         </div>
+        <AudioGuide target="dossier-sante" />
         <p className="flex items-start gap-2 text-xs text-muted-foreground"><ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />{DOSSIER_PRIVACY}</p>
       </header>
       <SanteNav current="/ma-sante/dossier" />

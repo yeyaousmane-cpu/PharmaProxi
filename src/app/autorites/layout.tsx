@@ -1,0 +1,37 @@
+import Link from "next/link";
+import { Landmark, ShieldCheck } from "lucide-react";
+import { authorityContext } from "@/lib/authority-server";
+import { CAN, SCOPES } from "@/lib/authorities";
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Espace Autorités", robots: { index: false } };
+
+export default async function AuthoritiesLayout({ children }: { children: React.ReactNode }) {
+  const ctx = await authorityContext("/autorites");
+  if (!ctx.ok) {
+    return (
+      <div className="container-page max-w-xl py-10">
+        <section className="space-y-3 rounded-2xl border bg-white p-6 text-center">
+          <Landmark className="mx-auto size-10 text-primary" aria-hidden />
+          <h1 className="text-xl font-bold text-brand-deep">Espace réservé aux autorités de santé</h1>
+          <p className="text-sm text-muted-foreground">Cet espace est ouvert aux personnes désignées par le ministère de la Santé, la DPM, le CNTS et les Ordres, dans le cadre d&apos;une convention avec PharmaProxi. Pour demander un accès, écrivez-nous depuis la page <Link prefetch={false} href="/infos/contact" className="underline">Contact</Link>.</p>
+        </section>
+      </div>
+    );
+  }
+  const can = (k: keyof typeof CAN) => ctx.admin || CAN[k].includes(ctx.scope);
+  const nav = [["/autorites", "Tableau de bord", true], ["/autorites/signalements", "Signalements de médicaments", can("reports")], ["/autorites/campagnes", "Campagnes de don de sang", can("campaigns")], ["/autorites/methode", "Méthode et confidentialité", true]] as const;
+  return (
+    <div className="container-page space-y-4 py-6">
+      <header className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Landmark className="size-7 text-primary" aria-hidden /> Espace Autorités</h1>
+        <p className="text-sm text-muted-foreground">{ctx.organisation}{ctx.scope !== "admin" ? ` · ${SCOPES[ctx.scope] ?? ""}` : ""}</p>
+      </header>
+      <p className="flex items-start gap-2 rounded-xl bg-brand-mint p-3 text-xs text-brand-deep"><ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />Chiffres anonymes et agrégés uniquement : une case de moins de 10 n&apos;est pas affichée. Les dossiers santé et toutes les données personnelles de santé des utilisateurs n&apos;entrent jamais dans ces statistiques. Chaque consultation est enregistrée.</p>
+      <nav aria-label="Espace Autorités" className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1">
+        {nav.filter((n) => n[2]).map(([href, label]) => <Link prefetch={false} key={href} href={href} className="shrink-0 rounded-full border bg-white px-4 py-2 text-sm font-medium hover:border-primary">{label}</Link>)}
+      </nav>
+      {children}
+    </div>
+  );
+}

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDate, formatPhone } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { BloodCampaigns } from "@/components/blood/campaigns";
+import { AudioGuide } from "@/components/audio/audio-guide";
 
 export const metadata = {
   title: "Don de sang",
@@ -32,6 +34,7 @@ export default async function BloodPage() {
       <header className="space-y-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Droplet className="size-7 text-red-600" aria-hidden /> Don de sang : une poche, des vies sauvées</h1>
         <p className="max-w-3xl text-muted-foreground">Accouchements, accidents, anémies graves, drépanocytose, paludisme sévère de l&apos;enfant : chaque jour, des malades ont besoin de sang. Au Mali, les donneurs volontaires réguliers manquent.</p>
+        <AudioGuide target="don-de-sang" />
       </header>
 
       <section aria-labelledby="besoins" className="space-y-3">
@@ -54,6 +57,8 @@ export default async function BloodPage() {
         )}
         <Link prefetch={false} href="/ma-sante#alertes" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><BellRing aria-hidden /> Être prévenu(e) quand mon groupe est demandé</Link>
       </section>
+
+      {isSupabaseConfigured() && <BloodCampaigns />}
 
       <div className="grid gap-6 md:grid-cols-2">
         <section className="space-y-2 rounded-2xl border bg-white p-5 text-sm leading-relaxed">

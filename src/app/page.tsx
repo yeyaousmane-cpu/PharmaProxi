@@ -12,13 +12,17 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { formatAge } from "@/lib/format";
 import { getSpecialties } from "@/lib/directory-server";
+import { isSimpleMode } from "@/lib/simple-mode";
+import { SimpleHome } from "@/components/simple/simple-home";
+import { SimpleToggle } from "@/components/simple/simple-toggle";
 
 export const revalidate = 0;
 
 type Recent = { id: string; name: string; address: string; region_name: string; commune_name: string | null; last_stock_update: string | null; products_count: number; is_demo: boolean };
 
 export default async function Home() {
-  const [geo, specialties] = await Promise.all([getGeo(), getSpecialties()]);
+  const [geo, specialties, simple] = await Promise.all([getGeo(), getSpecialties(), isSimpleMode()]);
+  if (simple) return <SimpleHome geo={geo} />;
   const popular = ["medecine_generale", "pediatrie", "gynecologie", "cardiologie", "ophtalmologie", "dermatologie", "orl", "chirurgie_dentaire"]
     .map((c) => specialties.find((s) => s.code === c)).filter(Boolean) as typeof specialties;
   let recent: Recent[] = [];
@@ -42,6 +46,7 @@ export default async function Home() {
             <h1 className="mb-4 text-2xl font-bold text-brand-deep sm:text-3xl">Quel médicament recherchez-vous ?</h1>
             <SearchBar geo={geo} large />
             <AudioGuide target="accueil" className="mt-4" />
+            <SimpleToggle on={false} className="mt-3" />
           </div>
         </div>
       </section>

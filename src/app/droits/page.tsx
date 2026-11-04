@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioGuide } from "@/components/audio/audio-guide";
 import { ChevronRight, Scale, ShieldPlus } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { TopicIcon } from "@/components/droits/topic-icon";
@@ -15,6 +16,7 @@ export default function DroitsPage() {
       <header className="space-y-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Scale className="size-7 text-primary" aria-hidden /> Vos droits et votre santé</h1>
         <p className="max-w-3xl text-muted-foreground">Ce que la loi malienne prévoit pour vous et votre famille : grossesse, enfants, travail, retraite, soins gratuits. Expliqué simplement, avec les textes de référence.</p>
+        <AudioGuide target="droits" />
       </header>
       <Alert tone="info" title={`Informations vérifiées en ${DROITS_CHECKED}`}>
         Chaque fiche cite ses sources. Les montants et les règles peuvent changer : pour votre cas précis, adressez-vous à l&apos;INPS, à votre employeur, à la mairie ou au centre de santé.

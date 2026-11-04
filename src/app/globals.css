@@ -40,3 +40,6 @@
 
 .leaflet-container { font: inherit; border-radius: 0.75rem; }
 .pp-marker { background: transparent; border: 0; }
+
+/* Mode simple : texte plus grand partout */
+html.simple { font-size: 112.5%; }

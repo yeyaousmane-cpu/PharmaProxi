@@ -33,6 +33,7 @@ export default async function HealthArticlePage({ params }: { params: Promise<{ 
   if (!data) notFound();
   const a = data as HealthArticle & { health_categories: { slug: string; name: string } | null };
   const published = a.status === "published";
+  if (published) void supabase.rpc("log_article_view", { p_slug: a.slug }).then(() => {}, () => {});   // compteur anonyme par jour
   const [{ data: src }, { data: specs }, { data: exams }] = await Promise.all([
     supabase.from("health_sources").select("*").eq("article_id", a.id).order("sort_order"),
     a.specialty_codes.length ? supabase.from("medical_specialties").select("id, code, name").in("code", a.specialty_codes) : Promise.resolve({ data: [] }),

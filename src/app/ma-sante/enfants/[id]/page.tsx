@@ -12,6 +12,8 @@ import { markVisitDone, setDose, updateChild } from "@/app/actions/health-tools"
 import { ageLabel, buildVisits, STATUS_LABEL, type Dose, type DoseStatus } from "@/lib/vaccines";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { GrowthSection } from "@/components/growth/growth-section";
+import { AudioGuide } from "@/components/audio/audio-guide";
 
 export const metadata = { title: "Carnet de vaccination" };
 
@@ -25,10 +27,11 @@ export default async function ChildCard({ params }: { params: Promise<{ id: stri
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   await requireUser(`/ma-sante/enfants/${id}`);
   const supabase = await createClient();
-  const [{ data: k }, { data: sched }, { data: vacc }] = await Promise.all([
+  const [{ data: k }, { data: sched }, { data: vacc }, { data: growth }] = await Promise.all([
     supabase.from("children").select("*").eq("id", id).maybeSingle(),
     supabase.from("vaccine_schedule").select("*"),
     supabase.from("child_vaccinations").select("dose_code, done_on").eq("child_id", id),
+    supabase.from("child_growth").select("id, measured_on, weight_kg, height_cm, place").eq("child_id", id).order("measured_on"),
   ]);
   if (!k) notFound();
   const visits = buildVisits((sched ?? []) as Dose[], k.birth_date, k.sex, Object.fromEntries((vacc ?? []).map((v) => [v.dose_code, v.done_on])));
@@ -45,6 +48,8 @@ export default async function ChildCard({ params }: { params: Promise<{ id: stri
         <a href={`/ma-sante/enfants/${k.id}/agenda.ics`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><CalendarPlus aria-hidden /> Ajouter les rendez-vous à mon agenda</a>
       </header>
       <SanteNav current="/ma-sante/enfants" />
+      <AudioGuide target="vaccination-enfants" />
+      <p className="text-sm"><a href="#croissance" className="font-semibold text-primary underline">Voir la courbe de croissance</a></p>
       {late.length > 0 && (
         <p className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"><TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>Des vaccins semblent en retard ({late.map((v) => v.label).join(", ")}). <strong>Il n&apos;est pas trop tard</strong> : allez au centre de santé avec le carnet, l&apos;agent reprendra le calendrier. S&apos;ils ont été faits, cochez-les ci-dessous.</span></p>
@@ -83,6 +88,7 @@ export default async function ChildCard({ params }: { params: Promise<{ id: stri
           );
         })}
       </ol>
+      <GrowthSection childId={k.id} birth={k.birth_date} sex={k.sex} firstName={k.first_name} rows={growth ?? []} />
       <p className="text-sm text-muted-foreground">Après les 3 doses contre le paludisme, deux rappels sont prévus, espacés de 6 à 12 mois : l&apos;agent de santé vous indiquera les dates.</p>
       <details className="rounded-2xl border bg-white p-4">
         <summary className="cursor-pointer font-semibold">Modifier ou supprimer ce carnet</summary>

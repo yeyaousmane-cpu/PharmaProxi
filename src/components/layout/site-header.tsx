@@ -29,6 +29,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
       { href: "/droits", label: "Vos droits et votre santé", hint: "Maternité, allocations, retraite, soins gratuits" },
       { href: "/ma-sante", label: "Ma santé", hint: "Vaccins des enfants, traitements, tension" },
       { href: "/ma-sante/dossier", label: "Mon dossier santé", hint: "Allergies, maladies, analyses : à montrer au médecin" },
+      { href: "/signaler", label: "Signaler un médicament suspect", hint: "Faux médicament, mauvaise réaction : prévenir les autorités" },
       { href: "/don-de-sang", label: "Don de sang", hint: "Où donner, besoins urgents", tone: "red" },
       { href: "/alertes", label: "Alertes sanitaires", hint: "Faux médicaments, campagnes, épidémies" },
     ] },
