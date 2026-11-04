@@ -42,7 +42,7 @@ export default function DroitsPage() {
           </ul>
         </section>
       ))}
-      <p className="text-xs text-muted-foreground">PharmaProxi résume des textes publics. Ce n&apos;est ni un avis juridique ni un avis médical.</p>
+      <p className="text-xs text-muted-foreground">SantéProxi résume des textes publics. Ce n&apos;est ni un avis juridique ni un avis médical.</p>
     </div>
   );
 }

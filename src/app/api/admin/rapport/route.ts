@@ -23,5 +23,5 @@ export async function GET(req: NextRequest) {
   }
   for (const q of (s.top_no_result_queries as { query: string; n: number }[]) ?? []) rows.push({ indicateur: "recherche_sans_resultat", cle: q.query, valeur: q.n });
   const csv = toCsv([{ indicateur: "periode", cle: `${from.toISOString().slice(0, 10)} → ${to.toISOString().slice(0, 10)}`, valeur: "" }, ...rows], ["indicateur", "cle", "valeur"]);
-  return new NextResponse(csv, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="rapport-pharmaproxi.csv"`, "Cache-Control": "no-store" } });
+  return new NextResponse(csv, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="rapport-santeproxi.csv"`, "Cache-Control": "no-store" } });
 }

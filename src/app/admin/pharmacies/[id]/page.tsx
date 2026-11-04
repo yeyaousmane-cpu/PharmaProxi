@@ -92,7 +92,7 @@ export default async function ReviewPharmacy({ params }: { params: Promise<{ id:
             <CardContent><ul className="space-y-2 text-sm">{(hist ?? []).map((h) => <li key={h.id}><strong>{PHARMACY_STATUS_LABEL[h.decision as keyof typeof PHARMACY_STATUS_LABEL]}</strong> · {formatDateTime(h.created_at)}{h.reason ? <span className="block text-muted-foreground">{h.reason}</span> : null}</li>)}</ul></CardContent></Card>
           <Card><CardHeader><CardTitle>Changement de titulaire</CardTitle></CardHeader>
             <CardContent>
-              <p className="mb-3 text-xs text-muted-foreground">Départ du titulaire : vérifiez d&apos;abord les justificatifs du nouveau titulaire (autorisation, inscription à l&apos;Ordre, identité). Le nouveau titulaire doit avoir un compte PharmaProxi ; l&apos;ancien devient collaborateur.</p>
+              <p className="mb-3 text-xs text-muted-foreground">Départ du titulaire : vérifiez d&apos;abord les justificatifs du nouveau titulaire (autorisation, inscription à l&apos;Ordre, identité). Le nouveau titulaire doit avoir un compte SantéProxi ; l&apos;ancien devient collaborateur.</p>
               <ActionForm action={transferPharmacyOwner} resetOnSuccess className="space-y-3">
                 <input type="hidden" name="pharmacy_id" value={p.id} />
                 <Field label="E-mail du nouveau titulaire" htmlFor="new_owner" required><Input id="new_owner" name="email" type="email" required autoComplete="off" /></Field>

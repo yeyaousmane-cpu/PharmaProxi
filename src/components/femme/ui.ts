@@ -1,4 +1,4 @@
-/** Palette PharmaProxi Femme. */
+/** Palette SantéProxi Femme. */
 export const F = {
   btn: "inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#D96A91] px-4 text-sm font-semibold text-white hover:bg-[#843653] disabled:opacity-60",
   btnOutline: "inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#D96A91]/50 bg-white px-4 text-sm font-semibold text-[#843653] hover:bg-[#F8E7EF]",

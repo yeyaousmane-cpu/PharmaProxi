@@ -43,7 +43,7 @@ export async function TeamCard({ pharmacyId, userId, editable }: { pharmacyId: s
         {isOwner && editable && (
           <ActionForm action={addTeamMember} resetOnSuccess className="flex flex-col gap-2 sm:flex-row sm:items-end" labels={{ email: "E-mail" }}>
             <input type="hidden" name="pharmacy_id" value={pharmacyId} />
-            <Field label="Ajouter un collaborateur (e-mail de son compte PharmaProxi)" htmlFor="team-email" className="flex-1">
+            <Field label="Ajouter un collaborateur (e-mail de son compte SantéProxi)" htmlFor="team-email" className="flex-1">
               <Input id="team-email" name="email" type="email" required autoComplete="off" />
             </Field>
             <SubmitButton variant="secondary">Ajouter</SubmitButton>

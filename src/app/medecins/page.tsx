@@ -243,8 +243,7 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
         <p className="font-semibold text-brand-blue">Vous êtes médecin ou vous gérez une clinique ?</p>
         <p className="mt-1">Le référencement est gratuit, après vérification de votre inscription à l&apos;Ordre ou de votre autorisation d&apos;ouverture.</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Link prefetch={false} href="/medecin/inscription" className={cn(buttonVariants({ size: "sm" }), "bg-brand-blue hover:bg-brand-blue/90")}>Référencer ma pratique</Link>
-          <Link prefetch={false} href="/clinique/inscription" className={cn(buttonVariants({ size: "sm", variant: "outline" }))}>Inscrire un établissement</Link>
+          <Link prefetch={false} href="/professionnels?type=medecin" className={cn(buttonVariants({ size: "sm" }), "bg-brand-blue hover:bg-brand-blue/90")}>Faire une demande</Link>
         </div>
       </aside></ProOnly>
     </div>

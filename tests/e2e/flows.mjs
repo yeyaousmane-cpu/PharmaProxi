@@ -123,7 +123,7 @@ p.on("response", (r) => r.status() >= 400 && !/openstreetmap/.test(r.url()) && c
 
 await step("accueil : logo, barre de recherche, boutons", async () => {
   await p.goto(BASE, NI);
-  assert(await p.locator("img[alt^='PharmaProxi']").first().first().waitFor({ timeout: 10000 }).then(() => true, () => false), "logo absent");
+  assert(await p.locator("img[alt^='SantéProxi']").first().first().waitFor({ timeout: 10000 }).then(() => true, () => false), "logo absent");
   assert(await p.getByPlaceholder("Quel médicament recherchez-vous ?").first().waitFor({ timeout: 10000 }).then(() => true, () => false), "barre de recherche absente");
   assert(await p.getByRole("button", { name: "Trouver un médicament" }).first().waitFor({ timeout: 10000 }).then(() => true, () => false), "bouton Trouver absent");
   assert(await p.getByRole("button", { name: "Pharmacies autour de moi" }).first().waitFor({ timeout: 10000 }).then(() => true, () => false), "bouton autour de moi absent");
@@ -1005,7 +1005,7 @@ await step("contact : un visiteur écrit, l'administration reçoit et traite le 
   await v.goto(`${BASE}/garde`, NI);
   await v.getByRole("link", { name: "Signalez-la-nous" }).click();
   await v.waitForURL(/\/infos\/contact\?sujet=erreur/);
-  await v.getByText("Écrire à PharmaProxi").waitFor({ timeout: 10000 });
+  await v.getByText("Écrire à SantéProxi").waitFor({ timeout: 10000 });
   assert((await v.locator("#c-topic").inputValue()) === "erreur", "sujet non prérempli");
   await v.fill("#c-name", "Visiteur Test");
   await v.fill("#c-phone", "76 12 34 56");
@@ -1034,7 +1034,7 @@ await step("annonces : e-mail de bienvenue à l'inscription, annonce à tous (co
   const MAILDIR = process.env.E2E_MAIL_DIR;
   const mails = () => (MAILDIR ? readdirSync(MAILDIR).map((f) => rf(`${MAILDIR}/${f}`, "utf8")) : []);
   if (MAILDIR) {
-    const welcome = mails().find((m) => m.includes(newEmail) && /Bienvenue sur PharmaProxi/.test(m));
+    const welcome = mails().find((m) => m.includes(newEmail) && /Bienvenue sur SantéProxi/.test(m));
     assert(welcome, "e-mail de bienvenue non envoyé à l'inscription");
   }
   const aCtx = await newCtx({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
@@ -1044,7 +1044,7 @@ await step("annonces : e-mail de bienvenue à l'inscription, annonce à tous (co
   await a.goto(`${BASE}/admin/annonces?modele=bienvenue`, NI);
   await a.getByRole("button", { name: "Envoyer l'annonce" }).click();
   await a.getByText(/Annonce envoyée : 0 notification\(s\)/).first().waitFor({ timeout: 30000 }); // déjà reçue à l'inscription
-  if (MAILDIR) assert(!mails().filter((m) => m.includes(newEmail) && /Bienvenue sur PharmaProxi/.test(m)).slice(1).length, "bienvenue envoyée deux fois par e-mail");
+  if (MAILDIR) assert(!mails().filter((m) => m.includes(newEmail) && /Bienvenue sur SantéProxi/.test(m)).slice(1).length, "bienvenue envoyée deux fois par e-mail");
   await a.goto(`${BASE}/admin/annonces?modele=libre`, NI);
   await a.fill("#an-title", "Nouveau : pharmacies de garde");
   await a.fill("#an-body", "Retrouvez désormais les pharmacies de garde de votre commune.");
@@ -1173,7 +1173,7 @@ await step("guides audio : administration (avancement, kit), lecteur multilingue
   await a.getByText("Vérifiée par (second locuteur)").first().waitFor();
   await a.goto(`${BASE}/admin/audio/kit`, NI);
   await a.getByText("Consignes pour la personne qui enregistre").waitFor();
-  await a.getByText(/Bienvenue sur PharmaProxi\. Ce site vous aide/).waitFor();
+  await a.getByText(/Bienvenue sur SantéProxi\. Ce site vous aide/).waitFor();
   await aCtx.close();
   // Le stockage de fichiers n'est pas émulé localement : enregistrements publiés insérés directement
   const { execSync } = await import("node:child_process");
@@ -1237,7 +1237,7 @@ await step("assistant santé : réponse en flux, urgence détectée sans IA, lie
   await d.goto(`${BASE}/assistant`, NI);
   const nav = d.getByRole("navigation", { name: "Navigation principale" });
   await nav.getByRole("button", { name: "Santé" }).click();
-  await nav.getByRole("link", { name: /PharmaProxi Femme/ }).waitFor();
+  await nav.getByRole("link", { name: /SantéProxi Femme/ }).waitFor();
   await nav.getByRole("link", { name: /Assistant santé/ }).waitFor();
   await d.keyboard.press("Escape");
   await nav.getByRole("button", { name: "Services" }).click();
@@ -1260,7 +1260,7 @@ await step("menu mobile : toutes les rubriques classées, sans bande à faire d�
   await v.goto(`${BASE}/`, NI);
   await v.getByRole("button", { name: "Menu" }).click();
   const menu = v.getByRole("navigation", { name: "Menu", exact: true });
-  for (const l of ["Médicaments", "Rendez-vous", "Santé essentielle", "Assistant santé", "PharmaProxi Femme", "Pharmacies de garde", "Laboratoires et examens", "Urgences", "Se connecter"])
+  for (const l of ["Médicaments", "Rendez-vous", "Santé essentielle", "Assistant santé", "SantéProxi Femme", "Pharmacies de garde", "Laboratoires et examens", "Urgences", "Se connecter"])
     await menu.getByRole("link", { name: new RegExp(l) }).first().waitFor();
   assert((await v.evaluate(() => document.documentElement.scrollWidth)) <= 390, "défilement horizontal (menu)");
   await shot(v, "38-menu-mobile");
@@ -1271,7 +1271,7 @@ await step("menu mobile : toutes les rubriques classées, sans bande à faire d�
   await c.close();
 });
 
-await step("PharmaProxi Femme : activation, cycle, journal, code secret, partage sans données, export, suppression (mobile)", async () => {
+await step("SantéProxi Femme : activation, cycle, journal, code secret, partage sans données, export, suppression (mobile)", async () => {
   const c = await newCtx(mobile);
   const v = await c.newPage();
   current = v;

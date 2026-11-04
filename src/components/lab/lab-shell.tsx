@@ -33,7 +33,7 @@ export function NoLab() {
         <FlaskConical className="mx-auto size-10 text-brand-blue" aria-hidden />
         <h1 className="text-xl font-bold text-brand-deep">Espace laboratoire</h1>
         <p className="text-sm text-muted-foreground">Votre espace n&apos;est pas encore ouvert. Faites une demande : l&apos;équipe vérifie l&apos;autorisation du laboratoire avant d&apos;ouvrir l&apos;accès.</p>
-        <Link prefetch={false} href="/laboratoire/inscription" className="inline-block rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white">Demander l&apos;accès</Link>
+        <Link prefetch={false} href="/professionnels?type=laboratoire" className="inline-block rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white">Demander l&apos;accès</Link>
       </section>
     </div>
   );

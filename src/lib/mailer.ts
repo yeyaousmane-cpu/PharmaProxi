@@ -42,18 +42,18 @@ export function renderEmail({ title, body, link, name }: { title: string; body: 
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f6f4;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #dde7e1">
 <tr><td><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td height="6" style="background:#14B53A;font-size:0">&nbsp;</td><td height="6" style="background:#FCD116;font-size:0">&nbsp;</td><td height="6" style="background:#CE1126;font-size:0">&nbsp;</td></tr></table></td></tr>
-<tr><td style="padding:22px 26px 6px;font-size:22px;font-weight:bold;color:#068132">PharmaProxi</td></tr>
-<tr><td style="padding:0 26px;font-size:13px;color:#5b6b63">Votre pharmacie, plus proche de vous.</td></tr>
+<tr><td style="padding:22px 26px 6px;font-size:22px;font-weight:bold;color:#068132">SantéProxi</td></tr>
+<tr><td style="padding:0 26px;font-size:13px;color:#5b6b63">Toute la santé, près de chez vous.</td></tr>
 <tr><td style="padding:22px 26px 8px;font-size:15px">
 <h1 style="margin:0 0 16px;font-size:20px;color:#052D1E">${esc(title)}</h1>
 <p style="margin:0 0 14px">${esc(hello)}</p>${paragraphs}
-<p style="margin:22px 0"><a href="${esc(url)}" style="display:inline-block;background:#068132;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:10px">Ouvrir PharmaProxi</a></p>
+<p style="margin:22px 0"><a href="${esc(url)}" style="display:inline-block;background:#068132;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:10px">Ouvrir SantéProxi</a></p>
 </td></tr>
 <tr><td style="padding:16px 26px 22px;font-size:12px;color:#6b7b73;border-top:1px solid #eef2ef">
-Vous recevez ce message car vous êtes inscrit(e) sur PharmaProxi. Pour toute question : ${esc(SITE())}/infos/contact<br>
-PharmaProxi ne pose aucun diagnostic. En cas d'urgence, rendez-vous au service d'urgence le plus proche.</td></tr>
+Vous recevez ce message car vous êtes inscrit(e) sur SantéProxi. Pour toute question : ${esc(SITE())}/infos/contact<br>
+SantéProxi ne pose aucun diagnostic. En cas d'urgence, rendez-vous au service d'urgence le plus proche.</td></tr>
 </table></td></tr></table></body></html>`;
-  const text = `${title}\n\n${hello}\n\n${body}\n\nOuvrir PharmaProxi : ${url}\n\n—\nVous recevez ce message car vous êtes inscrit(e) sur PharmaProxi.`;
+  const text = `${title}\n\n${hello}\n\n${body}\n\nOuvrir SantéProxi : ${url}\n\n—\nVous recevez ce message car vous êtes inscrit(e) sur SantéProxi.`;
   return { html, text };
 }
 
@@ -61,7 +61,7 @@ export async function sendMail({ to, subject, html, text }: { to: string; subjec
   if (!isMailConfigured()) return false;
   try {
     await getTransport().sendMail({
-      from: process.env.MAIL_FROM || `PharmaProxi <${process.env.SMTP_USER}>`,
+      from: process.env.MAIL_FROM || `SantéProxi <${process.env.SMTP_USER}>`,
       to, subject, html, text,
     });
     return true;

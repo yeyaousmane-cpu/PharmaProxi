@@ -9,9 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LocationPicker } from "@/components/location-picker";
 import { addAddress, deleteAccount, deleteAddress, updateProfile } from "@/app/actions/account";
 import { signOut } from "@/app/actions/auth";
-import { setAccountType } from "@/app/actions/labs";
-import { ACCOUNT_TYPES } from "@/lib/labs";
-import { Select } from "@/components/ui/input";
 import { formatPhone } from "@/lib/format";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -39,16 +36,6 @@ export default async function AccountPage() {
           <form action={signOut}><button className={cn(buttonVariants({ variant: "outline" }))}>Déconnexion</button></form>
         </div>
       </div>
-
-      <Card>
-        <CardHeader><CardTitle>Vous êtes</CardTitle><CardDescription>Les espaces professionnels ne s&apos;affichent que pour les professionnels. Changer ce choix ne donne aucun accès : chaque espace professionnel est vérifié par PharmaProxi.</CardDescription></CardHeader>
-        <CardContent>
-          <ActionForm action={setAccountType} className="flex flex-wrap items-end gap-2">
-            <Field label="Type de compte" htmlFor="at"><Select id="at" name="account_type" defaultValue={s.accountType ?? "patient"}>{Object.entries(ACCOUNT_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</Select></Field>
-            <SubmitButton variant="outline">Enregistrer</SubmitButton>
-          </ActionForm>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader><CardTitle>Profil</CardTitle><CardDescription>{s.email}</CardDescription></CardHeader>
@@ -107,7 +94,7 @@ export default async function AccountPage() {
       <Card>
         <CardHeader><CardTitle>Espaces professionnels</CardTitle></CardHeader>
         <CardContent className="flex flex-wrap gap-2">
-          <Link prefetch={false} href="/pharmacien/inscription" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Inscrire une pharmacie</Link>
+          <Link prefetch={false} href="/professionnels" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Vous êtes professionnel de santé ?</Link>
           <Link prefetch={false} href="/livraison" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Devenir livreur</Link>
         </CardContent>
       </Card>

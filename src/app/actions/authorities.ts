@@ -106,7 +106,7 @@ export async function submitFeedback(_: ActionState, fd: FormData): Promise<Acti
   const supabase = await createClient();
   const { error } = await supabase.rpc("submit_feedback", { p_page: page.startsWith("/") ? page.slice(0, 200) : "", p_mood: mood, p_category: str(fd, "category"), p_message: msg });
   if (error) return { error: humanizeError(error) };
-  return { ok: true, message: "Merci pour votre avis ! Il nous aide à améliorer PharmaProxi." };
+  return { ok: true, message: "Merci pour votre avis ! Il nous aide à améliorer SantéProxi." };
 }
 
 export async function feedbackStatus(_: ActionState, fd: FormData): Promise<ActionState> {

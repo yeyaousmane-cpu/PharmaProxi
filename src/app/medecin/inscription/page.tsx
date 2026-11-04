@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Stethoscope } from "lucide-react";
 import { requireUser } from "@/lib/auth";
+import { hasProAuthorization } from "@/lib/pro-access";
+import { ProReserved } from "@/components/pro/pro-reserved";
 import { getSpecialties, groupByFamily } from "@/lib/directory-server";
 import { registerDoctor } from "@/app/actions/directory";
 import { DoctorFormFields, DOCTOR_LABELS } from "@/components/directory/doctor-form-fields";
@@ -14,6 +16,7 @@ export const metadata = { title: "Référencer ma pratique" };
 export default async function DoctorSignup() {
   const s = await requireUser("/medecin/inscription");
   if (s.doctor) redirect("/medecin");
+  if (!(await hasProAuthorization("medecin"))) return <ProReserved kind="medecin" />;
   const specialties = groupByFamily(await getSpecialties());
   return (
     <div className="container-page max-w-3xl space-y-5 py-6">
@@ -27,7 +30,7 @@ export default async function DoctorSignup() {
           <li>Vous remplissez ce formulaire et donnez votre accord de publication.</li>
           <li>Vous déposez vos justificatifs (attestation d&apos;inscription à l&apos;Ordre, diplôme de spécialité, pièce d&apos;identité).</li>
           <li>Vous indiquez vos lieux et jours de consultation ; chaque établissement confirme.</li>
-          <li>L&apos;équipe PharmaProxi vérifie, puis publie votre fiche. Vous la modifiez ou la retirez à tout moment.</li>
+          <li>L&apos;équipe SantéProxi vérifie, puis publie votre fiche. Vous la modifiez ou la retirez à tout moment.</li>
         </ol>
       </Alert>
       <Card>
@@ -39,7 +42,7 @@ export default async function DoctorSignup() {
               <label className="flex items-start gap-3 text-sm">
                 <input type="checkbox" name="consent" required className="mt-0.5 size-4 shrink-0" />
                 <span>
-                  J&apos;autorise PharmaProxi à publier dans son annuaire mon nom, mes spécialités, mes langues de consultation, mes lieux et jours de consultation
+                  J&apos;autorise SantéProxi à publier dans son annuaire mon nom, mes spécialités, mes langues de consultation, mes lieux et jours de consultation
                   et les numéros professionnels que j&apos;indique. Je peux retirer ma fiche à tout moment depuis mon espace. Aucune notation, aucun classement et aucune publicité ne sont associés à ma fiche.
                 </span>
               </label>

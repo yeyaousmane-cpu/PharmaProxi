@@ -19,7 +19,7 @@ describe.skipIf(!hasDb)("Guides audio", () => {
   it("langues et pages publiques ; dépôt refusé hors équipe", async () => {
     expect((await q(db, null, "select count(*)::int as n from public.audio_languages")).rows[0].n).toBe(14);
     expect((await q(db, null, "select script_fr from public.audio_targets where key = 'urgences'")).rows[0].script_fr).toMatch(/service d'urgence/);
-    await expectError(reg(stranger, "bambara", "accueil/bambara-1.mp3"), /équipe PharmaProxi/);
+    await expectError(reg(stranger, "bambara", "accueil/bambara-1.mp3"), /équipe SantéProxi/);
     await expectError(reg(w.admin, "klingon", "accueil/x.mp3"), /langue inconnue/);
     await expectError(q(db, w.admin, "select public.audio_register_clip('accueil', 'bambara', 'a/b.mp3', 'video/mp4', 100, null, null, null, null)"), /format/);
   });
@@ -38,7 +38,7 @@ describe.skipIf(!hasDb)("Guides audio", () => {
     await reg(w.admin, "francais", "accueil/francais-1.mp3");
     const fr = (await q(db, w.admin, "select id from public.audio_clips where lang = 'francais'")).rows[0].id;
     await q(db, w.admin, "select public.audio_set_published($1, true)", [fr]);
-    await expectError(q(db, stranger, "select public.audio_delete_clip($1)", [fr]), /équipe PharmaProxi/);
+    await expectError(q(db, stranger, "select public.audio_delete_clip($1)", [fr]), /équipe SantéProxi/);
     expect((await q(db, w.admin, "select public.audio_delete_clip($1) as p", [fr])).rows[0].p).toBe("accueil/francais-1.mp3");
   });
 
@@ -46,6 +46,6 @@ describe.skipIf(!hasDb)("Guides audio", () => {
     await q(db, w.admin, "select public.audio_save_target('fiche:paludisme', 'Paludisme', '/sante/fiche/paludisme', 'Le paludisme se transmet par la piqûre de moustique.')");
     expect((await q(db, null, "select label from public.audio_targets where key = 'fiche:paludisme'")).rows[0].label).toBe("Paludisme");
     await expectError(q(db, w.admin, "select public.audio_save_target('X Y', 'a', 'pas-une-adresse', 'court')"), /vérifiez/);
-    await expectError(q(db, stranger, "select public.audio_save_target('fiche:x', 'Titre', '/x', 'Un texte assez long pour passer.')"), /équipe PharmaProxi/);
+    await expectError(q(db, stranger, "select public.audio_save_target('fiche:x', 'Titre', '/x', 'Un texte assez long pour passer.')"), /équipe SantéProxi/);
   });
 });

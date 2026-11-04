@@ -61,7 +61,7 @@ export function PharmacyFormFields({ geo, v = {} }: { geo: GeoData; v?: Values }
 
       <fieldset className="space-y-3">
         <legend className="text-base font-bold">Responsable et informations réglementaires</legend>
-        <p className="text-xs text-muted-foreground">Ces informations ne sont visibles que par votre équipe et l&apos;administration de PharmaProxi.</p>
+        <p className="text-xs text-muted-foreground">Ces informations ne sont visibles que par votre équipe et l&apos;administration de SantéProxi.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Pharmacien responsable" htmlFor="pharmacist_in_charge" required><Input id="pharmacist_in_charge" name="pharmacist_in_charge" required defaultValue={v.pharmacist_in_charge} /></Field>
           <Field label="Téléphone du responsable" htmlFor="manager_phone"><Input id="manager_phone" name="manager_phone" type="tel" defaultValue={formatPhone(v.manager_phone)} /></Field>

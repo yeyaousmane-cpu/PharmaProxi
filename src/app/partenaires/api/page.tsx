@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Code2 } from "lucide-react";
 
-export const metadata = { title: "API pour les partenaires", description: "API publique en lecture seule de PharmaProxi : annuaire des pharmacies, gardes, laboratoires et examens." };
+export const metadata = { title: "API pour les partenaires", description: "API publique en lecture seule de SantéProxi : annuaire des pharmacies, gardes, laboratoires et examens." };
 
 const EP = [
   ["/api/v1/pharmacies", "Annuaire des pharmacies", "q (nom), region, commune (identifiants), lat et lng (tri par distance), inscrites=1, limit (≤ 100), offset"],
@@ -18,8 +18,8 @@ export default function ApiDoc() {
       <ul className="list-disc space-y-1 pl-5 text-sm">
         <li>Sans clé, réponses en JSON, 60 requêtes par minute et par adresse.</li>
         <li><strong>Aucune donnée personnelle ni de santé</strong> : pas de comptes, pas de commandes, pas de dossier santé, pas de recherches individuelles.</li>
-        <li>Chaque établissement porte un identifiant PharmaProxi stable (PP-PH-…, PP-LB-…, PP-ET-…, PP-MD-…). Il ne remplace pas les identifiants des référentiels officiels ; une correspondance pourra être ajoutée avec les autorités.</li>
-        <li>Réutilisation autorisée en citant « PharmaProxi » et la date de consultation. Les disponibilités et prix doivent être confirmés auprès de l&apos;établissement.</li>
+        <li>Chaque établissement porte un identifiant SantéProxi stable (PP-PH-…, PP-LB-…, PP-ET-…, PP-MD-…). Il ne remplace pas les identifiants des référentiels officiels ; une correspondance pourra être ajoutée avec les autorités.</li>
+        <li>Réutilisation autorisée en citant « SantéProxi » et la date de consultation. Les disponibilités et prix doivent être confirmés auprès de l&apos;établissement.</li>
       </ul>
       <div className="space-y-3">{EP.map(([path, title, params]) => (
         <section key={path} className="rounded-2xl border bg-white p-4 text-sm">

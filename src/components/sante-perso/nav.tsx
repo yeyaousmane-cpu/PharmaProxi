@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, Baby, BellRing, FolderHeart, HeartPulse, Pill } from "lucide-react";
+import { Activity, Baby, BellRing, FolderHeart, HeartPulse, Lock, Pill } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
@@ -17,7 +17,7 @@ export function SanteNav({ current }: { current: string }) {
       {ITEMS.map(({ href, label, icon: Icon }) => (
         <Link key={href} prefetch={false} href={href} aria-current={current === href ? "page" : undefined}
           className={cn("flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium", current === href ? "border-primary bg-primary text-white" : "bg-white hover:border-primary")}>
-          <Icon className="size-4" aria-hidden />{label}
+          <Icon className="size-4" aria-hidden />{label}{href === "/ma-sante/dossier" && <Lock className="size-3.5 opacity-80" aria-label="protégé" />}
         </Link>
       ))}
     </nav>

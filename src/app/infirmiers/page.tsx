@@ -65,13 +65,13 @@ export default async function NursesPage({ searchParams }: { searchParams: Promi
       {tab === "domicile" ? (
         <section className="space-y-3" aria-label="Structures de soins à domicile">
           <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
-            Les structures « non vérifiées » sont référencées à partir d&apos;informations publiques ou transmises : PharmaProxi n&apos;a pas encore contrôlé leur autorisation d&apos;exercer,
+            Les structures « non vérifiées » sont référencées à partir d&apos;informations publiques ou transmises : SantéProxi n&apos;a pas encore contrôlé leur autorisation d&apos;exercer,
             leurs disponibilités ni leurs tarifs. Demandez toujours le nom et la qualification de l&apos;infirmier qui viendra, et le tarif avant le soin.
           </p>
           {providers.length === 0 ? <p className="rounded-xl border bg-white p-5 text-muted-foreground">Aucune structure référencée pour le moment.</p> : (
             <ul className="grid gap-3 md:grid-cols-2">
               {providers.map((p) => {
-                const wa = whatsappUrl(p.whatsapp ?? p.phone, `Bonjour ${p.name}, je vous contacte via PharmaProxi pour des soins à domicile.`);
+                const wa = whatsappUrl(p.whatsapp ?? p.phone, `Bonjour ${p.name}, je vous contacte via SantéProxi pour des soins à domicile.`);
                 return (
                   <li key={p.id} className="flex flex-col gap-2 rounded-xl border bg-white p-4">
                     <div className="flex flex-wrap items-center gap-2">

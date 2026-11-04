@@ -133,7 +133,7 @@ export default async function AmoPage({ searchParams }: { searchParams: Promise<
       </div>
 
       <section aria-labelledby="ph-t" className="space-y-3">
-        <h2 id="ph-t" className="flex items-center gap-2 text-lg font-bold"><BadgeCheck className="size-5 text-brand-blue" aria-hidden /> Pharmacies conventionnées inscrites sur PharmaProxi</h2>
+        <h2 id="ph-t" className="flex items-center gap-2 text-lg font-bold"><BadgeCheck className="size-5 text-brand-blue" aria-hidden /> Pharmacies conventionnées inscrites sur SantéProxi</h2>
         {pharmacies.length === 0 ? (
           <p className="text-sm text-muted-foreground">Aucune pharmacie inscrite n&apos;a encore déclaré sa convention AMO. Demandez directement à votre pharmacie si elle est conventionnée.</p>
         ) : (
@@ -148,7 +148,7 @@ export default async function AmoPage({ searchParams }: { searchParams: Promise<
             ))}
           </ul>
         )}
-        <p className="text-xs text-muted-foreground">« Déclarée » : la pharmacie indique être conventionnée, l&apos;équipe PharmaProxi ne l&apos;a pas encore vérifié.</p>
+        <p className="text-xs text-muted-foreground">« Déclarée » : la pharmacie indique être conventionnée, l&apos;équipe SantéProxi ne l&apos;a pas encore vérifié.</p>
       </section>
     </div>
   );

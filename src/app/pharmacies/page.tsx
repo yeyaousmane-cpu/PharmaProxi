@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata = {
   title: "Annuaire des pharmacies",
-  description: "Toutes les pharmacies référencées au Mali : celles inscrites sur PharmaProxi (stocks et réservation) et les autres officines, avec leur téléphone.",
+  description: "Toutes les pharmacies référencées au Mali : celles inscrites sur SantéProxi (stocks et réservation) et les autres officines, avec leur téléphone.",
 };
 
 type Row = {
@@ -66,7 +66,7 @@ export default async function PharmacyDirectory({ searchParams }: { searchParams
         <LocationPicker geo={geo} compact names={{ region: "region", commune: "commune" }} defaults={{ region: sp.region, commune: sp.commune }} />
         <Select name="type" defaultValue={sp.type ?? ""} aria-label="Type de pharmacie">
           <option value="">Toutes</option>
-          <option value="inscrites">Inscrites sur PharmaProxi</option>
+          <option value="inscrites">Inscrites sur SantéProxi</option>
           <option value="autres">Non encore inscrites</option>
         </Select>
         {me ? <><input type="hidden" name="lat" value={sp.lat} /><input type="hidden" name="lng" value={sp.lng} /></> : null}
@@ -119,7 +119,7 @@ export default async function PharmacyDirectory({ searchParams }: { searchParams
               </div>
               {p.kind === "listing" && (
 <ProOnly><p className="text-xs text-muted-foreground">
-                  Vous êtes le pharmacien de cette officine ? <Link prefetch={false} href="/pharmacien/inscription" className="font-medium text-primary underline">Inscrivez-la gratuitement</Link>
+                  Vous êtes le pharmacien de cette officine ? <Link prefetch={false} href="/professionnels?type=pharmacie" className="font-medium text-primary underline">Demandez son inscription</Link>
                 </p></ProOnly>
               )}
             </li>

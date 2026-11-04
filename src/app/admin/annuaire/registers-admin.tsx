@@ -66,7 +66,7 @@ export async function RegisterAdmin({ sp }: { sp: SP }) {
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="masques" value="1" defaultChecked={sp.masques === "1"} className="size-4" /> Masqués seulement</label>
             <Button type="submit" size="sm" variant="outline">Filtrer</Button>
           </form>
-          <p className="text-xs text-muted-foreground">Un médecin demande à ne pas figurer sur PharmaProxi ? Masquez son entrée : elle n&apos;apparaît plus au public, et ce choix est conservé lors des imports suivants.</p>
+          <p className="text-xs text-muted-foreground">Un médecin demande à ne pas figurer sur SantéProxi ? Masquez son entrée : elle n&apos;apparaît plus au public, et ce choix est conservé lors des imports suivants.</p>
         </CardHeader>
         <CardContent>
           {!data?.length ? <p className="text-sm text-muted-foreground">Aucune entrée.</p> : (
@@ -172,7 +172,7 @@ export async function FacilityAdmin({ sp }: { sp: SP }) {
           )}
           <Pagination basePath="/admin/annuaire" params={{ ...sp, vue: "etablissements" }} page={range.page} total={count} />
           <p className="mt-3 text-xs text-muted-foreground">
-            Quand l&apos;établissement s&apos;inscrit lui-même (<Link prefetch={false} href="/clinique/inscription" className="underline">inscription</Link>) et que vous le validez, supprimez ou masquez sa fiche non vérifiée.
+            Quand l&apos;établissement est inscrit par son responsable, après votre autorisation (<Link prefetch={false} href="/admin/professionnels" className="underline">Professionnels</Link>), et que vous le validez, supprimez ou masquez sa fiche non vérifiée.
           </p>
         </CardContent>
       </Card>

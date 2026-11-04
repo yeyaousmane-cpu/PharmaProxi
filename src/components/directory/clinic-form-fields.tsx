@@ -57,7 +57,7 @@ export function ClinicFormFields({ geo, v = {} }: { geo: GeoData; v?: Values }) 
 
       <fieldset className="min-w-0 space-y-3">
         <legend className="text-base font-bold">Responsable et informations réglementaires (privées)</legend>
-        <p className="text-xs text-muted-foreground">Visibles uniquement par votre équipe et l&apos;équipe de vérification de PharmaProxi.</p>
+        <p className="text-xs text-muted-foreground">Visibles uniquement par votre équipe et l&apos;équipe de vérification de SantéProxi.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Nom du responsable" htmlFor="manager_name" required><Input id="manager_name" name="manager_name" required maxLength={120} defaultValue={v.manager_name} /></Field>
           <Field label="Téléphone du responsable" htmlFor="manager_phone"><Input id="manager_phone" name="manager_phone" type="tel" defaultValue={formatPhone(v.manager_phone)} /></Field>

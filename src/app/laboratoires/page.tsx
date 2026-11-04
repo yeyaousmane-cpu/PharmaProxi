@@ -126,7 +126,7 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
               <div className="flex flex-wrap gap-1.5">
                 {r.category_label?.includes("autorisé (DPM)") && <Badge className="border-emerald-200 bg-emerald-50 text-emerald-800">Autorisé — liste DPM</Badge>}
                 {r.category_label?.includes("en cours") && <Badge className="border-amber-200 bg-amber-50 text-amber-900">Autorisation en cours (DPM)</Badge>}
-                <Badge className="bg-muted text-muted-foreground">Coordonnées non vérifiées par PharmaProxi</Badge>
+                <Badge className="bg-muted text-muted-foreground">Coordonnées non vérifiées par SantéProxi</Badge>
                 {exam && r.delay && <Badge className="bg-white">Résultat : {r.delay}</Badge>}
                 {!exam && r.exams_count > 0 && <Badge className="bg-white"><ScanLine className="size-3" aria-hidden /> {r.exams_count} examen(s) renseigné(s)</Badge>}
                 {home.has(r.facility_id) && <Badge className="border-blue-200 bg-blue-50 text-brand-blue"><Home className="size-3" aria-hidden /> Prélèvement à domicile</Badge>}

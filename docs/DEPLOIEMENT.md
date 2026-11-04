@@ -1,4 +1,4 @@
-# Mettre PharmaProxi en ligne — pas à pas
+# Mettre SantéProxi en ligne — pas à pas
 
 Durée : environ une heure. Aucune installation de logiciel n'est obligatoire : tout se fait dans le navigateur, sauf l'étape 1 (au choix).
 
@@ -20,7 +20,7 @@ Vous aurez besoin de trois comptes gratuits : **GitHub** (le code), **Supabase**
    - **Sans terminal** : installez *GitHub Desktop*, ouvrez le dossier `pharmaproxi` décompressé (*File › Add local repository*), puis **Publish**.
    - **Avec un terminal** (dans le dossier décompressé) :
      ```bash
-     git init && git add -A && git commit -m "PharmaProxi v0.3"
+     git init && git add -A && git commit -m "SantéProxi v0.3"
      git branch -M main
      git remote add origin https://github.com/VOTRE-COMPTE/pharmaproxi.git
      git push -u origin main
@@ -126,7 +126,7 @@ Menu **Authentication** :
 2. Envoyez `pharmaproxi-code.zip` à la racine du dépôt GitHub.
 3. *Administration › Infirmiers* : importez le Tableau du CNOIIM (CSV), vérifiez les structures de soins à domicile.
 
-### Passer à la v0.12.0 (PharmaProxi Femme + nouvelle navigation)
+### Passer à la v0.12.0 (SantéProxi Femme + nouvelle navigation)
 
 1. Dans Supabase › *SQL Editor*, exécutez `mise-a-jour-0.11-et-0.12.sql` (contient aussi l'assistant 0.11 ; peut être relancé). Contrôle attendu : `true, true`.
 2. Dans Vercel › *Settings › Environment Variables* : `FEMME_ENCRYPTION_KEY` (type **Secret**) = 32 octets aléatoires en base64 (voir `.env.example`). Conservez-la précieusement : sans elle, les notes déjà chiffrées sont illisibles. Facultatif mais recommandé.
@@ -156,8 +156,8 @@ Menu **Authentication** :
 ### Envoi d'e-mails (annonces, bienvenue)
 
 Le site envoie ses e-mails par SMTP. Avec une adresse Gmail dédiée (par ex. pharmaproxi.mali@gmail.com) :
-1. Sur le compte Google : *Sécurité › Validation en deux étapes* (activer), puis *Mots de passe des applications* › créer « PharmaProxi » : Google affiche un code de 16 lettres.
-2. Dans Vercel › *Settings › Environment Variables*, ajoutez (type **Secret**, Production) : `SMTP_USER` = l'adresse Gmail, `SMTP_PASS` = le code de 16 lettres (sans espaces), `MAIL_FROM` = `PharmaProxi <adresse Gmail>`. `SMTP_HOST` et `SMTP_PORT` sont facultatifs (smtp.gmail.com, 465).
+1. Sur le compte Google : *Sécurité › Validation en deux étapes* (activer), puis *Mots de passe des applications* › créer « SantéProxi » : Google affiche un code de 16 lettres.
+2. Dans Vercel › *Settings › Environment Variables*, ajoutez (type **Secret**, Production) : `SMTP_USER` = l'adresse Gmail, `SMTP_PASS` = le code de 16 lettres (sans espaces), `MAIL_FROM` = `SantéProxi <adresse Gmail>`. `SMTP_HOST` et `SMTP_PORT` sont facultatifs (smtp.gmail.com, 465).
 3. Redéployez (*Deployments › … › Redeploy*). Limite Gmail : 500 e-mails par jour ; au-delà, utilisez un service d'envoi (Brevo, Zoho…) avec les mêmes variables.
 Ne mettez jamais ces valeurs dans le code ni dans une variable `NEXT_PUBLIC_`.
 

@@ -8,7 +8,7 @@ export const metadata = { title: "Comment ça marche ?" };
 export default function Page() {
   return (
     <div className="container-page max-w-4xl space-y-8 py-8">
-      <h1 className="text-2xl font-bold">Comment fonctionne PharmaProxi ?</h1>
+      <h1 className="text-2xl font-bold">Comment fonctionne SantéProxi ?</h1>
       <HowItWorks />
       <section>
         <h2 className="text-lg font-bold">Que signifient les indicateurs de disponibilité ?</h2>
@@ -24,7 +24,7 @@ export default function Page() {
       <section className="space-y-2 text-sm">
         <h2 className="text-lg font-bold">Réservation, paiement et livraison</h2>
         <p>Votre demande n&apos;engage la pharmacie qu&apos;après sa confirmation : le produit vous est alors réservé pendant une durée limitée.</p>
-        <p>Le paiement se fait directement à la pharmacie (ou au livreur lorsque la livraison est disponible). PharmaProxi n&apos;encaisse aucun paiement.</p>
+        <p>Le paiement se fait directement à la pharmacie (ou au livreur lorsque la livraison est disponible). SantéProxi n&apos;encaisse aucun paiement.</p>
         <p>La livraison n&apos;est proposée que pour les catégories de produits autorisées, par des livreurs vérifiés, et jamais pour les médicaments sur ordonnance.</p>
         <p><Link prefetch={false} href="/infos/securite" className="font-semibold text-primary underline">Consignes de sécurité</Link></p>
       </section>

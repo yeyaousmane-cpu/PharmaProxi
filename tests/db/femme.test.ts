@@ -1,8 +1,8 @@
-/** PharmaProxi Femme : confidentialité, verrou, limites adolescentes, rappels neutres, export, suppression. */
+/** SantéProxi Femme : confidentialité, verrou, limites adolescentes, rappels neutres, export, suppression. */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildWorld, createTestDb, createUser, Db, expectError, hasDb, q, sys, World } from "./helpers";
 
-describe.skipIf(!hasDb)("PharmaProxi Femme", () => {
+describe.skipIf(!hasDb)("SantéProxi Femme", () => {
   let db: Db;
   let w: World;
   let awa: string;

@@ -14,5 +14,5 @@ export async function GET(req: NextRequest) {
   const { data, error } = await supabase.rpc("authority_searches", { p_region: region, p_from: from, p_to: null, p_unfound: true, p_limit: 100 });
   if (error) return new NextResponse("Accès réservé aux autorités de santé désignées.", { status: 403 });
   const rows = [["Médicament recherché", "Recherches sans résultat", "Recherches au total", "Nombre de régions"], ...((data ?? []) as { query: string; unfound: number; searches: number; regions: number }[]).map((r) => [r.query, r.unfound, r.searches, r.regions])];
-  return new NextResponse(csv(rows), { headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="pharmaproxi-introuvables-${from}.csv"`, "cache-control": "private, no-store" } });
+  return new NextResponse(csv(rows), { headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="santeproxi-introuvables-${from}.csv"`, "cache-control": "private, no-store" } });
 }

@@ -66,7 +66,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
       <div className="space-y-6">
         {!isPublic && (
           <Alert tone="warning" title="Aperçu : cette fiche n'est pas publiée">
-            {d.status !== "verified" ? "Elle le sera après vérification par l'équipe PharmaProxi." : !d.is_published ? "Le médecin l'a retirée de l'annuaire." : "Les informations doivent être confirmées."}
+            {d.status !== "verified" ? "Elle le sera après vérification par l'équipe SantéProxi." : !d.is_published ? "Le médecin l'a retirée de l'annuaire." : "Les informations doivent être confirmées."}
           </Alert>
         )}
         {isPublic && <RecentTracker kind="medecin" id={d.id} name={label} phone={null} place={specs.map((x) => x.name).join(", ") || null} href={`/medecins/${d.id}`} />}
@@ -91,7 +91,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
             </Link>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
-            <a href={shareUrl(`${label} — ${specs.map((s) => s.name).join(", ")} — sur PharmaProxi :`, `${site}/medecins/${d.id}`)} target="_blank" rel="noopener noreferrer"
+            <a href={shareUrl(`${label} — ${specs.map((s) => s.name).join(", ")} — sur SantéProxi :`, `${site}/medecins/${d.id}`)} target="_blank" rel="noopener noreferrer"
               className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Share2 aria-hidden /> Partager sur WhatsApp</a>
           </div>
         </header>
@@ -178,7 +178,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
           <Link prefetch={false} href="/recherche" className="mt-2 inline-block font-semibold text-primary underline">Rechercher un médicament</Link>
         </div>
         {session && <DirectoryReportForm doctorId={d.id} />}
-        {d.verified_at && <p className="text-xs text-muted-foreground">Inscription vérifiée par PharmaProxi le {formatDate(d.verified_at)}.</p>}
+        {d.verified_at && <p className="text-xs text-muted-foreground">Inscription vérifiée par SantéProxi le {formatDate(d.verified_at)}.</p>}
       </aside>
     </div>
   );

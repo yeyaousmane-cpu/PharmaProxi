@@ -93,7 +93,7 @@ export default async function EditorialHome({ searchParams }: { searchParams: Pr
           <CardHeader>
             <CardTitle>Rédacteurs et validateurs médicaux</CardTitle>
             <CardDescription>
-              La personne doit d&apos;abord avoir un compte PharmaProxi. Un validateur médical doit être un professionnel de santé dont vous avez vérifié l&apos;identité et l&apos;inscription à l&apos;Ordre :
+              La personne doit d&apos;abord avoir un compte SantéProxi. Un validateur médical doit être un professionnel de santé dont vous avez vérifié l&apos;identité et l&apos;inscription à l&apos;Ordre :
               son nom et sa qualification sont affichés sur chaque fiche qu&apos;il valide.
             </CardDescription>
           </CardHeader>

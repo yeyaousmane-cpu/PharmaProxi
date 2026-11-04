@@ -136,7 +136,7 @@ export default async function AdminServices({ searchParams }: { searchParams: Pr
     body = (
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Données agrégées et anonymes. Elles reflètent la demande exprimée sur PharmaProxi, pas l&apos;état réel du marché : à croiser avec d&apos;autres sources
+          Données agrégées et anonymes. Elles reflètent la demande exprimée sur SantéProxi, pas l&apos;état réel du marché : à croiser avec d&apos;autres sources
           avant toute communication. Les recherches sans résultat ne sont listées qu&apos;à partir de 3 occurrences.
         </p>
         <div className="flex gap-2 text-sm">

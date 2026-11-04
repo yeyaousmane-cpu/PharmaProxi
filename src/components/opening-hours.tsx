@@ -16,7 +16,7 @@ export function OpeningHours({ hours, verified }: { hours: Record<string, [strin
         </tbody>
       </table>
       <p className="mt-2 text-xs text-muted-foreground">
-        {verified ? "Horaires vérifiés par PharmaProxi." : "Horaires déclarés par la pharmacie, non vérifiés."} Heure du Mali.
+        {verified ? "Horaires vérifiés par SantéProxi." : "Horaires déclarés par la pharmacie, non vérifiés."} Heure du Mali.
       </p>
     </div>
   );

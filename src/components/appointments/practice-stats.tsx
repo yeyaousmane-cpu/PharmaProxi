@@ -56,7 +56,7 @@ export async function PracticeStats({ clinicId, basePath, days }: { clinicId?: s
         <Card>
           <CardHeader>
             <CardTitle>Repère de votre spécialité</CardTitle>
-            <CardDescription>Médiane anonyme des médecins de même spécialité sur PharmaProxi, affichée à partir de 5 médecins comparables.</CardDescription>
+            <CardDescription>Médiane anonyme des médecins de même spécialité sur SantéProxi, affichée à partir de 5 médecins comparables.</CardDescription>
           </CardHeader>
           <CardContent className="text-sm">
             {s.repere_specialite ? (

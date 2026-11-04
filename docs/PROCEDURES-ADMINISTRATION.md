@@ -49,7 +49,7 @@ Toutes les décisions ci-dessous sont enregistrées dans le **journal d'audit** 
 
 ## Équipe d'une pharmacie
 
-- Le compte qui inscrit la pharmacie en est le **propriétaire**. Il ajoute des collaborateurs depuis *Ma pharmacie › Équipe* (la personne doit d'abord avoir créé son compte PharmaProxi).
+- Le compte qui inscrit la pharmacie en est le **propriétaire**. Il ajoute des collaborateurs depuis *Ma pharmacie › Équipe* (la personne doit d'abord avoir créé son compte SantéProxi).
 - Les collaborateurs gèrent stocks et commandes. Seul le propriétaire gère l'équipe et les justificatifs.
 - Un collaborateur retiré perd immédiatement l'accès ; son rôle pharmacien est retiré s'il n'appartient plus à aucune pharmacie.
 - Changement de propriétaire (départ du titulaire) : *Administration › Pharmacies › fiche › Transférer la titularité*. Le nouveau titulaire doit avoir un compte ; vérifiez d'abord ses justificatifs, saisissez son e-mail et un motif. L'ancien propriétaire reste collaborateur (le nouveau peut le retirer). L'opération est journalisée.
@@ -72,7 +72,7 @@ Toutes les décisions ci-dessous sont enregistrées dans le **journal d'audit** 
 
 - *Annuaire médical › Tableau de l'Ordre* : importez chaque année le Tableau publié par l'Ordre (CSV : ordre ; inscription ; nom ; prenom ; specialite ; structure ; crom), en cochant « Remplacer l'édition existante ».
 - Le Tableau ne contient aucune coordonnée : ne jamais y ajouter de téléphone ou d'adresse personnelle.
-- Un médecin demande à ne pas figurer sur PharmaProxi : recherchez-le et cliquez sur **Masquer** ; ce choix est conservé lors des imports suivants.
+- Un médecin demande à ne pas figurer sur SantéProxi : recherchez-le et cliquez sur **Masquer** ; ce choix est conservé lors des imports suivants.
 - Un médecin qui complète sa fiche (contacts, plannings) et est vérifié remplace automatiquement son entrée du Tableau dans les résultats (même numéro d'inscription).
 
 ## Établissements non vérifiés
@@ -120,7 +120,7 @@ Aucun classement payant ni mise en avant : l'ordre est alphabétique ou par dist
 Importez les services d'urgence et ambulances (types `urgences`, `ambulance`, colonne `urgences_24h`) ou utilisez le bouton « Urgences 24 h » sur une fiche. Renseignez `emergency_numbers` dans les paramètres avec des numéros vérifiés.
 
 ### Observatoire des ruptures
-Chiffres agrégés et anonymes de la demande exprimée sur PharmaProxi. Ils ne mesurent pas l'état réel du marché : croisez-les avec d'autres sources avant toute communication publique, et ne publiez jamais de données permettant d'identifier une pharmacie ou une personne.
+Chiffres agrégés et anonymes de la demande exprimée sur SantéProxi. Ils ne mesurent pas l'état réel du marché : croisez-les avec d'autres sources avant toute communication publique, et ne publiez jamais de données permettant d'identifier une pharmacie ou une personne.
 
 ## Bibliothèque « Santé essentielle »
 *Administration › Bibliothèque santé* (`/redaction-sante`).
@@ -132,7 +132,7 @@ Chiffres agrégés et anonymes de la demande exprimée sur PharmaProxi. Ils ne m
 6. **Signalements** : traitez les signalements du public listés sur la page, corrigez la fiche si besoin.
 
 ## Messages de contact
-*Administration › Messages.* Chaque message envoyé depuis la page Contact apparaît dans « Nouveaux » et déclenche une notification. Répondez par e-mail ou téléphone (liens directs), ajoutez une note interne, puis marquez « Traité ». Ne transférez jamais ces messages hors de la plateforme : ils contiennent des données personnelles. Pour publier l'e-mail ou le téléphone officiels de PharmaProxi, modifiez la page `contact` dans *Administration › Contenus*.
+*Administration › Messages.* Chaque message envoyé depuis la page Contact apparaît dans « Nouveaux » et déclenche une notification. Répondez par e-mail ou téléphone (liens directs), ajoutez une note interne, puis marquez « Traité ». Ne transférez jamais ces messages hors de la plateforme : ils contiennent des données personnelles. Pour publier l'e-mail ou le téléphone officiels de SantéProxi, modifiez la page `contact` dans *Administration › Contenus*.
 
 ## Incidents techniques
 

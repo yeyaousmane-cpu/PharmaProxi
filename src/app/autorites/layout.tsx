@@ -16,7 +16,7 @@ export default async function AuthoritiesLayout({ children }: { children: React.
         <section className="space-y-3 rounded-2xl border bg-white p-6 text-center">
           <Landmark className="mx-auto size-10 text-primary" aria-hidden />
           <h1 className="text-xl font-bold text-brand-deep">Espace réservé aux autorités de santé</h1>
-          <p className="text-sm text-muted-foreground">Cet espace est ouvert aux personnes désignées par le ministère de la Santé, la DPM, le CNTS et les Ordres, dans le cadre d&apos;une convention avec PharmaProxi. Pour demander un accès, écrivez-nous depuis la page <Link prefetch={false} href="/infos/contact" className="underline">Contact</Link>.</p>
+          <p className="text-sm text-muted-foreground">Cet espace est ouvert aux personnes désignées par le ministère de la Santé, la DPM, le CNTS et les Ordres, dans le cadre d&apos;une convention avec SantéProxi. Pour demander un accès, écrivez-nous depuis la page <Link prefetch={false} href="/infos/contact" className="underline">Contact</Link>.</p>
         </section>
       </div>
     );

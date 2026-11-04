@@ -13,36 +13,6 @@ const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const isoDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
 const int = (v: string) => { const d = v.replace(/[\s.]/g, ""); return d === "" ? null : /^\d{1,8}$/.test(d) ? Number(d) : NaN; };
 
-export async function setAccountType(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireUser("/compte");
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("set_account_type", { p_type: str(fd, "account_type") });
-  if (error) return { error: humanizeError(error) };
-  revalidatePath("/", "layout");
-  return { ok: true, message: "Profil enregistré." };
-}
-
-// ---------------- Demande d'accès laboratoire ----------------
-export async function requestLabAccess(_: ActionState, fd: FormData): Promise<ActionState> {
-  const s = await requireUser("/laboratoire/inscription");
-  const phone = normalizePhone(str(fd, "phone"));
-  const fe: Record<string, string> = {};
-  if (str(fd, "lab_name").length < 2) fe.lab_name = "Obligatoire";
-  if (!phone) fe.phone = "Numéro invalide";
-  if (str(fd, "authorization_ref").length < 2) fe.authorization_ref = "Obligatoire";
-  if (Object.keys(fe).length) return { error: "Vérifiez le formulaire.", fieldErrors: fe };
-  const supabase = await createClient();
-  const { error } = await supabase.from("lab_access_requests").insert({
-    user_id: s.userId, lab_name: str(fd, "lab_name").slice(0, 160), region_id: uuid.safeParse(fd.get("region_id")).success ? str(fd, "region_id") : null,
-    address: str(fd, "address").slice(0, 300) || null, phone, authorization_ref: str(fd, "authorization_ref").slice(0, 120),
-    role_in_lab: str(fd, "role_in_lab").slice(0, 120) || null, message: str(fd, "message").slice(0, 1000) || null,
-    facility_id: uuid.safeParse(fd.get("facility_id")).success ? str(fd, "facility_id") : null,
-  });
-  if (error) return { error: humanizeError(error) };
-  await supabase.rpc("set_account_type", { p_type: "laboratoire" });
-  return { ok: true, message: "Demande envoyée. L'équipe vérifie l'autorisation du laboratoire puis ouvre votre espace ; vous recevrez une notification." };
-}
-
 // ---------------- Espace laboratoire ----------------
 export async function saveLabExam(_: ActionState, fd: FormData): Promise<ActionState> {
   const fac = uuid.safeParse(fd.get("facility_id")), exam = uuid.safeParse(fd.get("exam_id"));

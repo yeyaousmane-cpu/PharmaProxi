@@ -26,7 +26,7 @@ export function ResultCard({ r, amo, pharmacyAmo }: { r: SearchRow; amo?: AmoPro
   const label = [r.brand_name, r.dosage, r.form].filter(Boolean).join(" · ");
   const place = [r.locality_name, r.commune_name, r.region_name].filter(Boolean).join(", ");
   const dist = formatDistance(r.distance_km);
-  const wa = whatsappUrl(r.whatsapp, `Bonjour, avez-vous ${[r.brand_name, r.dosage].filter(Boolean).join(" ")} disponible ? (vu sur PharmaProxi)`);
+  const wa = whatsappUrl(r.whatsapp, `Bonjour, avez-vous ${[r.brand_name, r.dosage].filter(Boolean).join(" ")} disponible ? (vu sur SantéProxi)`);
   const listed = amo?.amo === true;
   const share = listed && pharmacyAmo && r.price_xof !== null ? amoPatientShare(r.price_xof, amo!.tariff, amo!.rate) : null;
   return (

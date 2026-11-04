@@ -1,4 +1,6 @@
 import { requireUser } from "@/lib/auth";
+import { hasProAuthorization } from "@/lib/pro-access";
+import { ProReserved } from "@/components/pro/pro-reserved";
 import { getGeo } from "@/lib/geo";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Alert } from "@/components/ui/alert";
@@ -9,6 +11,7 @@ export const metadata = { title: "Inscrire ma pharmacie" };
 
 export default async function RegisterPharmacy() {
   await requireUser("/pharmacien/inscription");
+  if (!(await hasProAuthorization("pharmacie"))) return <ProReserved kind="pharmacie" />;
   const geo = await getGeo();
   return (
     <div className="mx-auto max-w-3xl">

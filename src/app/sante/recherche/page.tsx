@@ -45,7 +45,7 @@ export default async function HealthSearch({ searchParams }: { searchParams: Pro
           <p className="text-sm text-muted-foreground">Tapez une maladie, un symptôme, un examen, un médicament, un groupe sanguin ou une question de santé.</p>
         ) : (
           <>
-            <p className="text-sm text-muted-foreground">Résultats pour « {q} ». La recherche porte sur les fiches déjà validées et les données référencées sur PharmaProxi : elle n&apos;est pas exhaustive et n&apos;établit aucun diagnostic.</p>
+            <p className="text-sm text-muted-foreground">Résultats pour « {q} ». La recherche porte sur les fiches déjà validées et les données référencées sur SantéProxi : elle n&apos;est pas exhaustive et n&apos;établit aucun diagnostic.</p>
             {blood && (
               <Link prefetch={false} href="/sante/mariage#groupes" className="flex items-center gap-3 rounded-xl border border-[#068132]/30 bg-white p-4 hover:shadow-sm">
                 <Droplets className="size-6 text-[#068132]" aria-hidden />

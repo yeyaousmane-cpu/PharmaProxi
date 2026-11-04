@@ -7,7 +7,7 @@ export type IcsEvent = { uid: string; start: string; durationMin?: number; title
 
 /** start : « AAAA-MM-JJ » (journée) ou « AAAA-MM-JJTHH:MM » (heure du Mali = UTC). */
 export function buildIcs(name: string, events: IcsEvent[]) {
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//PharmaProxi//FR", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${esc(name)}`, "X-WR-TIMEZONE:Africa/Bamako"];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SantéProxi//FR", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${esc(name)}`, "X-WR-TIMEZONE:Africa/Bamako"];
   for (const e of events) {
     const d = e.start.replace(/-/g, "").replace(":", "");
     lines.push("BEGIN:VEVENT", `UID:${e.uid}@pharmaproxi`, `DTSTAMP:${stamp()}`);

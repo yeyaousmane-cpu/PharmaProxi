@@ -108,5 +108,5 @@ export async function submitReport(_: ActionState, fd: FormData): Promise<Action
   if (!auth.user) return { error: "Connectez-vous pour signaler un problème." };
   const { error } = await supabase.from("reports").insert({ ...parsed.data, reporter_id: auth.user.id });
   if (error) return { error: humanizeError(error) };
-  return { ok: true, message: "Merci, votre signalement a été transmis à l'équipe PharmaProxi." };
+  return { ok: true, message: "Merci, votre signalement a été transmis à l'équipe SantéProxi." };
 }

@@ -28,7 +28,7 @@ function Sources() {
     <section className="text-xs text-muted-foreground">
       <p className="font-semibold">Sources</p>
       <ul className="list-disc pl-5">{SOURCES.map((s) => <li key={s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" className="underline">{s.title}</a> — {s.org}, {s.year}</li>)}</ul>
-      <p className="mt-1">Informations générales résumées de ces recommandations ; elles n&apos;ont pas encore été relues par un professionnel de santé de PharmaProxi et ne remplacent pas le suivi par une sage-femme ou un médecin.</p>
+      <p className="mt-1">Informations générales résumées de ces recommandations ; elles n&apos;ont pas encore été relues par un professionnel de santé de SantéProxi et ne remplacent pas le suivi par une sage-femme ou un médecin.</p>
     </section>
   );
 }

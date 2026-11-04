@@ -63,7 +63,7 @@ export default async function SettingsPage() {
             <span><strong>Me rappeler de noter mon journal</strong> (au plus une fois par semaine si rien n&apos;a été noté)</span></label>
           <SubmitButton className={F.btn}>Enregistrer</SubmitButton>
         </ActionForm>
-        <p className="text-xs text-muted-foreground">Les rappels arrivent dans vos notifications PharmaProxi, avec un texte neutre. Aucun e-mail ni SMS n&apos;est envoyé pour cet espace.</p>
+        <p className="text-xs text-muted-foreground">Les rappels arrivent dans vos notifications SantéProxi, avec un texte neutre. Aucun e-mail ni SMS n&apos;est envoyé pour cet espace.</p>
       </section>
 
       <section className={`${F.card} space-y-3`}>
@@ -101,7 +101,7 @@ export default async function SettingsPage() {
         <h2 className={F.h2}>Mes données</h2>
         <a href="/femme/export" className={F.btnOutline} download><Download className="size-4" aria-hidden /> Télécharger toutes mes données</a>
         <p className="text-xs text-muted-foreground">
-          Protection : connexion chiffrée (HTTPS) ; base de données hébergée chiffrée sur disque ; accès limité à votre compte par la base elle-même{notesEncrypted() ? " ; vos notes personnelles sont en plus chiffrées avec une clé secrète du site" : ""}. Les personnes qui gèrent techniquement l&apos;hébergement pourraient y accéder en dehors du site : PharmaProxi ne le fait pas, et aucune page d&apos;administration ne les affiche.
+          Protection : connexion chiffrée (HTTPS) ; base de données hébergée chiffrée sur disque ; accès limité à votre compte par la base elle-même{notesEncrypted() ? " ; vos notes personnelles sont en plus chiffrées avec une clé secrète du site" : ""}. Les personnes qui gèrent techniquement l&apos;hébergement pourraient y accéder en dehors du site : SantéProxi ne le fait pas, et aucune page d&apos;administration ne les affiche.
         </p>
         {(log.data ?? []).length > 0 && (
           <details className="text-sm"><summary className="cursor-pointer font-semibold text-[#843653]">Derniers accès sensibles</summary>
@@ -111,7 +111,7 @@ export default async function SettingsPage() {
         <details className="rounded-xl border border-red-200 p-3">
           <summary className="cursor-pointer text-sm font-semibold text-red-800">Supprimer définitivement mon espace</summary>
           <ActionForm action={deleteFemmeAll} className="mt-3 space-y-2">
-            <p className="text-sm">Toutes vos données (profil, règles, journal, rappels, historique d&apos;accès) seront effacées. Cette action est irréversible. Votre compte PharmaProxi reste actif.</p>
+            <p className="text-sm">Toutes vos données (profil, règles, journal, rappels, historique d&apos;accès) seront effacées. Cette action est irréversible. Votre compte SantéProxi reste actif.</p>
             <label className="block max-w-xs space-y-1 text-sm font-medium">Écrivez SUPPRIMER<input name="confirm" required className={F.input} autoComplete="off" /></label>
             <SubmitButton variant="destructive">Tout supprimer</SubmitButton>
           </ActionForm>

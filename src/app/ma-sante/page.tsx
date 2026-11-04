@@ -28,7 +28,7 @@ export default async function MaSante() {
   const kidsNext = (kids ?? []).map((k) => ({ k, next: nextVisit(buildVisits((sched ?? []) as Dose[], k.birth_date, k.sex, doneBy(k.id))) }));
   const m = last?.[0];
   const cards = [
-    { href: "/ma-sante/dossier", icon: FolderHeart, title: "Mon dossier santé", text: "Groupe sanguin, allergies, maladies, analyses, consultations : à montrer à votre médecin. Pour vous et vos proches." },
+    { href: "/ma-sante/dossier", icon: FolderHeart, title: "Mon dossier santé", text: "🔒 Protégé par votre code, visible par vous seul. Groupe sanguin, allergies, maladies, analyses, consultations : à montrer à votre médecin. Pour vous et vos proches." },
     { href: "/ma-sante/enfants", icon: Baby, title: "Carnet de vaccination", text: kidsNext.length ? kidsNext.map(({ k, next }) => `${k.first_name} : ${next ? `${next.label}${next.status === "en_retard" ? " (en retard)" : ` le ${formatDate(next.due)}`}` : "à jour"}`).join(" · ") : "Ajoutez vos enfants : rappel avant chaque vaccin." },
     { href: "/ma-sante/traitements", icon: Pill, title: "Mes traitements", text: treatments?.length ? `${treatments.length} traitement(s) en cours · ${treatments.reduce((a, t) => a + t.times.length, 0)} prise(s) par jour` : "Rappel de chaque prise et avant la fin de la boîte." },
     { href: "/ma-sante/mesures", icon: Activity, title: "Tension et glycémie", text: m ? `Dernière mesure : ${m.kind === "tension" ? `${m.systolic}/${m.diastolic}` : `${String(m.glucose_gl).replace(".", ",")} g/L`} le ${formatDate(m.measured_at)}` : "Notez vos mesures et montrez le graphique à votre médecin." },

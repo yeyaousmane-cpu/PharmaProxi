@@ -201,11 +201,11 @@ export default async function BookingHub({ searchParams }: { searchParams: Promi
         <div className="rounded-xl border bg-white p-4 text-sm">
           <p className="font-semibold">Vous êtes médecin ou clinique ?</p>
           <p className="text-muted-foreground">Ouvrez votre agenda en ligne gratuitement : motifs, horaires, réservation immédiate ou sur demande.</p>
-          <Link prefetch={false} href="/medecin/inscription" className="mt-1 inline-block font-semibold text-brand-blue underline">Référencer ma pratique</Link>
+          <Link prefetch={false} href="/professionnels?type=medecin" className="mt-1 inline-block font-semibold text-brand-blue underline">Faire une demande</Link>
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        Médecins présentés par distance puis par ordre alphabétique, sans classement payant. PharmaProxi ne pose aucun diagnostic.
+        Médecins présentés par distance puis par ordre alphabétique, sans classement payant. SantéProxi ne pose aucun diagnostic.
       </p>
     </div>
   );

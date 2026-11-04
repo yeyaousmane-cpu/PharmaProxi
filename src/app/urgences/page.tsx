@@ -67,9 +67,9 @@ export default async function EmergencyPage({ searchParams }: { searchParams: Pr
         {numbers ? (
           <p className="mt-3 text-lg font-bold">Numéros d&apos;urgence : {numbers}</p>
         ) : (
-          <p className="mt-3 text-sm">Les numéros nationaux d&apos;urgence seront affichés ici après leur vérification par l&apos;équipe PharmaProxi.</p>
+          <p className="mt-3 text-sm">Les numéros nationaux d&apos;urgence seront affichés ici après leur vérification par l&apos;équipe SantéProxi.</p>
         )}
-        <p className="mt-2 text-xs">PharmaProxi ne pose aucun diagnostic. Les disponibilités des services ne sont pas garanties : appelez avant de vous déplacer quand c&apos;est possible.</p>
+        <p className="mt-2 text-xs">SantéProxi ne pose aucun diagnostic. Les disponibilités des services ne sont pas garanties : appelez avant de vous déplacer quand c&apos;est possible.</p>
       </header>
 
       <AudioGuide target="urgences" />

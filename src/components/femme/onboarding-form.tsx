@@ -60,7 +60,7 @@ export function OnboardingForm({ today }: { today: string }) {
         <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="declared_woman" required className="mt-0.5 size-5 accent-[#D96A91]" />
           <span>Je confirme être une femme ou une jeune fille. <span className="text-muted-foreground">Cet espace leur est réservé.</span></span></label>
         <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="consent" required className="mt-0.5 size-5 accent-[#D96A91]" />
-          <span>J&apos;accepte que PharmaProxi enregistre ces informations pour moi seule. Elles ne sont visibles par personne d&apos;autre (ni l&apos;équipe, ni les pharmacies, ni les médecins), jamais vendues ni utilisées pour de la publicité, et je peux les exporter ou les supprimer à tout moment.</span></label>
+          <span>J&apos;accepte que SantéProxi enregistre ces informations pour moi seule. Elles ne sont visibles par personne d&apos;autre (ni l&apos;équipe, ni les pharmacies, ni les médecins), jamais vendues ni utilisées pour de la publicité, et je peux les exporter ou les supprimer à tout moment.</span></label>
       </fieldset>
       <SubmitButton className={F.btn} pendingText="Création…">Créer mon espace privé</SubmitButton>
     </ActionForm>

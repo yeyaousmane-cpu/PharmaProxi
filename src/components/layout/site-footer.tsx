@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { SimpleToggle } from "@/components/simple/simple-toggle";
-import { ProOnly } from "@/components/pro/pro-only";
 
 export function SiteFooter({ simple = false }: { simple?: boolean }) {
   return (
     <footer className="mt-16 border-t bg-white pb-20 md:pb-0 print:hidden">
       <div className="container-page grid gap-6 py-8 text-sm sm:grid-cols-3">
         <div>
-          <p className="font-bold text-brand-deep">PharmaProxi</p>
-          <p className="mt-1 text-muted-foreground">Votre pharmacie, plus proche de vous.</p>
+          <p className="font-bold text-brand-deep">SantéProxi</p>
+          <p className="mt-1 text-muted-foreground">Toute la santé, près de chez vous.</p>
           <p className="mt-3 text-xs text-muted-foreground">
             Service de mise en relation. Ne remplace pas l&apos;avis d&apos;un professionnel de santé. En cas d&apos;urgence, contactez les services d&apos;urgence.
           </p>
@@ -21,7 +20,7 @@ export function SiteFooter({ simple = false }: { simple?: boolean }) {
           <Link prefetch={false} href="/questions-pharmacien" className="hover:underline">Questions à un pharmacien</Link>
           <Link prefetch={false} href="/premiers-secours" className="hover:underline">Premiers secours</Link>
           <Link prefetch={false} href="/comparer" className="hover:underline">Génériques et prix</Link>
-          <Link prefetch={false} href="/femme" className="hover:underline">PharmaProxi Femme</Link>
+          <Link prefetch={false} href="/femme" className="hover:underline">SantéProxi Femme</Link>
           <Link prefetch={false} href="/infirmiers" className="hover:underline">Infirmiers et soins à domicile</Link>
           <Link prefetch={false} href="/garde" className="hover:underline">Pharmacies de garde</Link>
           <Link prefetch={false} href="/amo" className="hover:underline">AMO : médicaments pris en charge</Link>
@@ -43,22 +42,16 @@ export function SiteFooter({ simple = false }: { simple?: boolean }) {
           <Link prefetch={false} href="/infos/contact" className="hover:underline">Contact</Link>
         </nav>
         <nav aria-label="Professionnels" className="flex flex-col gap-2">
-          <ProOnly>
-            <p className="font-semibold text-brand-deep">Professionnels de santé</p>
-            <Link prefetch={false} href="/pharmacien/inscription" className="hover:underline">Inscrire ma pharmacie</Link>
-            <Link prefetch={false} href="/medecin/inscription" className="hover:underline">Référencer ma pratique (médecins)</Link>
-            <Link prefetch={false} href="/clinique/inscription" className="hover:underline">Inscrire une clinique</Link>
-            <Link prefetch={false} href="/laboratoire/inscription" className="hover:underline">Espace laboratoire</Link>
-            <Link prefetch={false} href="/livraison" className="hover:underline">Devenir livreur</Link>
-            <Link prefetch={false} href="/autorites" className="hover:underline">Espace Autorités</Link>
-            <Link prefetch={false} href="/partenaires/api" className="hover:underline">API pour les partenaires</Link>
-          </ProOnly>
+          <p className="font-semibold text-brand-deep">Professionnels de santé</p>
+          <Link prefetch={false} href="/professionnels" className="hover:underline">Vous êtes professionnel de santé ?</Link>
+          <Link prefetch={false} href="/livraison" className="hover:underline">Devenir livreur</Link>
+          <Link prefetch={false} href="/partenaires/api" className="hover:underline">API pour les partenaires</Link>
           <Link prefetch={false} href="/fonctionnement" className="hover:underline">Comment ça marche ?</Link>
         </nav>
       </div>
       <div className="border-t">
         <p className="container-page py-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} PharmaProxi · Projet porté et édité par{" "}
+          © {new Date().getFullYear()} SantéProxi · Projet porté et édité par{" "}
           <span className="font-semibold text-brand-deep">Yéya Ousmane Touré</span>
         </p>
       </div>

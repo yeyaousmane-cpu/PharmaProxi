@@ -13,12 +13,12 @@ import { isSimpleMode } from "@/lib/simple-mode";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "PharmaProxi — Votre pharmacie, plus proche de vous", template: "%s · PharmaProxi" },
-  description: "Trouvez les pharmacies du Mali et les médicaments qu'elles déclarent disponibles, demandez une confirmation et réservez pour un retrait.",
-  applicationName: "PharmaProxi",
+  title: { default: "SantéProxi — Toute la santé, près de chez vous", template: "%s · SantéProxi" },
+  description: "Le point d'accès numérique à la santé au Mali : pharmacies et médicaments, médecins et rendez-vous, laboratoires et prix des analyses, urgences, dossier santé personnel.",
+  applicationName: "SantéProxi",
   manifest: "/manifest.webmanifest",
   icons: { apple: "/icons/apple-touch-icon.png" },
-  openGraph: { images: ["/logo.webp"], locale: "fr_ML", siteName: "PharmaProxi" },
+  openGraph: { images: ["/logo-santeproxi.webp"], locale: "fr_ML", siteName: "SantéProxi" },
 };
 
 export const viewport: Viewport = {

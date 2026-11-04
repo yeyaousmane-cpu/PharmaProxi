@@ -84,13 +84,22 @@ export async function sys<R extends pg.QueryResultRow = any>(db: Db, sql: string
   return db.pool.query<R>(sql, params);
 }
 
-export async function createUser(db: Db, label: string, meta: Record<string, unknown> = {}) {
+/**
+ * Crée un compte de test. Depuis la 0.22, seul l'administrateur peut autoriser un compte à
+ * inscrire une pharmacie, une fiche médecin ou une clinique : par défaut, les comptes de test
+ * reçoivent ces autorisations (comme si l'administrateur les avait données) ; `{ pro: false }`
+ * crée un simple patient.
+ */
+export async function createUser(db: Db, label: string, meta: Record<string, unknown> = {}, opts: { pro?: boolean } = {}) {
   const id = randomUUID();
   await sys(db, "insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)", [
     id,
     `${label}-${id.slice(0, 6)}@test.local`,
     JSON.stringify({ full_name: label, ...meta }),
   ]);
+  if (opts.pro !== false) {
+    await sys(db, "insert into public.pro_authorizations (user_id, kind) select $1, k from unnest(array['pharmacie','medecin','clinique']) k on conflict do nothing", [id]);
+  }
   return id;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Service worker PharmaProxi.
+ * Service worker SantéProxi.
  * Règle de sécurité : on ne met JAMAIS en cache les pages de recherche, de stock,
  * de commande, de compte ni les réponses de l'API Supabase — un stock ancien ne doit pas
  * être présenté comme récent, et aucune donnée personnelle ne doit rester sur l'appareil.
@@ -7,8 +7,8 @@
  * droits, don de sang, guide AMO) sont gardées pour être lisibles sans réseau. Elles sont
  * enregistrées dans leur version anonyme (sans cookie de connexion).
  */
-const VERSION = "pp-v3";
-const STATIC = ["/offline", "/logo.webp", "/emblem.webp", "/icons/icon-192.png"];
+const VERSION = "sp-v4";
+const STATIC = ["/offline", "/logo-santeproxi.webp", "/emblem.webp", "/icons/icon-192.png"];
 const OFFLINE_PAGES = ["/premiers-secours", "/urgences", "/droits", "/don-de-sang", "/amo/guide"];
 const OFFLINE_PREFIXES = ["/premiers-secours", "/sante/fiche/", "/droits/", "/sante/urgences"];
 

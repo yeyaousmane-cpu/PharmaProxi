@@ -1,6 +1,6 @@
 # Vérifications réglementaires avant le lancement réel
 
-PharmaProxi touche à la dispensation de médicaments, aux données personnelles et, éventuellement, au transport de produits de santé. Les points ci-dessous doivent être **vérifiés par un juriste et par des professionnels habilités** au Mali avant d'ouvrir le service au public. Les institutions citées sont des interlocuteurs probables ; leur compétence exacte et les textes en vigueur sont à confirmer.
+SantéProxi touche à la dispensation de médicaments, aux données personnelles et, éventuellement, au transport de produits de santé. Les points ci-dessous doivent être **vérifiés par un juriste et par des professionnels habilités** au Mali avant d'ouvrir le service au public. Les institutions citées sont des interlocuteurs probables ; leur compétence exacte et les textes en vigueur sont à confirmer.
 
 ## 1. Statut de la plateforme
 

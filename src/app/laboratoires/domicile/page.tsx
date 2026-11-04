@@ -17,7 +17,7 @@ export default async function HomeSampling() {
       <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Home className="size-7 text-brand-blue" aria-hidden /> Prise de sang à domicile</h1>
       <p className="text-muted-foreground">Pour les personnes âgées, malades ou qui se déplacent difficilement : le laboratoire envoie une infirmière à la maison, puis apporte l&apos;échantillon au laboratoire. Choisissez un laboratoire, indiquez les analyses demandées par le médecin, votre adresse et le jour souhaité ; le laboratoire vous rappelle pour confirmer.</p>
       <p className="rounded-xl bg-muted/60 p-3 text-xs text-muted-foreground">Le prélèvement, la conservation et le transport de l&apos;échantillon sont réalisés sous la responsabilité du laboratoire et de son partenaire. Préparez l&apos;ordonnance. Une urgence ? N&apos;attendez pas : allez au centre de santé.</p>
-      {rows.length === 0 ? <p className="rounded-xl border bg-white p-4 text-sm text-muted-foreground">Aucun laboratoire ne propose encore ce service sur PharmaProxi. Les laboratoires peuvent l&apos;activer depuis leur espace.</p> : (
+      {rows.length === 0 ? <p className="rounded-xl border bg-white p-4 text-sm text-muted-foreground">Aucun laboratoire ne propose encore ce service sur SantéProxi. Les laboratoires peuvent l&apos;activer depuis leur espace.</p> : (
         <ul className="grid gap-3 sm:grid-cols-2">{rows.map((r) => (
           <li key={r.facility_id} className="flex flex-col gap-2 rounded-2xl border bg-white p-4 text-sm">
             <Link prefetch={false} href={`/laboratoires/fiche/${r.facility_id}`} className="text-base font-bold text-brand-deep hover:underline">{r.facility_listings!.name}</Link>

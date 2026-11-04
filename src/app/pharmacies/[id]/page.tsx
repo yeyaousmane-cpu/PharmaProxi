@@ -91,14 +91,14 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
               {insurers.map((i) => <Link key={i.slug} prefetch={false} href={`/assurances/${i.slug}`}><Badge className="border-blue-200 bg-blue-50 text-brand-blue">{i.name}</Badge></Link>)}
             </p>
           )}
-          {amoStatus === "declared" && <p className="text-xs text-muted-foreground">Convention AMO déclarée par la pharmacie, pas encore vérifiée par PharmaProxi : confirmez avec elle avant de vous déplacer.</p>}
+          {amoStatus === "declared" && <p className="text-xs text-muted-foreground">Convention AMO déclarée par la pharmacie, pas encore vérifiée par SantéProxi : confirmez avec elle avant de vous déplacer.</p>}
           <DutyBadge slots={duties} />
           {p.verified_at && <p className="text-xs text-muted-foreground">Vérifiée le {formatDate(p.verified_at)}</p>}
           <p className="mt-3 flex items-start gap-2 text-sm"><MapPin className="mt-0.5 size-4 shrink-0 text-brand-green" aria-hidden />{p.address} — {place}</p>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <a href={`tel:${p.phone}`} className={cn(buttonVariants({ size: "sm" }))}><Phone aria-hidden /> {formatPhone(p.phone)}</a>
             {p.whatsapp && (
-              <a href={whatsappUrl(p.whatsapp, "Bonjour, je vous contacte depuis PharmaProxi. ") ?? `https://wa.me/${p.whatsapp.replace("+", "")}`} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+              <a href={whatsappUrl(p.whatsapp, "Bonjour, je vous contacte depuis SantéProxi. ") ?? `https://wa.me/${p.whatsapp.replace("+", "")}`} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
                 <MessageCircle aria-hidden /> WhatsApp
               </a>
             )}

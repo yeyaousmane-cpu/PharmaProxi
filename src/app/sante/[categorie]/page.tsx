@@ -62,7 +62,7 @@ export default async function HealthCategory({ params }: { params: Promise<{ cat
             <ul className="mt-2 list-disc space-y-1 pl-5">
               <li>Aucun de ces examens n&apos;est une condition pour se marier, et <strong>aucune différence de groupe sanguin n&apos;interdit un mariage</strong>.</li>
               <li>Les examens se répartissent en trois niveaux : <strong>{HEALTH_RECO.recommande.label.toLowerCase()}</strong>, <strong>{HEALTH_RECO.selon_risque.label.toLowerCase()}</strong> et <strong>{HEALTH_RECO.sur_indication.label.toLowerCase()}</strong>. Un professionnel de santé vous aide à choisir.</li>
-              <li>Vos résultats vous appartiennent : PharmaProxi ne vous les demande jamais.</li>
+              <li>Vos résultats vous appartiennent : SantéProxi ne vous les demande jamais.</li>
             </ul>
           </div>
         )}

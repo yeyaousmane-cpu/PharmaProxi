@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   if (error) return json({ error: "Service momentanément indisponible." }, 502);
   return json({
     generated_at: now.toISOString(), license: LICENSE,
-    notice: "Les gardes affichées sont celles enregistrées sur PharmaProxi. Appelez la pharmacie avant de vous déplacer.",
+    notice: "Les gardes affichées sont celles enregistrées sur SantéProxi. Appelez la pharmacie avant de vous déplacer.",
     data: ((data ?? []) as Row[]).map((r) => ({ id: r.id, name: r.name, registered: r.kind === "verified", address: r.address, area: r.area, phone: r.phone,
       location: r.latitude !== null && r.longitude !== null ? { lat: r.latitude, lng: r.longitude } : null,
       starts_at: r.starts_at, ends_at: r.ends_at, status: r.status, source: r.source, distance_km: r.distance_km !== null ? Math.round(r.distance_km * 10) / 10 : null })),

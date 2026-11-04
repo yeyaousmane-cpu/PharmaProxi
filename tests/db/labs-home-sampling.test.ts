@@ -16,30 +16,24 @@ describe.skipIf(!hasDb)("Laboratoires et prélèvement à domicile", () => {
   }, 120_000);
   afterAll(async () => db?.close());
 
-  it("profil : lu à l'inscription, modifiable, valeurs contrôlées", async () => {
+  it("profil : toujours « patient » à l'inscription, non modifiable par l'utilisateur", async () => {
     const u = (await sys(db, "insert into auth.users (id, email, raw_user_meta_data) values (gen_random_uuid(), 'labo.nouveau@test.invalid', '{\"full_name\":\"Awa\",\"account_type\":\"laboratoire\"}') returning id")).rows[0].id;
-    expect((await sys(db, "select account_type from public.profiles where id = $1", [u])).rows[0].account_type).toBe("laboratoire");
-    const v = (await sys(db, "insert into auth.users (id, email, raw_user_meta_data) values (gen_random_uuid(), 'pirate@test.invalid', '{\"account_type\":\"admin\"}') returning id")).rows[0].id;
-    expect((await sys(db, "select account_type from public.profiles where id = $1", [v])).rows[0].account_type).toBe("patient");
-    await q(db, w.customerA, "select public.set_account_type('medecin')");
-    await expectError(q(db, w.customerA, "select public.set_account_type('admin')"), /invalide/);
-    await q(db, w.customerA, "select public.set_account_type('patient')");
+    expect((await sys(db, "select account_type from public.profiles where id = $1", [u])).rows[0].account_type).toBe("patient");
+    await expectError(q(db, w.customerA, "select public.set_account_type('medecin')"), /permission denied|administrateur/);
   });
 
   it("identifiants uniques attribués et distincts", async () => {
     const codes = (await sys(db, "select public_code from public.pharmacies union all select public_code from public.facility_listings")).rows.map((r) => r.public_code);
-    expect(codes.every((c) => /^PP-(PH|ET|LB)-\d{6}$/.test(c))).toBe(true);
+    expect(codes.every((c) => /^SP-(PH|ET|LB)-\d{6}$/.test(c))).toBe(true);
     expect(new Set(codes).size).toBe(codes.length);
-    expect((await sys(db, "select public_code from public.facility_listings where id = $1", [lab])).rows[0].public_code).toMatch(/^PP-LB-/);
+    expect((await sys(db, "select public_code from public.facility_listings where id = $1", [lab])).rows[0].public_code).toMatch(/^SP-LB-/);
   });
 
   it("espace laboratoire : réservé aux membres désignés par l'administrateur", async () => {
     await expectError(q(db, w.customerB, "select public.lab_save_exam($1, $2, 5000, null, '24 h')", [lab, nfs]), /réservé aux membres/);
     await expectError(q(db, w.customerB, "select public.admin_grant_lab($1, $2)", [await email(w.customerB), lab]), /administrat|réservé|PP403/i);
-    await q(db, w.customerB, "insert into public.lab_access_requests (lab_name, phone, authorization_ref) values ('Laboratoire Test', '+22370000000', 'Arrêté 2021-0042')");
-    await expectError(q(db, w.customerB, "insert into public.lab_access_requests (lab_name, phone, authorization_ref, status) values ('X', '+22370000000', 'Y', 'acceptee')"), /row-level security/);
-    const req = (await sys(db, "select id from public.lab_access_requests where user_id = $1", [w.customerB])).rows[0].id;
-    await q(db, w.admin, "select public.admin_grant_lab(null, $1, $2)", [lab, req]);
+    await expectError(q(db, w.customerB, "insert into public.lab_access_requests (lab_name, phone, authorization_ref) values ('X', '+22370000000', 'Y')"), /permission denied/);
+    await q(db, w.admin, "select public.admin_grant_lab($1, $2)", [await email(w.customerB), lab]);
     await q(db, w.customerB, "select public.lab_save_exam($1, $2, 5000, 'Tarif normal', '24 h')", [lab, nfs]);
     const row = (await q(db, null, "select price_xof, source from public.facility_exams where facility_id = $1", [lab])).rows[0];
     expect(row).toEqual({ price_xof: 5000, source: "Déclaré par le laboratoire" });

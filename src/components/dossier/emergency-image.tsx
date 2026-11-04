@@ -42,7 +42,7 @@ function draw(d: EmergencyData, show: { conditions: boolean; name: boolean }) {
   if (show.conditions && d.conditions.length) row("Maladies", d.conditions.join(", "), "#1B2B22", 46);
   if (d.phone) row(`Prévenir${d.contact ? ` : ${d.contact}` : ""}`, d.phone, "#068132", 56);
   x.fillStyle = "#A9DDB8"; x.font = "30px Arial, sans-serif";
-  x.fillText("Informations déclarées par la personne · PharmaProxi", 110, 1880);
+  x.fillText("Informations déclarées par la personne · SantéProxi", 110, 1880);
   return c;
 }
 

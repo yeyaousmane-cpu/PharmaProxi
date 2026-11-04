@@ -127,7 +127,7 @@ export default async function HealthArticlePage({ params }: { params: Promise<{ 
               {labs.map(({ exam, labs: list }) => (
                 <div key={exam.code}>
                   <p className="font-semibold">{exam.name}</p>
-                  {list.length === 0 ? <p className="text-sm text-muted-foreground">Aucun établissement n&apos;a encore déclaré cet examen sur PharmaProxi.</p> : (
+                  {list.length === 0 ? <p className="text-sm text-muted-foreground">Aucun établissement n&apos;a encore déclaré cet examen sur SantéProxi.</p> : (
                     <ul className="mt-1 divide-y text-sm">
                       {list.map((l) => (
                         <li key={l.facility_id} className="flex flex-wrap items-center justify-between gap-2 py-2">

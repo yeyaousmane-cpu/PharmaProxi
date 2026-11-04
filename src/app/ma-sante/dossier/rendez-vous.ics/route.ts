@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   if (!who) return new NextResponse("Dossier verrouillé ou introuvable. Ouvrez votre dossier puis réessayez.", { status: 403 });
   const today = new Date().toISOString().slice(0, 10);
   const { data } = await supabase.from("record_items").select("id, title, event_date, event_time, place").eq("person_id", who.id).eq("kind", "rendez_vous").gte("event_date", today).limit(50);
-  const ics = buildIcs("PharmaProxi — rendez-vous", (data ?? []).map((r) => ({
+  const ics = buildIcs("SantéProxi — rendez-vous", (data ?? []).map((r) => ({
     uid: `rdv-${r.id}`, start: r.event_time ? `${r.event_date}T${r.event_time}` : r.event_date!, allDay: !r.event_time, durationMin: 60, alarmMin: r.event_time ? 120 : undefined,
     title: `Rendez-vous médical${who.is_self ? "" : ` (${who.display_name})`}`, description: [r.title, r.place].filter(Boolean).join(" — "),
   })));

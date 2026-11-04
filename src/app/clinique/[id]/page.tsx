@@ -157,7 +157,7 @@ export default async function ManageClinic({ params, searchParams }: { params: P
                     <Input id="medecin" name="medecin" placeholder="Nom du médecin" defaultValue={q} minLength={2} maxLength={80} />
                     <Button type="submit" variant="secondary"><Search aria-hidden /> Chercher</Button>
                   </form>
-                  {q.length >= 2 && candidates.length === 0 && <p className="mt-2 text-sm text-muted-foreground">Aucun médecin vérifié trouvé. Le médecin doit d&apos;abord <Link prefetch={false} href="/medecin/inscription" className="underline">référencer sa pratique</Link>.</p>}
+                  {q.length >= 2 && candidates.length === 0 && <p className="mt-2 text-sm text-muted-foreground">Aucun médecin vérifié trouvé. Le médecin doit d&apos;abord être ajouté par l&apos;équipe SantéProxi (<Link prefetch={false} href="/professionnels?type=medecin" className="underline">demande professionnelle</Link>).</p>}
                   <ul className="mt-3 space-y-3">
                     {candidates.map((d) => (
                       <li key={d.doctor_id} className="rounded-lg bg-muted/50 p-3">
@@ -189,7 +189,7 @@ export default async function ManageClinic({ params, searchParams }: { params: P
                   <ClinicFormFields geo={geo} v={{ ...c, ...(priv ?? {}) }} />
                   <SubmitButton>Enregistrer les modifications</SubmitButton>
                 </ActionForm>
-              ) : <Alert tone="warning" title="Établissement suspendu : modification impossible. Contactez l'équipe PharmaProxi." />}
+              ) : <Alert tone="warning" title="Établissement suspendu : modification impossible. Contactez l'équipe SantéProxi." />}
             </CardContent>
           </Card>
         </div>
@@ -250,7 +250,7 @@ export default async function ManageClinic({ params, searchParams }: { params: P
               {isOwner && editable && (
                 <ActionForm action={clinicAddMember} resetOnSuccess className="flex flex-col gap-2 sm:flex-row sm:items-end">
                   <input type="hidden" name="clinic_id" value={c.id} />
-                  <Field label="Ajouter un membre (e-mail de son compte PharmaProxi)" htmlFor="team-email" className="flex-1"><Input id="team-email" name="email" type="email" required autoComplete="off" /></Field>
+                  <Field label="Ajouter un membre (e-mail de son compte SantéProxi)" htmlFor="team-email" className="flex-1"><Input id="team-email" name="email" type="email" required autoComplete="off" /></Field>
                   <SubmitButton variant="secondary">Ajouter</SubmitButton>
                 </ActionForm>
               )}

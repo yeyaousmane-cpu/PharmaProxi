@@ -115,7 +115,7 @@ export default async function AdminNursesPage({ searchParams }: { searchParams: 
                   <SubmitButton size="sm" variant="outline">Enregistrer</SubmitButton>
                 </ActionForm>
                 <ActionForm action={updateNurse}><input type="hidden" name="id" value={n.id} /><input type="hidden" name="published" value={String(!n.is_published)} />
-                  <SubmitButton size="sm" variant="ghost" confirm={n.is_published ? "Retirer cette personne de PharmaProxi (à sa demande) ?" : undefined}>{n.is_published ? "Retirer (à sa demande)" : "Republier"}</SubmitButton></ActionForm>
+                  <SubmitButton size="sm" variant="ghost" confirm={n.is_published ? "Retirer cette personne de SantéProxi (à sa demande) ?" : undefined}>{n.is_published ? "Retirer (à sa demande)" : "Republier"}</SubmitButton></ActionForm>
               </li>
             ))}
           </ul>

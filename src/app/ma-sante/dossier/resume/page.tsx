@@ -82,7 +82,7 @@ export default async function Resume({ searchParams }: { searchParams: Promise<{
             <h1 className="text-2xl font-bold text-brand-deep">{person.display_name}</h1>
             <p className="text-sm">{[person.birth_year ? `${tr("born", lang)} ${person.birth_year}${age !== null ? ` (${age} ${lang === "en" ? "years" : "ans"})` : ""}` : null, person.sex ? tr(person.sex as "F" | "M", lang) : null].filter(Boolean).join(" · ")}</p>
           </div>
-          <p className="text-xs text-muted-foreground">{tr("summary", lang)}{full ? (lang === "en" ? " — full copy" : " — copie complète") : ""} · {tr("printed", lang)} {fmtDate(new Date().toISOString(), lang)} · PharmaProxi</p>
+          <p className="text-xs text-muted-foreground">{tr("summary", lang)}{full ? (lang === "en" ? " — full copy" : " — copie complète") : ""} · {tr("printed", lang)} {fmtDate(new Date().toISOString(), lang)} · SantéProxi</p>
         </header>
         <p className="rounded-lg bg-amber-50 p-2 text-xs text-amber-900">{tr("declared", lang)}</p>
 

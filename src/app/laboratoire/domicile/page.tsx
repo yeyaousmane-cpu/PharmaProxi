@@ -20,7 +20,7 @@ export default async function LabHome({ searchParams }: { searchParams: Promise<
     <LabShell labs={ctx.labs} current={ctx.current} active="/domicile">
       <section className="space-y-3 rounded-2xl border bg-white p-4 sm:p-5">
         <h2 className="text-lg font-bold text-brand-deep">Prélèvement à domicile</h2>
-        <p className="text-sm text-muted-foreground">Une infirmière de votre laboratoire, ou de votre partenaire de soins à domicile, se déplace chez le patient et rapporte l&apos;échantillon au laboratoire. <strong>Le respect des conditions de prélèvement, de conservation et de transport reste sous la responsabilité du laboratoire et de son partenaire.</strong> PharmaProxi transmet seulement la demande.</p>
+        <p className="text-sm text-muted-foreground">Une infirmière de votre laboratoire, ou de votre partenaire de soins à domicile, se déplace chez le patient et rapporte l&apos;échantillon au laboratoire. <strong>Le respect des conditions de prélèvement, de conservation et de transport reste sous la responsabilité du laboratoire et de son partenaire.</strong> SantéProxi transmet seulement la demande.</p>
         <ActionForm action={saveHomeService} className="grid gap-3 sm:grid-cols-2">
           <input type="hidden" name="facility_id" value={fid} />
           <label className="flex items-center gap-2 text-sm font-semibold sm:col-span-2"><input type="checkbox" name="enabled" defaultChecked={svc?.enabled} className="size-4" /> Nous proposons le prélèvement à domicile</label>

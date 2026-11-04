@@ -1,10 +1,10 @@
-# PharmaProxi
+# SantéProxi
 
-**Votre pharmacie, plus proche de vous.** Plateforme malienne pour localiser les pharmacies, connaître les médicaments qu'elles déclarent disponibles (avec la date de mise à jour), demander une confirmation, réserver pour un retrait et — lorsque c'est autorisé — se faire livrer. Depuis la v0.3, elle comprend aussi un **annuaire médical vérifié** : médecins par spécialité, établissements où ils consultent, jours de consultation et contacts.
+**Toute la santé, près de chez vous.** Le point d'accès numérique à l'écosystème sanitaire malien (anciennement PharmaProxi) : pharmacies, médecins, laboratoires, urgences et dossier santé personnel. Plateforme pour localiser les pharmacies, connaître les médicaments qu'elles déclarent disponibles (avec la date de mise à jour), demander une confirmation, réserver pour un retrait et — lorsque c'est autorisé — se faire livrer. Depuis la v0.3, elle comprend aussi un **annuaire médical vérifié** : médecins par spécialité, établissements où ils consultent, jours de consultation et contacts.
 
-Version **0.3.0** — éditeur : Yéya Ousmane Touré.
+Version **0.22.0** — éditeur : Yéya Ousmane Touré.
 
-> PharmaProxi ne recommande aucun médicament ni aucun médecin, ne pose aucun diagnostic et ne remplace pas l'avis d'un professionnel de santé. En cas d'urgence, appelez les secours.
+> SantéProxi ne recommande aucun médicament ni aucun médecin, ne pose aucun diagnostic et ne remplace pas l'avis d'un professionnel de santé. En cas d'urgence, appelez les secours.
 
 ---
 

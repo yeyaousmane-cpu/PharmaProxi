@@ -62,7 +62,7 @@ export function FindProfessionals({ specialty, title = "Trouver un professionnel
   return (
     <section aria-label={title} className="rounded-2xl border bg-[#052D1E] p-5 text-white">
       <h2 className="text-lg font-bold">{title}</h2>
-      <p className="mt-1 text-sm text-white/80">Les professionnels et établissements référencés sur PharmaProxi, près de chez vous.</p>
+      <p className="mt-1 text-sm text-white/80">Les professionnels et établissements référencés sur SantéProxi, près de chez vous.</p>
       <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {links.map(([href, label, Icon]) => (
           <li key={href}>

@@ -17,9 +17,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (!a || a.status !== "confirmed" || !a.scheduled_at) return new NextResponse("Rendez-vous introuvable", { status: 404 });
   const start = new Date(a.scheduled_at);
   const end = a.ends_at ? new Date(a.ends_at) : new Date(start.getTime() + 30 * 60_000);
-  const desc = [a.type_name && `Motif : ${a.type_name}`, a.instructions && `À savoir : ${a.instructions}`, a.phone && `Téléphone : ${a.phone}`, "Rendez-vous pris sur PharmaProxi"].filter(Boolean).join("\n");
+  const desc = [a.type_name && `Motif : ${a.type_name}`, a.instructions && `À savoir : ${a.instructions}`, a.phone && `Téléphone : ${a.phone}`, "Rendez-vous pris sur SantéProxi"].filter(Boolean).join("\n");
   const ics = [
-    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//PharmaProxi//Rendez-vous//FR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SantéProxi//Rendez-vous//FR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
     "BEGIN:VEVENT", `UID:${a.id}@pharmaproxi`, `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`,
     `SUMMARY:${esc(`Rendez-vous — ${a.doctor_label}`)}`, `LOCATION:${esc(`${a.clinic_name}, ${a.clinic_address}`)}`, `DESCRIPTION:${esc(desc)}`,
     "BEGIN:VALARM", "TRIGGER:-PT2H", "ACTION:DISPLAY", "DESCRIPTION:Rendez-vous médical dans 2 heures", "END:VALARM",

@@ -63,7 +63,7 @@ export default async function LabPage({ params }: { params: Promise<{ id: string
                 </li>))}</ul>
             </div>))
         )}
-        {exams.length > 0 && <p className="text-xs text-muted-foreground">Source : {exams[0].source}{exams[0].verified_at ? `, information du ${formatDate(exams[0].verified_at)}` : ""}. Confirmez le prix et les conditions (ordonnance, jeûne) par téléphone. PharmaProxi ne choisit pas les analyses : c&apos;est le rôle de votre médecin.</p>}
+        {exams.length > 0 && <p className="text-xs text-muted-foreground">Source : {exams[0].source}{exams[0].verified_at ? `, information du ${formatDate(exams[0].verified_at)}` : ""}. Confirmez le prix et les conditions (ordonnance, jeûne) par téléphone. SantéProxi ne choisit pas les analyses : c&apos;est le rôle de votre médecin.</p>}
       </section>
     </div>
   );

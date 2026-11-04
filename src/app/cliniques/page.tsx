@@ -123,7 +123,7 @@ export default async function ClinicsPage({ searchParams }: { searchParams: Prom
         <div className="rounded-xl border border-dashed bg-white p-8 text-center">
           <SearchX className="mx-auto size-8 text-muted-foreground" aria-hidden />
           <p className="mt-2 font-semibold">Aucun établissement référencé ne correspond.</p>
-          <p className="mt-1 text-sm text-muted-foreground">L&apos;annuaire se construit avec les établissements qui demandent leur référencement. <Link prefetch={false} href="/clinique/inscription" className="font-semibold text-brand-blue underline">Inscrire un établissement</Link>.</p>
+          <p className="mt-1 text-sm text-muted-foreground">L&apos;annuaire se construit avec les établissements qui demandent leur référencement. <Link prefetch={false} href="/professionnels?type=clinique" className="font-semibold text-brand-blue underline">Demander le référencement</Link>.</p>
         </div>
       ) : (
         <>
@@ -166,7 +166,7 @@ export default async function ClinicsPage({ searchParams }: { searchParams: Prom
         <section aria-labelledby="others-title" className="space-y-3">
           <div>
             <h2 id="others-title" className="text-lg font-bold">Autres établissements, pas encore vérifiés ({otherTotal})</h2>
-            <p className="text-sm text-muted-foreground">Informations non vérifiées par PharmaProxi (nom, ville, téléphone). Appelez avant de vous déplacer. Établissement concerné ? <Link prefetch={false} href="/clinique/inscription" className="font-semibold text-brand-blue underline">Inscrivez-vous</Link> pour afficher vos médecins et vos horaires.</p>
+            <p className="text-sm text-muted-foreground">Informations non vérifiées par SantéProxi (nom, ville, téléphone). Appelez avant de vous déplacer. Établissement concerné ? <Link prefetch={false} href="/professionnels?type=clinique" className="font-semibold text-brand-blue underline">Faites une demande</Link> pour afficher vos médecins et vos horaires.</p>
           </div>
           <ul className="grid gap-3 md:grid-cols-2">
             {others.map((f) => (

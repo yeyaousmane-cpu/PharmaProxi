@@ -36,7 +36,7 @@ export default async function RemindersPage() {
           <label className="space-y-1 text-sm font-medium">Répétition<select name="repeat" className={F.input}>{Object.entries(REPEATS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
           <div className="flex items-end"><SubmitButton className={`${F.btn} w-full`}>Programmer</SubmitButton></div>
         </ActionForm>
-        <p className="text-xs text-muted-foreground">Le rappel arrive dans vos notifications PharmaProxi avec un texte neutre (« Vous avez un rappel ») : son contenu n&apos;apparaît qu&apos;une fois votre espace ouvert. Les rappels de traitement concernent uniquement des traitements prescrits.</p>
+        <p className="text-xs text-muted-foreground">Le rappel arrive dans vos notifications SantéProxi avec un texte neutre (« Vous avez un rappel ») : son contenu n&apos;apparaît qu&apos;une fois votre espace ouvert. Les rappels de traitement concernent uniquement des traitements prescrits.</p>
       </section>
       <section className={`${F.card} space-y-2`}>
         <h2 className={F.h2}>Mes rappels</h2>

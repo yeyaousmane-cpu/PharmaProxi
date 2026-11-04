@@ -102,7 +102,7 @@ export default async function InsurerPage({ params, searchParams }: { params: Pr
                 </p>
               )}
               {r.pharmacy_id && (
-                <Link prefetch={false} href={`/pharmacies/${r.pharmacy_id}`} className="mt-2 inline-flex items-center gap-1.5 font-semibold text-primary underline"><Store className="size-3.5" aria-hidden />Voir ses produits sur PharmaProxi</Link>
+                <Link prefetch={false} href={`/pharmacies/${r.pharmacy_id}`} className="mt-2 inline-flex items-center gap-1.5 font-semibold text-primary underline"><Store className="size-3.5" aria-hidden />Voir ses produits sur SantéProxi</Link>
               )}
             </li>
           ))}

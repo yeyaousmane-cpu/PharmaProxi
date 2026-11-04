@@ -29,7 +29,7 @@ export default async function Measures({ searchParams }: { searchParams: Promise
     <div className="container-page max-w-3xl space-y-5 py-6">
       <header className="space-y-2 print:hidden">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Activity className="size-7 text-primary" aria-hidden /> Tension et glycémie</h1>
-        <p className="text-muted-foreground">Notez vos mesures et montrez le graphique ou le tableau à votre médecin. PharmaProxi n&apos;interprète pas les valeurs : seul votre médecin le peut.</p>
+        <p className="text-muted-foreground">Notez vos mesures et montrez le graphique ou le tableau à votre médecin. SantéProxi n&apos;interprète pas les valeurs : seul votre médecin le peut.</p>
       </header>
       <div className="print:hidden"><SanteNav current="/ma-sante/mesures" /></div>
       <nav aria-label="Type de mesure" className="flex gap-2 print:hidden">

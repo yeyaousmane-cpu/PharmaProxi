@@ -38,9 +38,9 @@ export default async function Home() {
       <section className="bogolan border-b">
         <div className="container-page grid items-center gap-8 py-8 md:grid-cols-[1fr_1.2fr] md:py-14">
           <div className="flex flex-col items-center text-center md:items-start md:text-left">
-            <Image src="/logo-320.webp" alt="PharmaProxi — Votre pharmacie, plus proche de vous." width={320} height={320} priority className="h-40 w-40 rounded-3xl bg-white p-2 shadow-sm md:h-64 md:w-64" />
+            <Image src="/logo-santeproxi-320.webp" alt="SantéProxi — Toute la santé, près de chez vous." width={320} height={320} priority className="h-40 w-40 rounded-3xl bg-white p-2 shadow-sm md:h-64 md:w-64" />
             <p className="mt-2 max-w-md text-muted-foreground">
-              Trouvez quelle pharmacie déclare avoir votre médicament, à quel prix, et faites-le confirmer avant de vous déplacer.
+              Pharmacies et médicaments, médecins, laboratoires, urgences et votre dossier santé : trouvez le bon soin près de chez vous.
             </p>
           </div>
           <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6">
@@ -62,7 +62,7 @@ export default async function Home() {
         </Link>
         <Link prefetch={false} href="/femme" className="flex items-center gap-3 rounded-xl border border-[#D96A91]/40 bg-[#F8E7EF] p-4 transition hover:border-[#D96A91] hover:shadow-sm">
           <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#D96A91] text-white"><Flower2 className="size-6" aria-hidden /></span>
-          <span className="min-w-0"><span className="block font-bold text-[#843653]">PharmaProxi Femme</span>
+          <span className="min-w-0"><span className="block font-bold text-[#843653]">SantéProxi Femme</span>
             <span className="block text-sm text-muted-foreground">Règles, fertilité, grossesse, symptômes : votre espace privé et protégé.</span></span>
           <span className="ml-auto hidden shrink-0 text-sm font-semibold text-[#843653] sm:block">Ouvrir</span>
         </Link>
@@ -117,8 +117,8 @@ export default async function Home() {
             <Store className="mx-auto size-8 text-muted-foreground" aria-hidden />
             <p className="mt-2 font-medium">Aucune pharmacie vérifiée pour le moment.</p>
             <p className="text-sm text-muted-foreground">
-              PharmaProxi est en cours de déploiement. <ProOnly>Vous êtes pharmacien ?{" "}
-              <Link prefetch={false} href="/pharmacien/inscription" className="font-semibold text-primary underline">Inscrivez votre pharmacie</Link>.</ProOnly>
+              SantéProxi est en cours de déploiement. <ProOnly>Vous êtes pharmacien ?{" "}
+              <Link prefetch={false} href="/professionnels?type=pharmacie" className="font-semibold text-primary underline">Rejoignez SantéProxi</Link>.</ProOnly>
             </p>
           </div>
         ) : (
@@ -159,7 +159,7 @@ export default async function Home() {
             Les médicaments sur ordonnance sont délivrés en pharmacie, sur présentation de l&apos;ordonnance. Ils ne sont jamais livrés automatiquement.
           </Alert>
           <Alert tone="error" title="Pas d'automédication">
-            PharmaProxi ne pose aucun diagnostic et ne recommande aucun médicament. Demandez conseil à un professionnel de santé.
+            SantéProxi ne pose aucun diagnostic et ne recommande aucun médicament. Demandez conseil à un professionnel de santé.
           </Alert>
         </div>
         <Link prefetch={false} href="/infos/securite" className="mt-4 inline-block text-sm font-semibold text-primary hover:underline">Lire toutes les consignes</Link>

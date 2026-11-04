@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "PharmaProxi",
-    short_name: "PharmaProxi",
-    description: "Trouvez une pharmacie et un médicament au Mali.",
+    name: "SantéProxi",
+    short_name: "SantéProxi",
+    description: "Pharmacies, médecins, laboratoires et dossier santé au Mali.",
     start_url: "/",
     scope: "/",
     display: "standalone",

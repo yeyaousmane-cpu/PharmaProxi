@@ -15,7 +15,7 @@ export default async function FemmeLayout({ children }: { children: React.ReactN
         <div className="flex items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#F8E7EF] text-[#D96A91]"><Flower2 className="size-6" aria-hidden /></span>
           <div className="min-w-0">
-            <p className="text-lg font-bold leading-tight text-[#843653]">{discreet ? "Mon espace" : "PharmaProxi Femme"}</p>
+            <p className="text-lg font-bold leading-tight text-[#843653]">{discreet ? "Mon espace" : "SantéProxi Femme"}</p>
             {!discreet && <p className="text-xs text-[#843653]/80">Votre corps, votre santé, votre équilibre.</p>}
           </div>
           {open && st.has_pin && (

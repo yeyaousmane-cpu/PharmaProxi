@@ -116,5 +116,5 @@ export async function declarePharmacyAmo(_: ActionState, fd: FormData): Promise<
   revalidatePath("/pharmacien/ma-pharmacie");
   revalidatePath(`/pharmacies/${id.data}`);
   revalidatePath("/admin/amo");
-  return { ok: true, message: on ? "Déclaration enregistrée : l'équipe PharmaProxi la vérifiera." : "Convention AMO retirée de votre fiche." };
+  return { ok: true, message: on ? "Déclaration enregistrée : l'équipe SantéProxi la vérifiera." : "Convention AMO retirée de votre fiche." };
 }

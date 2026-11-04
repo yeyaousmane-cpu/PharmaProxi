@@ -69,7 +69,7 @@ export default async function MyPharmacy({ searchParams }: { searchParams: Promi
             <CardContent className="space-y-3 text-sm">
               {amo?.status === "verified" && <Alert tone="success" title="Convention vérifiée">Votre fiche affiche « Conventionnée AMO ».</Alert>}
               {amo?.status === "declared" && <Alert tone="info" title="Déclaration en cours de vérification">Le badge est affiché avec la mention « déclarée » jusqu&apos;à la vérification.</Alert>}
-              {amo?.status === "rejected" && <Alert tone="warning" title="Déclaration non retenue">{amo.note ?? "Contactez l'équipe PharmaProxi."}</Alert>}
+              {amo?.status === "rejected" && <Alert tone="warning" title="Déclaration non retenue">{amo.note ?? "Contactez l'équipe SantéProxi."}</Alert>}
               {isOwner ? (
                 amo?.status === "declared" || amo?.status === "verified" ? (
                   <ActionForm action={declarePharmacyAmo}>

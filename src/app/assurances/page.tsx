@@ -49,7 +49,7 @@ export default async function InsurancePage() {
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>Ayez toujours sur vous votre <strong>carte d&apos;assuré</strong> et, pour les médicaments, l&apos;<strong>ordonnance</strong>.</li>
           <li>Le taux de prise en charge, les plafonds et les médicaments couverts dépendent de <strong>votre contrat</strong> : en cas de doute, appelez votre assureur avant les soins.</li>
-          <li>Les listes de partenaires changent : PharmaProxi affiche la liste communiquée par l&apos;assureur, à la date indiquée.</li>
+          <li>Les listes de partenaires changent : SantéProxi affiche la liste communiquée par l&apos;assureur, à la date indiquée.</li>
           <li>Vous êtes assuré AMO ? Voir aussi <Link prefetch={false} href="/amo" className="text-primary underline">les médicaments pris en charge par l&apos;AMO</Link>.</li>
         </ul>
         <p className="mt-3 text-xs text-muted-foreground">Vous êtes une assurance ou une mutuelle et souhaitez publier votre réseau ? <Link prefetch={false} href="/infos/contact" className="underline">Contactez-nous</Link>.</p>

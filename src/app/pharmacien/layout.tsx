@@ -12,7 +12,9 @@ const NAV = [
 ];
 
 export default async function PharmacistLayout({ children }: { children: React.ReactNode }) {
-  await requireUser("/pharmacien");
+  const s = await requireUser("/pharmacien");
+  // Pas encore pharmacien (inscription en attente d'autorisation) : pas de menu de l'espace pharmacien
+  if (!s.roles.includes("pharmacist") && !s.roles.includes("admin")) return <div className="container-page py-6">{children}</div>;
   return (
     <div className="container-page py-6">
       <ProGuard path="/pharmacien" />

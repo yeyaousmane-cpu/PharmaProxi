@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { FolderHeart, Lock, ShieldCheck } from "lucide-react";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
-import { lockDossier, unlockDossier } from "@/app/actions/dossier";
+import { unlockDossier } from "@/app/actions/dossier";
+import { LockBadge } from "@/components/dossier/lock-badge";
 import { SanteNav } from "@/components/sante-perso/nav";
 import { RELATIONS } from "@/lib/dossier/config";
 import type { DossierStatus, Person } from "@/lib/dossier/server";
 import { cn } from "@/lib/utils";
 import { AudioGuide } from "@/components/audio/audio-guide";
 
-export const DOSSIER_PRIVACY = "Votre dossier est visible par vous seul : ni médecin, ni pharmacie, ni assureur, ni PharmaProxi n'y ont accès. C'est vous qui le montrez, sur votre téléphone. Rien n'est utilisé pour de la publicité ni par l'assistant. Tout est effacé si vous supprimez votre compte.";
+export const DOSSIER_PRIVACY = "Votre dossier est visible par vous seul : ni médecin, ni pharmacie, ni assureur, ni SantéProxi n'y ont accès. C'est vous qui le montrez, sur votre téléphone. Rien n'est utilisé pour de la publicité ni par l'assistant. Tout est effacé si vous supprimez votre compte.";
 
 const NAV = [
   ["", "Essentiel"], ["/antecedents", "Antécédents et vaccins"], ["/analyses", "Analyses"], ["/consultations", "Consultations"],
@@ -19,9 +20,12 @@ export function DossierGate({ status, path }: { status: DossierStatus; path: str
   return (
     <div className="container-page max-w-md space-y-4 py-8">
       <section className="space-y-4 rounded-2xl border bg-white p-6 text-center">
-        <Lock className="mx-auto size-10 text-primary" aria-hidden />
+        <span className="relative mx-auto grid size-20 place-items-center rounded-full bg-primary text-white shadow-md">
+          <Lock className="size-10" aria-hidden />
+          <ShieldCheck className="absolute -bottom-1 -right-1 size-8 rounded-full bg-white p-1 text-primary" aria-hidden />
+        </span>
         <h1 className="text-xl font-bold text-brand-deep">Dossier santé verrouillé</h1>
-        <p className="text-sm text-muted-foreground">Saisissez votre code pour l&apos;ouvrir.</p>
+        <p className="text-sm text-muted-foreground">Protégé par votre code : vous seul pouvez l&apos;ouvrir. Saisissez-le pour continuer.</p>
         {status.blocked_until && <p className="text-sm font-semibold text-red-700">Trop d&apos;essais : réessayez après {new Date(status.blocked_until).toISOString().slice(11, 16)} (heure du Mali).</p>}
         <ActionForm action={unlockDossier} className="space-y-3">
           <input type="hidden" name="back" value={path} />
@@ -46,10 +50,8 @@ export function DossierShell({ persons, person, status, current, children }: {
       <header className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><FolderHeart className="size-7 text-primary" aria-hidden /> Mon dossier santé</h1>
-          {status.has_pin
-            ? <form action={lockDossier}><button className="flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-sm font-semibold hover:border-primary"><Lock className="size-4" aria-hidden /> Verrouiller</button></form>
-            : <Link prefetch={false} href="/ma-sante/dossier/code" className="flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-900"><Lock className="size-4" aria-hidden /> Protéger par un code</Link>}
         </div>
+        <LockBadge hasPin={Boolean(status.has_pin)} />
         <AudioGuide target="dossier-sante" />
         <p className="flex items-start gap-2 text-xs text-muted-foreground"><ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />{DOSSIER_PRIVACY}</p>
       </header>

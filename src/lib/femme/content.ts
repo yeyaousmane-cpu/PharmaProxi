@@ -1,7 +1,7 @@
 /**
- * Contenus pédagogiques généraux de PharmaProxi Femme.
+ * Contenus pédagogiques généraux de SantéProxi Femme.
  * Ils résument des recommandations publiques (OMS) et des repères médicaux courants ;
- * ils ne sont pas présentés comme « validés par un professionnel PharmaProxi » tant qu'un
+ * ils ne sont pas présentés comme « validés par un professionnel SantéProxi » tant qu'un
  * validateur ne les a pas relus dans la bibliothèque santé.
  */
 export const SOURCES = [

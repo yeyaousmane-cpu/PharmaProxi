@@ -139,7 +139,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
         </div>
       </Section>
 
-      <Section id="gardes" title="Couverture des gardes (prochaines 24 heures)" icon={Store} note="Communes ayant des pharmacies vérifiées mais aucune garde enregistrée sur PharmaProxi dans les 24 heures. Cela peut venir d'un tableau de garde non saisi : à vérifier avec l'Ordre des pharmaciens.">
+      <Section id="gardes" title="Couverture des gardes (prochaines 24 heures)" icon={Store} note="Communes ayant des pharmacies vérifiées mais aucune garde enregistrée sur SantéProxi dans les 24 heures. Cela peut venir d'un tableau de garde non saisi : à vérifier avec l'Ordre des pharmaciens.">
         {gp.length ? (
           <ul className="grid gap-2 text-sm sm:grid-cols-2">{gp.slice(0, 20).map((g) => (
             <li key={`${g.region}-${g.commune}`} className={cn("flex justify-between rounded-lg border px-3 py-2", Number(g.on_duty_24h) === 0 && "border-amber-300 bg-amber-50")}>
@@ -176,7 +176,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
       </div>
 
       {sp2 && (
-        <Section id="offre" title="Offre de soins référencée" icon={Building2} note={`Structures publiées sur PharmaProxi (pharmacies inscrites et vérifiées, autres officines de l'annuaire, établissements et laboratoires référencés, soins à domicile) et médecins du tableau de l'Ordre${sp2.register_year ? ` ${sp2.register_year}` : ""}. Ce sont des comptes d'établissements publics, pas de personnes. Le référencement n'est pas encore complet : un chiffre bas peut signaler un manque de référencement autant qu'un manque de structures.`}>
+        <Section id="offre" title="Offre de soins référencée" icon={Building2} note={`Structures publiées sur SantéProxi (pharmacies inscrites et vérifiées, autres officines de l'annuaire, établissements et laboratoires référencés, soins à domicile) et médecins du tableau de l'Ordre${sp2.register_year ? ` ${sp2.register_year}` : ""}. Ce sont des comptes d'établissements publics, pas de personnes. Le référencement n'est pas encore complet : un chiffre bas peut signaler un manque de référencement autant qu'un manque de structures.`}>
           <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead><tr className="text-left text-xs text-muted-foreground"><th className="py-1">Région</th><th>Pharmacies inscrites</th><th>Autres officines</th><th>Médecins (tableau)</th><th>Établissements</th><th>Laboratoires</th><th>Prise de sang à domicile</th><th>Soins à domicile</th></tr></thead>
             <tbody>{sp2.by_region.map((r) => (
@@ -196,7 +196,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
           </div>
         </Section>
       )}
-      <p className="text-xs text-muted-foreground">Ces chiffres viennent des usages de PharmaProxi (surtout des utilisateurs de smartphone, plutôt en ville) : ce sont des signaux d&apos;alerte, pas des statistiques officielles. Ils complètent le système national d&apos;information sanitaire, ils ne le remplacent pas. <Link prefetch={false} href="/autorites/methode" className="underline">Méthode</Link>.</p>
+      <p className="text-xs text-muted-foreground">Ces chiffres viennent des usages de SantéProxi (surtout des utilisateurs de smartphone, plutôt en ville) : ce sont des signaux d&apos;alerte, pas des statistiques officielles. Ils complètent le système national d&apos;information sanitaire, ils ne le remplacent pas. <Link prefetch={false} href="/autorites/methode" className="underline">Méthode</Link>.</p>
     </div>
   );
 }

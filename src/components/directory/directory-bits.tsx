@@ -57,7 +57,7 @@ export function NotDirectoryAdvice() {
   return (
     <p className="flex items-start gap-2 text-xs text-muted-foreground">
       <AlertTriangle className="mt-0.5 size-3 shrink-0" aria-hidden />
-      Annuaire informatif : les médecins sont présentés par ordre alphabétique ou par distance, sans classement ni publicité. Les informations sont déclarées par les professionnels et vérifiées par PharmaProxi.
+      Annuaire informatif : les médecins sont présentés par ordre alphabétique ou par distance, sans classement ni publicité. Les informations sont déclarées par les professionnels et vérifiées par SantéProxi.
     </p>
   );
 }

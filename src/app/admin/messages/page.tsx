@@ -52,7 +52,7 @@ export default async function AdminMessages({ searchParams }: { searchParams: Pr
                 <CardContent className="space-y-3 text-sm">
                   <p className="whitespace-pre-wrap rounded-lg bg-muted/60 p-3">{m.message}</p>
                   <div className="flex flex-wrap gap-3">
-                    {m.email && <a href={`mailto:${m.email}?subject=${encodeURIComponent("Votre message à PharmaProxi")}`} className="inline-flex items-center gap-1 font-medium text-brand-blue underline"><Mail className="size-4" aria-hidden /> {m.email}</a>}
+                    {m.email && <a href={`mailto:${m.email}?subject=${encodeURIComponent("Votre message à SantéProxi")}`} className="inline-flex items-center gap-1 font-medium text-brand-blue underline"><Mail className="size-4" aria-hidden /> {m.email}</a>}
                     {m.phone && <a href={`tel:${m.phone}`} className="inline-flex items-center gap-1 font-medium text-brand-blue underline"><Phone className="size-4" aria-hidden /> {formatPhone(m.phone)}</a>}
                   </div>
                   <ActionForm action={updateContactMessage} className="flex flex-col gap-2 sm:flex-row sm:items-center">

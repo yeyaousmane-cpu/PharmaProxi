@@ -161,7 +161,7 @@ export default async function DoctorSpace({ searchParams }: { searchParams: Prom
                 <details className="rounded-lg border border-dashed p-3" open={(sites ?? []).length === 0}>
                   <summary className="cursor-pointer font-semibold">Ajouter un lieu de consultation</summary>
                   <ActionForm action={proposeSite} resetOnSuccess className="mt-3 space-y-3">
-                    <Field label="Établissement" htmlFor="clinic_id" required hint="Seuls les établissements déjà vérifiés par PharmaProxi sont proposés.">
+                    <Field label="Établissement" htmlFor="clinic_id" required hint="Seuls les établissements déjà vérifiés par SantéProxi sont proposés.">
                       <Select id="clinic_id" name="clinic_id" required defaultValue="">
                         <option value="" disabled>Choisir un établissement</option>
                         {clinicOptions.map((c) => (
@@ -169,7 +169,7 @@ export default async function DoctorSpace({ searchParams }: { searchParams: Prom
                         ))}
                       </Select>
                     </Field>
-                    <p className="text-xs text-muted-foreground">Votre établissement n&apos;est pas dans la liste ? <Link prefetch={false} href="/clinique/inscription" className="font-semibold underline">Inscrivez-le</Link> (ou demandez à son responsable de le faire).</p>
+                    <p className="text-xs text-muted-foreground">Votre établissement n&apos;est pas dans la liste ? <Link prefetch={false} href="/professionnels?type=clinique" className="font-semibold underline">Demandez son référencement</Link> à l&apos;équipe SantéProxi.</p>
                     <ScheduleFields idPrefix="new" legend="Jours et horaires de consultation" />
                     <Field label="Téléphone de rendez-vous (facultatif)" htmlFor="new-phone" hint="Secrétariat recommandé. Sinon, le numéro de l'établissement est affiché.">
                       <Input id="new-phone" name="appointment_phone" type="tel" />
@@ -192,7 +192,7 @@ export default async function DoctorSpace({ searchParams }: { searchParams: Prom
                   }} />
                   <SubmitButton>Enregistrer</SubmitButton>
                 </ActionForm>
-              ) : <Alert tone="warning" title="Fiche suspendue : modification impossible. Contactez l'équipe PharmaProxi." />}
+              ) : <Alert tone="warning" title="Fiche suspendue : modification impossible. Contactez l'équipe SantéProxi." />}
             </CardContent>
           </Card>
         </div>

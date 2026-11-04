@@ -18,7 +18,7 @@ export default async function AdminAuthorities() {
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Accès des autorités de santé</h1>
-      <p className="text-sm text-muted-foreground">À n&apos;accorder qu&apos;aux personnes désignées par écrit par leur institution, dans le cadre d&apos;une convention. La personne doit d&apos;abord créer son compte PharmaProxi avec son adresse e-mail professionnelle.</p>
+      <p className="text-sm text-muted-foreground">À n&apos;accorder qu&apos;aux personnes désignées par écrit par leur institution, dans le cadre d&apos;une convention. La personne doit d&apos;abord créer son compte SantéProxi avec son adresse e-mail professionnelle.</p>
       <section className="rounded-2xl border bg-white p-4">
         <ActionForm action={setAuthority} className="grid gap-3 sm:grid-cols-4" resetOnSuccess>
           <Field label="E-mail du compte" htmlFor="em"><Input id="em" name="email" type="email" required /></Field>

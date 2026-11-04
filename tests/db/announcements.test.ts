@@ -24,7 +24,7 @@ describe.skipIf(!hasDb)("Annonces", () => {
   });
 
   it("bienvenue envoyée par l'administration : pas de doublon de notification ni d'e-mail", async () => {
-    const send = () => q(db, w.admin, "select public.admin_send_announcement('Bienvenue sur PharmaProxi !', 'Merci de votre inscription, bonne expérience.', '/', 'tous', true, 'welcome') as r").then((r) => r.rows[0].r);
+    const send = () => q(db, w.admin, "select public.admin_send_announcement('Bienvenue sur SantéProxi !', 'Merci de votre inscription, bonne expérience.', '/', 'tous', true, 'welcome') as r").then((r) => r.rows[0].r);
     const r1 = await send();
     expect(r1.count).toBe(0); // tout le monde a déjà la notification (déclencheur)
     expect(r1.recipients.length).toBeGreaterThan(5); // mais personne n'a encore reçu l'e-mail

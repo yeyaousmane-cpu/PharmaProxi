@@ -80,7 +80,7 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
             <a href={`tel:${c.phone}`} className={cn(buttonVariants({ size: "sm" }), "bg-brand-blue hover:bg-brand-blue/90")}><Phone aria-hidden /> {formatPhone(c.phone)}</a>
             {c.whatsapp && <a href={`https://wa.me/${c.whatsapp.replace("+", "")}`} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><MessageCircle aria-hidden /> WhatsApp</a>}
             {c.latitude !== null && c.longitude !== null && <a href={directionsUrl(c.latitude, c.longitude)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Navigation aria-hidden /> Itinéraire</a>}
-            <a href={shareUrl(`${c.name} — sur PharmaProxi :`, `${site}/cliniques/${c.id}`)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Partager</a>
+            <a href={shareUrl(`${c.name} — sur SantéProxi :`, `${site}/cliniques/${c.id}`)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Partager</a>
           </div>
           <div className="mt-3"><DirectoryFreshnessBadge freshness={freshness} confirmedAt={c.confirmed_at} /></div>
           {(c.services as string[]).length > 0 && (
@@ -147,7 +147,7 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
           <Link prefetch={false} href="/recherche" className="mt-2 inline-block text-sm font-semibold text-primary underline">Rechercher un médicament</Link>
         </section>
         {session && <DirectoryReportForm clinicId={c.id} />}
-        {c.verified_at && <p className="text-xs text-muted-foreground">Établissement vérifié par PharmaProxi le {formatDate(c.verified_at)}.</p>}
+        {c.verified_at && <p className="text-xs text-muted-foreground">Établissement vérifié par SantéProxi le {formatDate(c.verified_at)}.</p>}
       </aside>
     </div>
   );

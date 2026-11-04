@@ -39,7 +39,7 @@ async function ContactSection({ topic }: { topic?: string }) {
   }
   return (
     <section id="formulaire" aria-labelledby="contact-form-title" className="mt-8 rounded-2xl border bg-white p-5">
-      <h2 id="contact-form-title" className="mb-4 text-lg font-bold">Écrire à PharmaProxi</h2>
+      <h2 id="contact-form-title" className="mb-4 text-lg font-bold">Écrire à SantéProxi</h2>
       <ContactForm defaults={defaults} />
     </section>
   );

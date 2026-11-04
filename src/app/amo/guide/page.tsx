@@ -229,7 +229,7 @@ export default function AmoGuide() {
           <li>Liste CANAM des médicaments pris en charge (octobre 2014), article 21 de la convention CANAM–officines.</li>
         </ul>
         <p className="text-sm"><Link prefetch={false} href="/droits" className="font-semibold text-primary underline">Voir aussi : congé de maternité, allocations familiales, retraite, accident du travail…</Link></p>
-        <p className="text-xs text-muted-foreground">PharmaProxi n&apos;est ni la CANAM ni l&apos;INPS. Ce guide résume les règles publiées ; seuls ces organismes peuvent confirmer vos droits.</p>
+        <p className="text-xs text-muted-foreground">SantéProxi n&apos;est ni la CANAM ni l&apos;INPS. Ce guide résume les règles publiées ; seuls ces organismes peuvent confirmer vos droits.</p>
       </Box>
     </div>
   );

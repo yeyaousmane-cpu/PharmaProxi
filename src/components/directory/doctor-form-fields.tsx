@@ -58,7 +58,7 @@ export function DoctorFormFields({ specialties, v = {} }: { specialties: [string
 
       <fieldset className="min-w-0 space-y-3">
         <legend className="text-base font-bold">Informations de vérification (privées)</legend>
-        <p className="text-xs text-muted-foreground">Visibles uniquement par vous et l&apos;équipe de vérification de PharmaProxi. Jamais publiées.</p>
+        <p className="text-xs text-muted-foreground">Visibles uniquement par vous et l&apos;équipe de vérification de SantéProxi. Jamais publiées.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="N° d'inscription à l'Ordre des médecins" htmlFor="order_number" required>
             <Input id="order_number" name="order_number" required maxLength={60} defaultValue={v.order_number} />

@@ -19,7 +19,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const ics = buildIcs(`Vaccins de ${k.first_name}`, visits.map((v) => ({
     uid: `vaccin-${k.id}-${v.key}`, start: v.due, allDay: true, alarmMin: 3 * 24 * 60 - 9 * 60,
     title: `Vaccins de ${k.first_name} (${v.label})`,
-    description: `${v.doses.filter((d) => d.status !== "fait").map((d) => d.label).join(", ")}. Apportez le carnet de vaccination au centre de santé. — PharmaProxi`,
+    description: `${v.doses.filter((d) => d.status !== "fait").map((d) => d.label).join(", ")}. Apportez le carnet de vaccination au centre de santé. — SantéProxi`,
   })));
   return new NextResponse(ics, { headers: { "Content-Type": "text/calendar; charset=utf-8", "Content-Disposition": `attachment; filename="vaccins-${k.first_name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.ics"`, "Cache-Control": "private, no-store" } });
 }

@@ -11,7 +11,7 @@ export default async function AudioKit() {
   return (
     <article className="mx-auto max-w-3xl space-y-6 bg-white p-6 text-[15px] leading-relaxed print:p-0">
       <header>
-        <h1 className="text-2xl font-bold">PharmaProxi — kit d&apos;enregistrement des guides audio</h1>
+        <h1 className="text-2xl font-bold">SantéProxi — kit d&apos;enregistrement des guides audio</h1>
         <p className="mt-2">Langues : {(langs ?? []).map((l) => l.name).join(", ")}.</p>
       </header>
       <section className="rounded-lg border p-4">

@@ -14,7 +14,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const ics = buildIcs("Mon traitement", (t.times as string[]).map((slot) => ({
     uid: `traitement-${t.id}-${slot}`, start: `${start}T${slot}`, durationMin: 10,
     title: `Prendre : ${t.name}${t.dose_note ? ` (${t.dose_note})` : ""}`,
-    description: "Rappel de traitement — PharmaProxi",
+    description: "Rappel de traitement — SantéProxi",
     rrule: remaining === null ? "FREQ=DAILY" : `FREQ=DAILY;COUNT=${remaining}`,
   })));
   return new NextResponse(ics, { headers: { "Content-Type": "text/calendar; charset=utf-8", "Content-Disposition": 'attachment; filename="traitement.ics"', "Cache-Control": "private, no-store" } });

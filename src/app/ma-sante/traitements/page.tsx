@@ -139,10 +139,10 @@ export default async function Treatments() {
 
       <section className="rounded-2xl border bg-white p-5">
         <h2 className="text-lg font-bold text-brand-deep">Ajouter un traitement</h2>
-        <p className="mb-3 text-sm text-muted-foreground">Recopiez votre ordonnance : PharmaProxi ne modifie jamais un traitement et ne donne pas de conseil de dose.</p>
+        <p className="mb-3 text-sm text-muted-foreground">Recopiez votre ordonnance : SantéProxi ne modifie jamais un traitement et ne donne pas de conseil de dose.</p>
         <TreatmentForm />
       </section>
-      <p className="text-xs text-muted-foreground">Les rappels apparaissent dans vos notifications PharmaProxi. Pour une sonnerie même sans connexion, utilisez « Rappels dans l&apos;agenda du téléphone ». {PRIVACY_NOTE}</p>
+      <p className="text-xs text-muted-foreground">Les rappels apparaissent dans vos notifications SantéProxi. Pour une sonnerie même sans connexion, utilisez « Rappels dans l&apos;agenda du téléphone ». {PRIVACY_NOTE}</p>
     </div>
   );
 }

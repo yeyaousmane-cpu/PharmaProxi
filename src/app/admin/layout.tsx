@@ -5,7 +5,7 @@ import { IdleLogout } from "@/components/security/idle-logout";
 
 const NAV = [
   ["/admin", "Vue générale"], ["/admin/pharmacies", "Pharmacies"], ["/admin/pharmacies-non-inscrites", "Pharmacies non inscrites"], ["/admin/annuaire", "Annuaire médical"], ["/admin/infirmiers", "Infirmiers"], ["/admin/services", "Gardes, examens, ruptures"], ["/admin/catalogue", "Catalogue"], ["/admin/amo", "AMO"], ["/admin/assurances", "Assurances"], ["/admin/alertes", "Alertes"], ["/admin/questions", "Questions"], ["/admin/commandes", "Commandes"],
-  ["/admin/livreurs", "Livreurs"], ["/admin/utilisateurs", "Utilisateurs"], ["/admin/signalements", "Signalements"], ["/admin/messages", "Messages"], ["/admin/annonces", "Annonces"], ["/redaction-sante", "Bibliothèque santé"], ["/admin/audio", "Guides audio"], ["/admin/autorites", "Autorités"], ["/admin/laboratoires", "Laboratoires"], ["/admin/avis", "Avis"],
+  ["/admin/livreurs", "Livreurs"], ["/admin/utilisateurs", "Utilisateurs"], ["/admin/signalements", "Signalements"], ["/admin/messages", "Messages"], ["/admin/annonces", "Annonces"], ["/redaction-sante", "Bibliothèque santé"], ["/admin/audio", "Guides audio"], ["/admin/autorites", "Autorités"], ["/admin/professionnels", "Professionnels"], ["/admin/laboratoires", "Laboratoires"], ["/admin/avis", "Avis"],
   ["/admin/geographie", "Géographie"], ["/admin/parametres", "Paramètres"], ["/admin/contenus", "Contenus"], ["/admin/integrite", "Intégrité"], ["/admin/audit", "Journal d'audit"],
 ];
 

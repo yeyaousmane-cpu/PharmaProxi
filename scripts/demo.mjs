@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Installation / suppression des données de démonstration PharmaProxi.
+ * Installation / suppression des données de démonstration SantéProxi.
  *   npm run demo:install    — crée 8 comptes de démonstration + données fictives (pharmacies et annuaire)
  *   npm run demo:uninstall  — supprime toutes les données marquées « démo » et les comptes
  *

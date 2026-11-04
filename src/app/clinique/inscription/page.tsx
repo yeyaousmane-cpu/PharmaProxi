@@ -1,5 +1,7 @@
 import { Building2 } from "lucide-react";
 import { requireUser } from "@/lib/auth";
+import { hasProAuthorization } from "@/lib/pro-access";
+import { ProReserved } from "@/components/pro/pro-reserved";
 import { getGeo } from "@/lib/geo";
 import { registerClinic } from "@/app/actions/directory";
 import { ClinicFormFields, CLINIC_LABELS } from "@/components/directory/clinic-form-fields";
@@ -11,6 +13,7 @@ export const metadata = { title: "Inscrire un établissement" };
 
 export default async function ClinicSignup() {
   await requireUser("/clinique/inscription");
+  if (!(await hasProAuthorization("clinique"))) return <ProReserved kind="clinique" />;
   const geo = await getGeo();
   return (
     <div className="container-page max-w-3xl space-y-5 py-6">

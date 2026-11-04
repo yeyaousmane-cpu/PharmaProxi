@@ -41,14 +41,12 @@ export async function signUp(_: ActionState, fd: FormData): Promise<ActionState>
   if (!parsed.success) return { error: "Vérifiez le formulaire", fieldErrors: fieldErrors(parsed.error) };
   if (!(await allow(`signup:${await clientIp()}`, 5, 60 * 60_000))) return { error: "Trop d'inscriptions depuis ce réseau. Réessayez plus tard." };
   const supabase = await createClient();
-  const ONBOARD: Record<string, string> = { pharmacien: "/pharmacien/inscription", medecin: "/medecin/inscription", clinique: "/clinique/inscription", laboratoire: "/laboratoire/inscription" };
-  const asked = safeNext(fd.get("suite"), "/");
-  const next = asked === "/" && ONBOARD[parsed.data.account_type] ? ONBOARD[parsed.data.account_type] : asked;
+  const next = safeNext(fd.get("suite"), "/");
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { full_name: parsed.data.full_name, phone: parsed.data.phone ?? null, account_type: parsed.data.account_type },
+      data: { full_name: parsed.data.full_name, phone: parsed.data.phone ?? null },
       emailRedirectTo: `${SITE_URL}/auth/callback?suite=${encodeURIComponent(next)}`,
     },
   });

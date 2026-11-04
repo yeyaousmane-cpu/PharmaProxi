@@ -40,7 +40,7 @@ export default async function AdminListings({ searchParams }: { searchParams: Pr
       <div>
         <h1 className="text-2xl font-bold">Pharmacies non inscrites</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Fiches d&apos;annuaire des officines qui n&apos;ont pas encore rejoint PharmaProxi : nom, zone, téléphone et position, <strong>sans stock ni prix</strong>.
+          Fiches d&apos;annuaire des officines qui n&apos;ont pas encore rejoint SantéProxi : nom, zone, téléphone et position, <strong>sans stock ni prix</strong>.
           Elles permettent au public de les trouver et de les appeler. N&apos;importez que des données dont vous avez le droit de vous servir et indiquez la source.
         </p>
       </div>

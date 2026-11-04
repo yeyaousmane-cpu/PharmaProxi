@@ -103,7 +103,7 @@ export default async function DutyPage({ searchParams }: { searchParams: Promise
             {k !== "now" && <h2 className="pt-2 text-lg font-bold">{dayLabel(`${k}T12:00:00Z`)}</h2>}
             <ul className="grid gap-3 md:grid-cols-2">
               {list.map((p) => {
-                const wa = whatsappUrl(p.whatsapp, "Bonjour, êtes-vous bien de garde en ce moment ? (vu sur PharmaProxi)");
+                const wa = whatsappUrl(p.whatsapp, "Bonjour, êtes-vous bien de garde en ce moment ? (vu sur SantéProxi)");
                 return (
                   <li key={p.duty_id} className="flex flex-col gap-2 rounded-xl border border-indigo-100 bg-white p-4">
                     <div className="flex flex-wrap items-center gap-2">

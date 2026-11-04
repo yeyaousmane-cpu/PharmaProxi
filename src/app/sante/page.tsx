@@ -64,13 +64,13 @@ export default async function HealthHome({ searchParams }: { searchParams: Promi
     <div className="bg-[#EAF6EE]/60">
       <section className="border-b bg-gradient-to-b from-[#EAF6EE] to-white">
         <div className="container-page py-8 sm:py-12">
-          <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[#068132]"><BookOpenCheck className="size-4" aria-hidden /> Bibliothèque santé PharmaProxi</p>
+          <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[#068132]"><BookOpenCheck className="size-4" aria-hidden /> Bibliothèque santé SantéProxi</p>
           <h1 className="mt-1 text-3xl font-bold text-[#052D1E] sm:text-4xl">Santé essentielle</h1>
           <p className="mt-2 max-w-2xl text-lg text-muted-foreground">Comprendre sa santé, prévenir les risques et prendre les bonnes décisions.</p>
           <div className="mt-5 max-w-2xl"><HealthSearchBar /></div>
           <AudioGuide target="sante" className="mt-4 max-w-2xl" />
           <Link prefetch={false} href="/assistant" className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#068132] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#052D1E]">Une question ? Demandez à l&apos;assistant santé</Link>
-          <Link prefetch={false} href="/femme" className="ml-2 mt-4 inline-flex items-center gap-2 rounded-lg bg-[#D96A91] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#843653]">PharmaProxi Femme</Link>
+          <Link prefetch={false} href="/femme" className="ml-2 mt-4 inline-flex items-center gap-2 rounded-lg bg-[#D96A91] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#843653]">SantéProxi Femme</Link>
           <p className="mt-3 text-xs text-muted-foreground">
             Chaque fiche affiche ses sources, le professionnel qui l&apos;a validée et la date de sa dernière révision. {published === 0 ? "Les premières fiches sont en cours de validation médicale." : `${published} fiche(s) validée(s) publiée(s).`}
           </p>
@@ -171,7 +171,7 @@ export default async function HealthHome({ searchParams }: { searchParams: Promi
         <FindProfessionals />
         <MedicalDisclaimer />
         <p className="text-xs text-muted-foreground">
-          Vous êtes professionnel de santé et souhaitez relire ou rédiger des fiches ? <Link prefetch={false} href="/infos/contact?sujet=medecin#formulaire" className="underline">Contactez l&apos;équipe PharmaProxi</Link>.
+          Vous êtes professionnel de santé et souhaitez relire ou rédiger des fiches ? <Link prefetch={false} href="/infos/contact?sujet=medecin#formulaire" className="underline">Contactez l&apos;équipe SantéProxi</Link>.
         </p>
       </div>
     </div>

@@ -11,7 +11,7 @@ export async function GET() {
   return new Response(JSON.stringify(out, null, 2), {
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "content-disposition": `attachment; filename="mon-espace-pharmaproxi-${new Date().toISOString().slice(0, 10)}.json"`,
+      "content-disposition": `attachment; filename="mon-espace-santeproxi-${new Date().toISOString().slice(0, 10)}.json"`,
       "cache-control": "no-store",
     },
   });

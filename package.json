@@ -1,8 +1,8 @@
 {
   "name": "pharmaproxi",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "private": true,
-  "description": "PharmaProxi — localiser les pharmacies et les médicaments disponibles au Mali",
+  "description": "SantéProxi — toute la santé, près de chez vous (Mali)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
