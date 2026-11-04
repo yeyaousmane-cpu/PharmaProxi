@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, Droplet, MessageCircleQuestion, Pill, Search, Store, TrendingUp, TriangleAlert } from "lucide-react";
+import { Building2, Download, Droplet, MessageCircleQuestion, Pill, Search, Store, TrendingUp, TriangleAlert } from "lucide-react";
 import { authorityContext } from "@/lib/authority-server";
 import { getGeo } from "@/lib/geo";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,9 @@ type RegionRow = { region_id: string; region: string; searches: number | null; u
 type GapRow = { region: string; commune: string; pharmacies: number; on_duty_24h: number };
 type AmoRow = { product: string; tariff: number; prices: number; min_price: number; avg_price: number; max_price: number; gap_pct: number };
 type Topics = { questions: { about: string; n: number }[]; urgent_questions: number | null; articles: { title: string; slug: string; n: number }[] };
+type SupplyRegion = { region: string; region_id: string; pharmacies: number; pharmacies_listed: number; doctors_register: number; labs: number; health_facilities: number; home_care: number; home_sampling: number };
+type Supply = { register_year: number | null; by_region: SupplyRegion[]; specialties: { specialty: string; n: number }[]; facility_kinds: { kind: string; n: number }[]; exams_with_price: number };
+const KIND: Record<string, string> = { laboratoire: "Laboratoires", clinique: "Cliniques", centre_sante: "Centres de santé", csref: "CSRéf", hopital: "Hôpitaux", cabinet: "Cabinets médicaux", cabinet_dentaire: "Cabinets dentaires", imagerie: "Imagerie" };
 type Blood = { by_group: { group: string; n: number | null }[]; by_region: { region: string; n: number | null }[]; needs_30d: number; campaigns: { title: string; date: string; place: string; going: number | null }[] };
 
 function Tile({ icon: Icon, label, value, hint, tone }: { icon: typeof Search; label: string; value: string; hint?: string; tone?: string }) {
@@ -53,7 +56,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
   const from = new Date(Date.now() - (days - 1) * 86_400_000).toISOString().slice(0, 10);
   const to = new Date().toISOString().slice(0, 10);
   const canBlood = ctx.admin || CAN.blood.includes(ctx.scope);
-  const [ov, unfound, top, trend, regions, gaps, amo, topics, blood] = await Promise.all([
+  const [ov, unfound, top, trend, regions, gaps, amo, topics, blood, supply] = await Promise.all([
     supabase.rpc("authority_overview", { p_region: region, p_from: from, p_to: to }),
     supabase.rpc("authority_searches", { p_region: region, p_from: from, p_to: to, p_unfound: true, p_limit: 20 }),
     supabase.rpc("authority_searches", { p_region: region, p_from: from, p_to: to, p_unfound: false, p_limit: 10 }),
@@ -63,6 +66,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
     supabase.rpc("authority_amo_prices", { p_region: region, p_limit: 15 }),
     supabase.rpc("authority_topics", { p_from: from, p_to: to }),
     canBlood ? supabase.rpc("authority_blood", { p_region: region }) : Promise.resolve({ data: null }),
+    supabase.rpc("authority_supply", { p_region: region }),
   ]);
   const o = (ov.data ?? {}) as Overview;
   const uf = (unfound.data ?? []) as SearchRow[];
@@ -73,6 +77,9 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
   const am = (amo.data ?? []) as AmoRow[];
   const tc = topics.data as Topics | null;
   const bl = blood.data as Blood | null;
+  const sp2 = supply.data as Supply | null;
+  const unfoundBy = new Map(rg.map((r) => [r.region_id, r.unfound_rate]));
+  const weak = (sp2?.by_region ?? []).filter((r) => r.pharmacies + r.pharmacies_listed === 0 || r.labs === 0 || (unfoundBy.get(r.region_id) ?? 0) >= 40);
   const regionName = region ? geo.regions.find((r) => r.id === region)?.name : "Tout le Mali";
   const qs = new URLSearchParams({ ...(region ? { region } : {}), jours: String(days) }).toString();
   const trMax = Math.max(1, ...tr.map((t) => Number(t.searches ?? 0)));
@@ -167,6 +174,28 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
           </Section>
         ) : null}
       </div>
+
+      {sp2 && (
+        <Section id="offre" title="Offre de soins référencée" icon={Building2} note={`Structures publiées sur PharmaProxi (pharmacies inscrites et vérifiées, autres officines de l'annuaire, établissements et laboratoires référencés, soins à domicile) et médecins du tableau de l'Ordre${sp2.register_year ? ` ${sp2.register_year}` : ""}. Ce sont des comptes d'établissements publics, pas de personnes. Le référencement n'est pas encore complet : un chiffre bas peut signaler un manque de référencement autant qu'un manque de structures.`}>
+          <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
+            <thead><tr className="text-left text-xs text-muted-foreground"><th className="py-1">Région</th><th>Pharmacies inscrites</th><th>Autres officines</th><th>Médecins (tableau)</th><th>Établissements</th><th>Laboratoires</th><th>Prise de sang à domicile</th><th>Soins à domicile</th></tr></thead>
+            <tbody>{sp2.by_region.map((r) => (
+              <tr key={r.region_id} className="border-t"><td className="py-1.5 font-medium">{r.region}</td><td>{r.pharmacies}</td><td>{r.pharmacies_listed}</td><td>{r.doctors_register}</td><td>{r.health_facilities}</td><td>{r.labs}</td><td>{r.home_sampling}</td><td>{r.home_care}</td></tr>))}</tbody>
+          </table></div>
+          {weak.length > 0 && (
+            <div className="rounded-xl bg-amber-50 p-3 text-sm">
+              <p className="font-semibold text-amber-900">Zones où l&apos;accès à l&apos;information sanitaire paraît difficile</p>
+              <ul className="mt-1 list-disc pl-5">{weak.map((r) => <li key={r.region_id}>{r.region} : {[r.pharmacies + r.pharmacies_listed === 0 && "aucune pharmacie référencée", r.labs === 0 && "aucun laboratoire référencé", (unfoundBy.get(r.region_id) ?? 0) >= 40 && `${unfoundBy.get(r.region_id)} % de recherches sans résultat`].filter(Boolean).join(" ; ")}</li>)}</ul>
+            </div>)}
+          <div className="grid gap-4 md:grid-cols-2">
+            <div><h3 className="mb-2 text-sm font-semibold">Spécialités médicales (tableau de l&apos;Ordre)</h3>
+              {sp2.specialties.length ? <ul className="space-y-1.5 text-sm">{sp2.specialties.slice(0, 12).map((x) => <li key={x.specialty}><span className="flex justify-between"><span>{x.specialty}</span><span>{x.n}</span></span><Bar v={x.n} max={sp2.specialties[0].n} /></li>)}</ul> : <p className="text-sm text-muted-foreground">Tableau non importé.</p>}</div>
+            <div><h3 className="mb-2 text-sm font-semibold">Types d&apos;établissements</h3>
+              <ul className="space-y-1.5 text-sm">{sp2.facility_kinds.map((x) => <li key={x.kind}><span className="flex justify-between"><span>{KIND[x.kind] ?? x.kind}</span><span>{x.n}</span></span><Bar v={x.n} max={sp2.facility_kinds[0]?.n ?? 1} tone="bg-brand-blue" /></li>)}</ul>
+              <p className="mt-3 text-sm">Analyses avec un prix déclaré par les laboratoires : <strong>{sp2.exams_with_price}</strong></p></div>
+          </div>
+        </Section>
+      )}
       <p className="text-xs text-muted-foreground">Ces chiffres viennent des usages de PharmaProxi (surtout des utilisateurs de smartphone, plutôt en ville) : ce sont des signaux d&apos;alerte, pas des statistiques officielles. Ils complètent le système national d&apos;information sanitaire, ils ne le remplacent pas. <Link prefetch={false} href="/autorites/methode" className="underline">Méthode</Link>.</p>
     </div>
   );

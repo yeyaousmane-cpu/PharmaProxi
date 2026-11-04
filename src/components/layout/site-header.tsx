@@ -56,6 +56,7 @@ export function SiteHeader({ session }: { session: SessionInfo | null }) {
         roles.includes("pharmacist") && { href: "/pharmacien", label: "Espace pharmacien" },
         session.doctor && { href: "/medecin", label: "Espace médecin" },
         session.clinics > 0 && { href: "/clinique", label: "Mes établissements" },
+        session.labs > 0 && { href: "/laboratoire", label: "Espace laboratoire" },
         roles.includes("courier") && { href: "/livraison", label: "Livraisons" },
         roles.includes("admin") && { href: "/admin", label: "Administration" },
       ].filter(Boolean) as NavLink[])

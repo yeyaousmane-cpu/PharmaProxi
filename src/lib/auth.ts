@@ -8,6 +8,8 @@ import { log } from "@/lib/log";
 export type Role = "customer" | "pharmacist" | "courier" | "admin";
 
 export type SessionInfo = {
+  accountType: string;
+  labs: number;
   userId: string;
   email: string | null;
   fullName: string | null;
@@ -38,12 +40,13 @@ async function loadSession(): Promise<SessionInfo | null> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
-  const [{ data: roles }, { data: profile }, { count }, { data: doctor }, { count: clinics }] = await Promise.all([
+  const [{ data: roles }, { data: profile }, { count }, { data: doctor }, { count: clinics }, { count: labs }] = await Promise.all([
     supabase.from("user_roles").select("role").eq("user_id", user.id),
-    supabase.from("profiles").select("full_name, deleted_at").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("full_name, deleted_at, account_type").eq("id", user.id).maybeSingle(),
     supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
     supabase.from("doctors").select("id, status").eq("user_id", user.id).maybeSingle(),
     supabase.from("clinic_members").select("clinic_id", { count: "exact", head: true }).eq("user_id", user.id),
+    supabase.from("facility_members").select("facility_id", { count: "exact", head: true }).eq("user_id", user.id),
   ]);
   if (profile?.deleted_at) return null;
   return {
@@ -54,6 +57,8 @@ async function loadSession(): Promise<SessionInfo | null> {
     unread: count ?? 0,
     doctor: doctor ? { id: doctor.id as string, status: doctor.status as string } : null,
     clinics: clinics ?? 0,
+    labs: labs ?? 0,
+    accountType: (profile?.account_type as string | undefined) ?? "patient",
   };
 }
 

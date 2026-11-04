@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Landmark, ShieldCheck } from "lucide-react";
 import { authorityContext } from "@/lib/authority-server";
 import { CAN, SCOPES } from "@/lib/authorities";
+import { enforceMfa } from "@/lib/mfa";
+import { IdleLogout } from "@/components/security/idle-logout";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Espace Autorités", robots: { index: false } };
@@ -19,10 +21,12 @@ export default async function AuthoritiesLayout({ children }: { children: React.
       </div>
     );
   }
+  await enforceMfa("/autorites", true);
   const can = (k: keyof typeof CAN) => ctx.admin || CAN[k].includes(ctx.scope);
   const nav = [["/autorites", "Tableau de bord", true], ["/autorites/signalements", "Signalements de médicaments", can("reports")], ["/autorites/campagnes", "Campagnes de don de sang", can("campaigns")], ["/autorites/methode", "Méthode et confidentialité", true]] as const;
   return (
     <div className="container-page space-y-4 py-6">
+      <IdleLogout />
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Landmark className="size-7 text-primary" aria-hidden /> Espace Autorités</h1>
         <p className="text-sm text-muted-foreground">{ctx.organisation}{ctx.scope !== "admin" ? ` · ${SCOPES[ctx.scope] ?? ""}` : ""}</p>

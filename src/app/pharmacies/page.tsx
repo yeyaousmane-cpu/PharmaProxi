@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ProOnly } from "@/components/pro/pro-only";
 import { MapPin, Navigation, Phone, ShieldCheck } from "lucide-react";
 import { LocationPicker } from "@/components/location-picker";
 import { LocateButton } from "@/components/locate-button";
@@ -117,9 +118,9 @@ export default async function PharmacyDirectory({ searchParams }: { searchParams
                 )}
               </div>
               {p.kind === "listing" && (
-                <p className="text-xs text-muted-foreground">
+<ProOnly><p className="text-xs text-muted-foreground">
                   Vous êtes le pharmacien de cette officine ? <Link prefetch={false} href="/pharmacien/inscription" className="font-medium text-primary underline">Inscrivez-la gratuitement</Link>
-                </p>
+                </p></ProOnly>
               )}
             </li>
           ))}

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { AudioGuide } from "@/components/audio/audio-guide";
 import Link from "next/link";
+import { ProOnly } from "@/components/pro/pro-only";
 import { Bot, BookOpenCheck, Flower2, CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
 import { RecentList } from "@/components/recent/recent-list";
 import { SearchBar } from "@/components/search-bar";
@@ -116,8 +117,8 @@ export default async function Home() {
             <Store className="mx-auto size-8 text-muted-foreground" aria-hidden />
             <p className="mt-2 font-medium">Aucune pharmacie vérifiée pour le moment.</p>
             <p className="text-sm text-muted-foreground">
-              PharmaProxi est en cours de déploiement. Vous êtes pharmacien ?{" "}
-              <Link prefetch={false} href="/pharmacien/inscription" className="font-semibold text-primary underline">Inscrivez votre pharmacie</Link>.
+              PharmaProxi est en cours de déploiement. <ProOnly>Vous êtes pharmacien ?{" "}
+              <Link prefetch={false} href="/pharmacien/inscription" className="font-semibold text-primary underline">Inscrivez votre pharmacie</Link>.</ProOnly>
             </p>
           </div>
         ) : (

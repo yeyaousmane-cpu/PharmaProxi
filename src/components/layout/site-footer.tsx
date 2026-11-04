@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SimpleToggle } from "@/components/simple/simple-toggle";
+import { ProOnly } from "@/components/pro/pro-only";
 
 export function SiteFooter({ simple = false }: { simple?: boolean }) {
   return (
@@ -31,7 +32,6 @@ export function SiteFooter({ simple = false }: { simple?: boolean }) {
           <Link prefetch={false} href="/ma-sante/dossier" className="hover:underline">Mon dossier santé</Link>
           <Link prefetch={false} href="/signaler" className="hover:underline">Signaler un médicament suspect</Link>
           <Link prefetch={false} href="/avis" className="hover:underline">Donner mon avis</Link>
-          <Link prefetch={false} href="/autorites" className="hover:underline">Espace Autorités</Link>
           <Link prefetch={false} href="/don-de-sang" className="hover:underline">Don de sang</Link>
           <Link prefetch={false} href="/alertes" className="hover:underline">Alertes sanitaires</Link>
           <Link prefetch={false} href="/laboratoires" className="hover:underline">Laboratoires et examens</Link>
@@ -43,10 +43,16 @@ export function SiteFooter({ simple = false }: { simple?: boolean }) {
           <Link prefetch={false} href="/infos/contact" className="hover:underline">Contact</Link>
         </nav>
         <nav aria-label="Professionnels" className="flex flex-col gap-2">
-          <Link prefetch={false} href="/pharmacien/inscription" className="hover:underline">Inscrire ma pharmacie</Link>
-          <Link prefetch={false} href="/medecin/inscription" className="hover:underline">Référencer ma pratique (médecins)</Link>
-          <Link prefetch={false} href="/clinique/inscription" className="hover:underline">Inscrire une clinique</Link>
-          <Link prefetch={false} href="/livraison" className="hover:underline">Devenir livreur</Link>
+          <ProOnly>
+            <p className="font-semibold text-brand-deep">Professionnels de santé</p>
+            <Link prefetch={false} href="/pharmacien/inscription" className="hover:underline">Inscrire ma pharmacie</Link>
+            <Link prefetch={false} href="/medecin/inscription" className="hover:underline">Référencer ma pratique (médecins)</Link>
+            <Link prefetch={false} href="/clinique/inscription" className="hover:underline">Inscrire une clinique</Link>
+            <Link prefetch={false} href="/laboratoire/inscription" className="hover:underline">Espace laboratoire</Link>
+            <Link prefetch={false} href="/livraison" className="hover:underline">Devenir livreur</Link>
+            <Link prefetch={false} href="/autorites" className="hover:underline">Espace Autorités</Link>
+            <Link prefetch={false} href="/partenaires/api" className="hover:underline">API pour les partenaires</Link>
+          </ProOnly>
           <Link prefetch={false} href="/fonctionnement" className="hover:underline">Comment ça marche ?</Link>
         </nav>
       </div>

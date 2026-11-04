@@ -27,6 +27,7 @@ export const signUpSchema = z.object({
   phone: optionalPhone,
   password: z.string().min(8, "8 caractères minimum").max(72),
   accept: z.literal("on", { message: "Vous devez accepter les conditions d'utilisation" }),
+  account_type: z.enum(["patient", "pharmacien", "medecin", "clinique", "laboratoire", "autre"]).default("patient"),
 });
 
 export const signInSchema = z.object({

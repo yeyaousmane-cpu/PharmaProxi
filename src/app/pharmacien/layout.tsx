@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
+import { ProGuard } from "@/components/security/pro-guard";
 
 const NAV = [
   { href: "/pharmacien", label: "Tableau de bord" },
@@ -14,6 +15,7 @@ export default async function PharmacistLayout({ children }: { children: React.R
   await requireUser("/pharmacien");
   return (
     <div className="container-page py-6">
+      <ProGuard path="/pharmacien" />
       <nav aria-label="Espace pharmacien" className="-mx-4 mb-6 flex gap-1 overflow-x-auto px-4 pb-1">
         {NAV.map((n) => (
           <Link prefetch={false} key={n.href} href={n.href} className="shrink-0 rounded-full border bg-white px-4 py-2 text-sm font-medium hover:border-primary">{n.label}</Link>

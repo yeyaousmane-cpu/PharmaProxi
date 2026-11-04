@@ -7,11 +7,12 @@ import { signIn } from "@/app/actions/auth";
 
 export const metadata = { title: "Connexion" };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ suite?: string; erreur?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ suite?: string; erreur?: string; raison?: string }> }) {
   const sp = await searchParams;
   return (
     <AuthShell title="Connexion" subtitle="Accédez à vos réservations, à votre pharmacie ou à vos livraisons.">
       {sp.erreur === "lien" && <Alert tone="error" title="Lien invalide ou expiré" className="mb-4" />}
+      {sp.raison === "inactivite" && <Alert tone="info" title="Vous avez été déconnecté(e) après 30 minutes sans activité, pour protéger les données." className="mb-4" />}
       <ActionForm action={signIn} className="space-y-4" labels={{ email: "E-mail", password: "Mot de passe" }}>
         <input type="hidden" name="suite" value={sp.suite ?? "/"} />
         <Field label="Adresse e-mail" htmlFor="email" required>

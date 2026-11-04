@@ -14,6 +14,17 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
       <AudioGuide target="inscription" className="mb-4" />
       <ActionForm action={signUp} className="space-y-4" labels={{ full_name: "Nom", email: "E-mail", phone: "Téléphone", password: "Mot de passe", accept: "Conditions" }}>
         <input type="hidden" name="suite" value={sp.suite ?? "/"} />
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium">Vous êtes</legend>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {[["patient", "Patient ou famille"], ["pharmacien", "Pharmacien"], ["medecin", "Médecin"], ["clinique", "Clinique ou centre"], ["laboratoire", "Laboratoire"], ["autre", "Autre professionnel"]].map(([v, l], i) => (
+              <label key={v} className="flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-brand-mint">
+                <input type="radio" name="account_type" value={v} defaultChecked={i === 0} className="size-4" />{l}
+              </label>
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Les professionnels sont ensuite guidés vers l&apos;inscription de leur établissement, vérifiée par l&apos;équipe.</p>
+        </fieldset>
         <Field label="Nom complet" htmlFor="full_name" required>
           <Input id="full_name" name="full_name" autoComplete="name" required maxLength={120} />
         </Field>

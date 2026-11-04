@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FlaskConical, MapPin, Navigation, Phone, ScanLine } from "lucide-react";
+import { FlaskConical, Home, MapPin, Navigation, Phone, ScanLine } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -36,6 +36,7 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
   let exams: Exam[] = [];
   let rows: Row[] = [];
   let failed = false;
+  let home = new Set<string>();
   const geo = await getGeo();
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -49,6 +50,8 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
     exams = (e.data as Exam[]) ?? [];
     rows = (r.data as Row[]) ?? [];
     failed = Boolean(r.error);
+    const ids = rows.map((x) => x.facility_id);
+    if (ids.length) home = new Set(((await supabase.from("lab_home_service").select("facility_id").eq("enabled", true).in("facility_id", ids)).data ?? []).map((x) => x.facility_id));
   }
   const exam = exams.find((x) => x.id === examId) ?? null;
   const total = rows[0]?.total_count ? Number(rows[0].total_count) : 0;
@@ -62,6 +65,7 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
           Trouvez où faire une analyse ou un examen d&apos;imagerie. Les tarifs ne sont affichés que s&apos;ils ont été <strong>communiqués par l&apos;établissement</strong>,
           avec leur date : confirmez toujours le prix et les conditions (ordonnance, jeûne, rendez-vous) par téléphone.
         </p>
+        <Link prefetch={false} href="/laboratoires/domicile" className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-brand-blue"><Home className="size-4" aria-hidden /> Prise de sang à domicile</Link>
       </div>
 
       <form method="get" className="grid gap-2 rounded-xl border bg-white p-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_auto] lg:items-end">
@@ -109,7 +113,7 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
             <li key={r.facility_id} className="flex flex-col gap-2 rounded-xl border bg-white p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="text-base font-bold">{r.name}</p>
+                  <Link prefetch={false} href={`/laboratoires/fiche/${r.facility_id}`} className="text-base font-bold hover:underline">{r.name}</Link>
                   <p className="text-xs text-muted-foreground">{FACILITY_KINDS[r.kind] ?? r.kind} · {r.city_label ?? r.region_name ?? "Ville non précisée"}</p>
                 </div>
                 {exam && (
@@ -125,11 +129,13 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
                 <Badge className="bg-muted text-muted-foreground">Coordonnées non vérifiées par PharmaProxi</Badge>
                 {exam && r.delay && <Badge className="bg-white">Résultat : {r.delay}</Badge>}
                 {!exam && r.exams_count > 0 && <Badge className="bg-white"><ScanLine className="size-3" aria-hidden /> {r.exams_count} examen(s) renseigné(s)</Badge>}
+                {home.has(r.facility_id) && <Badge className="border-blue-200 bg-blue-50 text-brand-blue"><Home className="size-3" aria-hidden /> Prélèvement à domicile</Badge>}
               </div>
               {exam && <p className="text-xs text-muted-foreground">Source : {r.source}{r.verified_at ? ` · information du ${formatDate(r.verified_at)}` : ""}</p>}
               {!r.phone && <p className="text-xs text-muted-foreground">Téléphone pas encore renseigné.</p>}
               {r.address && <p className="flex items-start gap-2 text-sm text-muted-foreground"><MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />{r.address}</p>}
               <div className="mt-auto flex flex-wrap gap-2 pt-1">
+                <Link prefetch={false} href={`/laboratoires/fiche/${r.facility_id}`} className={cn(buttonVariants({ size: "sm", variant: "secondary" }))}>Analyses et prix</Link>
                 {r.phone && <a href={`tel:${r.phone}`} className={cn(buttonVariants({ size: "sm" }))}><Phone aria-hidden /> {formatPhone(r.phone)}</a>}
                 {r.phone2 && <a href={`tel:${r.phone2}`} className={cn(buttonVariants({ size: "sm", variant: "outline" }))}><Phone aria-hidden /> {formatPhone(r.phone2)}</a>}
                 {r.latitude !== null && r.longitude !== null && (

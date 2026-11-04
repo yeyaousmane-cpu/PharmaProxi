@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ProOnly } from "@/components/pro/pro-only";
 import { Building2, CalendarCheck, Search, SearchX, Stethoscope } from "lucide-react";
 import { DoctorCard, type DoctorRow } from "@/components/directory/doctor-card";
 import { RegisterList, type RegisterRow } from "@/components/directory/register-list";
@@ -238,14 +239,14 @@ export default async function DoctorsPage({ searchParams }: { searchParams: Prom
         <NotDirectoryAdvice />
       </section>
 
-      <aside className="rounded-xl border bg-brand-sky p-4 text-sm">
+      <ProOnly><aside className="rounded-xl border bg-brand-sky p-4 text-sm">
         <p className="font-semibold text-brand-blue">Vous êtes médecin ou vous gérez une clinique ?</p>
         <p className="mt-1">Le référencement est gratuit, après vérification de votre inscription à l&apos;Ordre ou de votre autorisation d&apos;ouverture.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Link prefetch={false} href="/medecin/inscription" className={cn(buttonVariants({ size: "sm" }), "bg-brand-blue hover:bg-brand-blue/90")}>Référencer ma pratique</Link>
           <Link prefetch={false} href="/clinique/inscription" className={cn(buttonVariants({ size: "sm", variant: "outline" }))}>Inscrire un établissement</Link>
         </div>
-      </aside>
+      </aside></ProOnly>
     </div>
   );
 }
