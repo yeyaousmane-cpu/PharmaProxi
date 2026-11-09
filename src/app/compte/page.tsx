@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PatientDashboard } from "@/components/patient-dashboard";
 import { BellRing, CalendarCheck, Droplet, LifeBuoy, LockKeyhole, MapPin, Package, ShieldCheck, Trash2 } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -38,6 +39,8 @@ export default async function AccountPage() {
           <form action={signOut}><button className={cn(buttonVariants({ variant: "outline" }))}>Déconnexion</button></form>
         </div>
       </div>
+
+      <PatientDashboard userId={s.userId} firstName={(profile?.full_name ?? "").split(" ")[0] || null} />
 
       <Card>
         <CardHeader><CardTitle>Profil</CardTitle><CardDescription>{s.email}</CardDescription></CardHeader>

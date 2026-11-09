@@ -1,4 +1,5 @@
 import { trackView } from "@/lib/listing-stats";
+import { FavoriteButton } from "@/components/favorite-button";
 import { TrackClicks } from "@/components/stats/track";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -82,6 +83,7 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
         <header className="rounded-2xl border bg-white p-5">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold">{p.name}</h1>
+            <span className="ms-auto order-last"><FavoriteButton kind="pharmacie" targetId={p.id} label={p.name} href={`/pharmacies/${p.id}`} /></span>
             {p.status === "verified" ? (
               <Badge className="border-emerald-200 bg-emerald-50 text-emerald-800"><ShieldCheck className="size-3" aria-hidden /> Pharmacie vérifiée</Badge>
             ) : (

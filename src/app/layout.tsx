@@ -10,6 +10,7 @@ import { Alert } from "@/components/ui/alert";
 import { FlashToast } from "@/components/flash-toast";
 import { readFlash } from "@/lib/flash";
 import { isSimpleMode } from "@/lib/simple-mode";
+import { htmlLangDir } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -29,9 +30,9 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [session, flash, simple] = await Promise.all([getSession(), readFlash(), isSimpleMode()]);
+  const [session, flash, simple, ld] = await Promise.all([getSession(), readFlash(), isSimpleMode(), htmlLangDir()]);
   return (
-    <html lang="fr" className={simple ? "simple" : undefined}>
+    <html lang={ld.lang} dir={ld.dir} className={simple ? "simple" : undefined}>
       <body className="min-h-dvh">
         <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:p-2">
           Aller au contenu

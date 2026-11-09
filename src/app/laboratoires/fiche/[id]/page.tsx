@@ -1,4 +1,5 @@
 import { trackView } from "@/lib/listing-stats";
+import { FavoriteButton } from "@/components/favorite-button";
 import { TrackClicks } from "@/components/stats/track";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -41,6 +42,7 @@ export default async function LabPage({ params }: { params: Promise<{ id: string
       <p className="text-sm"><Link prefetch={false} href="/laboratoires" className="text-primary underline">Laboratoires et examens</Link> › {f.name}</p>
       <header className="space-y-1">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><FlaskConical className="size-7 text-brand-blue" aria-hidden /> {f.name}</h1>
+        <FavoriteButton kind="laboratoire" targetId={f.id} label={f.name} href={`/laboratoires/fiche/${f.id}`} />
         <p className="text-sm text-muted-foreground">{FACILITY_KINDS[f.kind] ?? f.kind} · {f.city_label ?? (region as { name: string } | null)?.name ?? ""} · Identifiant {f.public_code}</p>
         {f.address && <p className="flex items-start gap-2 text-sm"><MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />{f.address}</p>}
         <div className="flex flex-wrap gap-2 pt-1">

@@ -11,7 +11,7 @@ import { allow, blocked, failure } from "@/lib/limiter";
 import { clientIp } from "@/lib/request";
 import { safeNext } from "@/lib/redirect";
 import { SITE_URL } from "@/lib/env";
-import { applyPendingConsents } from "@/lib/consents";
+import { applyPendingConsents, recordLogin } from "@/lib/consents";
 
 export async function signIn(_: ActionState, fd: FormData): Promise<ActionState> {
   const parsed = signInSchema.safeParse(formObject(fd));
@@ -30,6 +30,7 @@ export async function signIn(_: ActionState, fd: FormData): Promise<ActionState>
     return { error: humanizeError(error) };
   }
   await applyPendingConsents(supabase);
+  await recordLogin(supabase);
   // Double authentification activée : demander le code avant d'ouvrir la session
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   const suite = safeNext(fd.get("suite"), "/");

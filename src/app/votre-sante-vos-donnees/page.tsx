@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/env";
 import { Ban, Bot, Building2, CheckCircle2, Eye, FileLock2, KeyRound, LockKeyhole, ScrollText, ServerCog, ShieldCheck, UserCheck } from "lucide-react";
 
 export const metadata = {
@@ -61,7 +63,19 @@ function Section({ id, letter, title, children }: { id: string; letter: string; 
   );
 }
 
-export default function YourDataPage() {
+export const revalidate = 600;
+
+type Recipient = { name: string; role: string; data_categories: string; country: string };
+const ID_FIELDS: [string, string][] = [["privacy_controller_name", "Responsable du traitement"], ["privacy_controller_registration", "Immatriculation"], ["privacy_controller_address", "Adresse"],
+  ["privacy_contact_email", "Contact confidentialité (e-mail)"], ["privacy_contact_phone", "Contact confidentialité (téléphone)"], ["privacy_dpo_name", "Correspondant à la protection des données"]];
+
+export default async function YourDataPage() {
+  let identity: Record<string, string> = {}; let recipients: Recipient[] = []; let policy: string | null = null;
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    const [i, r, v] = await Promise.all([supabase.rpc("privacy_identity"), supabase.from("third_party_recipients").select("name,role,data_categories,country").eq("active", true).order("sort"), supabase.rpc("current_policy_version")]);
+    identity = (i.data as Record<string, string> | null) ?? {}; recipients = (r.data as Recipient[] | null) ?? []; policy = (v.data as string | null) ?? null;
+  }
   const toc = [["engagements", "Nos engagements"], ["utilisation", "Comment utilisons-nous vos données ?"], ["protection", "Comment les protégeons-nous ?"], ["droits", "Vos droits et vos choix"], ["prestataires", "Nos prestataires"], ["ia", "IA et innovation"], ["conformite", "Conformité et transparence"]];
   return (
     <div>
@@ -84,6 +98,13 @@ export default function YourDataPage() {
         </nav>
 
         <div className="min-w-0 space-y-14">
+          <section aria-labelledby="responsable" className="space-y-3 rounded-2xl border bg-white p-5">
+            <h2 id="responsable" className="text-xl font-extrabold text-[#052D1E]">Qui est responsable de vos données ?</h2>
+            <dl className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[16rem_1fr]">{ID_FIELDS.map(([k, l]) => (
+              <div key={k} className="contents"><dt className="font-semibold">{l}</dt><dd>{identity[k] ? identity[k] : <span className="rounded bg-amber-100 px-1.5 text-amber-900">À compléter</span>}</dd></div>))}</dl>
+            <p className="text-xs text-muted-foreground">Les informations « À compléter » sont en cours de formalisation et seront publiées dès leur validation. En attendant, écrivez-nous depuis le <Link prefetch={false} href="/aide/contact?rubrique=securite-confidentialite" className="underline">centre d&apos;aide</Link>.{policy && <> Politique de confidentialité en vigueur : version {policy}.</>}</p>
+          </section>
+
           <Section id="engagements" letter="A" title="Nos engagements">
             <ul className="grid gap-3 sm:grid-cols-2">{commitments.map(({ Icon, t, d }) => (
               <li key={t} className="flex gap-3 rounded-2xl border bg-white p-4"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#EAF6EE] text-[#068132]"><Icon className="size-5" aria-hidden /></span>
@@ -92,6 +113,7 @@ export default function YourDataPage() {
 
           <Section id="utilisation" letter="B" title="Comment utilisons-nous vos données ?">
             <p className="text-muted-foreground">Pour chaque service : les informations nécessaires, à quoi elles servent, qui les reçoit et combien de temps elles sont conservées.</p>
+            <p className="rounded-xl bg-[#EAF6EE] p-3 text-sm"><strong>Obligatoire ou facultatif ?</strong> Seules les informations nécessaires au service demandé sont obligatoires (par exemple votre nom et un moyen de contact pour un rendez-vous) ; sans elles, ce service ne peut pas être rendu. Tout le reste est facultatif : refuser un consentement facultatif ne vous empêche pas d&apos;utiliser SantéProxi.</p>
             <div className="space-y-2">{uses.map(([s, data, why, who, keep]) => (
               <details key={s} className="group rounded-2xl border bg-white p-4 open:shadow-sm">
                 <summary className="cursor-pointer list-none font-bold text-[#052D1E]"><span className="mr-2 text-[#068132] group-open:hidden">+</span><span className="mr-2 hidden text-[#068132] group-open:inline">−</span>{s}</summary>
@@ -129,7 +151,7 @@ export default function YourDataPage() {
 
           <Section id="prestataires" letter="E" title="Nos prestataires technologiques">
             <p className="text-muted-foreground">SantéProxi s&apos;appuie sur des prestataires techniques. Ils agissent pour notre compte et n&apos;utilisent pas vos données pour leurs propres besoins selon leurs conditions contractuelles.</p>
-            <ul className="space-y-2">{providers.map(([n, r, d]) => (
+            <ul className="space-y-2">{(recipients.length ? recipients.map((x) => [x.name, `${x.role}. Pays : ${x.country}`, x.data_categories] as [string, string, string]) : providers).map(([n, r, d]) => (
               <li key={n} className="rounded-2xl border bg-white p-4 text-sm"><p className="flex items-center gap-2 font-bold text-[#052D1E]"><Building2 className="size-4 text-[#1D5FA8]" aria-hidden />{n}</p>
                 <p><span className="font-semibold">Rôle :</span> {r}</p><p><span className="font-semibold">Données concernées :</span> {d}</p></li>))}</ul>
             <p className="text-sm text-muted-foreground">Les données sont aujourd&apos;hui hébergées dans l&apos;Union européenne. Les démarches relatives au transfert de données hors du Mali auprès de l&apos;APDP sont en cours de préparation.</p>

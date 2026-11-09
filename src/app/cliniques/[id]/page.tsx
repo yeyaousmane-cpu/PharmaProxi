@@ -1,4 +1,5 @@
 import { trackView } from "@/lib/listing-stats";
+import { FavoriteButton } from "@/components/favorite-button";
 import { TrackClicks } from "@/components/stats/track";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -76,6 +77,7 @@ export default async function ClinicPage({ params }: { params: Promise<{ id: str
             <h1 className="text-2xl font-bold text-brand-deep">{c.name}</h1>
             {c.status === "verified" && <VerifiedBadge label="Établissement vérifié" />}
             {c.is_demo && <DemoBadge />}
+            <span className="ms-auto"><FavoriteButton kind="etablissement" targetId={c.id} label={c.name} href={`/cliniques/${c.id}`} /></span>
           </div>
           <p className="text-sm text-muted-foreground">{CLINIC_KINDS[c.kind] ?? c.kind}</p>
           <p className="mt-3 flex items-start gap-2 text-sm"><MapPin className="mt-0.5 size-4 shrink-0 text-brand-blue" aria-hidden />{c.address} — {place}</p>

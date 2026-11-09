@@ -4,14 +4,21 @@ import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Field, Select, Textarea } from "@/components/ui/input";
-import { createPrivacyRequest, setConsent, signOutOtherDevices } from "@/app/actions/v025";
+import { createPrivacyRequest, signOutOtherDevices } from "@/app/actions/v025";
+import { changeEmail, createConsentDispute } from "@/app/actions/v026";
+import { ConsentChoices, type PurposeView } from "@/components/privacy/consent-choices";
+import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/format";
 
 export const metadata = { title: "Mes données et confidentialité" };
 export const dynamic = "force-dynamic";
 
 type Purpose = { code: string; title: string; description: string; data_categories: string; recipients: string; legal_basis: string; withdrawal_effect: string | null; version: number };
-type Rec = { purpose_code: string; purpose_version: number; decision: "accorde" | "retire"; created_at: string };
+type Rec = { purpose_code: string; purpose_version: number; decision: "accorde" | "refuse" | "retire"; created_at: string };
+type Dispute = { reference: string; status: string; created_at: string; report: string | null };
+type Login = { created_at: string; device_label: string; new_device: boolean };
+const DISPUTE: Record<string, string> = { nouvelle: "Reçue", en_analyse: "En cours d'analyse", preuve_retrouvee: "Preuve retrouvée", preuve_insuffisante: "Preuve insuffisante", traitement_suspendu: "Traitement suspendu", resolue: "Résolue", transmise: "Transmise au responsable" };
+const DEC: Record<string, string> = { accorde: "accepté", refuse: "refusé", retire: "retiré" };
 type Req = { id: string; kind: string; message: string | null; status: string; admin_note: string | null; created_at: string; updated_at: string };
 type Ev = { created_at: string; action: string; entity_type: string; by_me: boolean };
 
@@ -27,12 +34,15 @@ const dt = (s: string) => new Date(s).toLocaleString("fr-FR", { dateStyle: "medi
 export default async function PrivacyCenter() {
   await requireUser("/compte/confidentialite");
   const supabase = await createClient();
-  const [{ data: purposes }, { data: recs }, { data: reqs }, { data: events }, { data: aal }] = await Promise.all([
+  const [{ data: purposes }, { data: recs }, { data: reqs }, { data: events }, { data: aal }, { data: disputes }, { data: logins }, { data: me }] = await Promise.all([
     supabase.from("consent_purposes").select("code,title,description,data_categories,recipients,legal_basis,withdrawal_effect,version").eq("active", true).order("sort"),
     supabase.from("consent_records").select("purpose_code,purpose_version,decision,created_at").order("created_at", { ascending: false }).limit(200),
     supabase.from("privacy_requests").select("id,kind,message,status,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
     supabase.rpc("my_audit_events", { p_limit: 30 }),
     supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+    supabase.from("consent_disputes").select("reference,status,created_at,report").order("created_at", { ascending: false }),
+    supabase.from("login_events").select("created_at,device_label,new_device").order("created_at", { ascending: false }).limit(15),
+    supabase.auth.getUser(),
   ]);
   const all = (purposes as Purpose[] | null) ?? [];
   const history = (recs as Rec[] | null) ?? [];
@@ -51,26 +61,7 @@ export default async function PrivacyCenter() {
 
       <section className="space-y-3 rounded-2xl border bg-white p-4" aria-labelledby="c-consent">
         <h2 id="c-consent" className="flex items-center gap-2 text-lg font-bold"><ShieldCheck className="size-5 text-[#068132]" aria-hidden /> Mes consentements</h2>
-        <p className="text-sm text-muted-foreground">Chaque choix est indépendant et peut être modifié à tout moment. Chaque changement est enregistré avec la version du texte affiché.</p>
-        <ul className="space-y-3">{consents.map((p) => {
-          const c = current.get(p.code); const on = c?.decision === "accorde";
-          return (
-            <li key={p.code} className="rounded-xl border p-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold">{p.title} <span className={`ml-1 rounded-full px-2 py-0.5 text-xs ${on ? "bg-emerald-100 text-emerald-900" : "bg-muted text-muted-foreground"}`}>{on ? "Accordé" : "Non accordé"}</span></p>
-                  <p className="text-sm">{p.description}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Données : {p.data_categories} · Destinataires : {p.recipients} · Texte v{p.version}</p>
-                  {c && <p className="text-xs text-muted-foreground">Dernier choix : {c.decision === "accorde" ? "accordé" : "retiré"} le {dt(c.created_at)} (texte v{c.purpose_version})</p>}
-                  {on && p.withdrawal_effect && <p className="mt-1 text-xs text-muted-foreground">En cas de retrait : {p.withdrawal_effect}</p>}
-                </div>
-                <ActionForm action={setConsent}>
-                  <input type="hidden" name="purpose" value={p.code} /><input type="hidden" name="granted" value={on ? "0" : "1"} />
-                  <SubmitButton size="sm" variant={on ? "outline" : "default"}>{on ? "Retirer" : "Accepter"}</SubmitButton>
-                </ActionForm>
-              </div>
-            </li>);
-        })}</ul>
+        <ConsentChoices purposes={consents.map((p): PurposeView => { const c = current.get(p.code); return { ...p, state: c?.decision ?? null, since: c ? dt(c.created_at) : null }; })} />
         <details className="text-sm">
           <summary className="cursor-pointer font-semibold">Traitements qui ne reposent pas sur votre consentement</summary>
           <ul className="mt-2 space-y-2">{others.map((p) => (
@@ -80,9 +71,22 @@ export default async function PrivacyCenter() {
           <details className="text-sm">
             <summary className="cursor-pointer font-semibold">Historique de mes choix ({history.length})</summary>
             <ul className="mt-2 divide-y">{history.map((r, i) => (
-              <li key={i} className="py-1.5">{dt(r.created_at)} · {all.find((p) => p.code === r.purpose_code)?.title ?? r.purpose_code} · {r.decision === "accorde" ? "accordé" : "retiré"} (texte v{r.purpose_version})</li>))}</ul>
+              <li key={i} className="py-1.5">{dt(r.created_at)} · {all.find((p) => p.code === r.purpose_code)?.title ?? r.purpose_code} · {DEC[r.decision]} (texte v{r.purpose_version})</li>))}</ul>
           </details>
         )}
+        <div className="flex flex-wrap gap-2">
+          <Link prefetch={false} href="/compte/confidentialite/historique" className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-[#068132]/30 px-4 text-sm font-semibold text-[#052D1E]"><Download className="size-4" aria-hidden /> Télécharger mon historique de consentement</Link>
+        </div>
+        <details className="rounded-xl border p-3 text-sm">
+          <summary className="cursor-pointer font-semibold">Je n&apos;ai jamais donné ce consentement : faire une réclamation</summary>
+          <ActionForm action={createConsentDispute} className="mt-3 grid gap-3" resetOnSuccess>
+            <Field label="Consentement concerné" htmlFor="dp"><Select id="dp" name="purpose" defaultValue=""><option value="">Je ne sais pas</option>{consents.map((p) => <option key={p.code} value={p.code}>{p.title}</option>)}</Select></Field>
+            <Field label="Expliquez la situation" htmlFor="dm" required><Textarea id="dm" name="message" rows={3} maxLength={2000} required /></Field>
+            <div><SubmitButton size="sm">Envoyer la réclamation</SubmitButton></div>
+          </ActionForm>
+          {((disputes as Dispute[] | null) ?? []).length > 0 && <ul className="mt-3 divide-y rounded-lg border">{(disputes as Dispute[]).map((d) => (
+            <li key={d.reference} className="p-2"><span className="font-mono">{d.reference}</span> · {dt(d.created_at)} · <strong>{DISPUTE[d.status] ?? d.status}</strong>{d.report && <span className="block text-muted-foreground">Conclusion : {d.report}</span>}</li>))}</ul>}
+        </details>
       </section>
 
       <section className="space-y-3 rounded-2xl border bg-white p-4" aria-labelledby="c-data">
@@ -120,6 +124,21 @@ export default async function PrivacyCenter() {
         <p className="text-sm">Double authentification : <strong>{mfaOn ? "activée" : "non activée"}</strong>. <Link prefetch={false} href="/compte/securite" className="font-semibold text-[#068132] underline">{mfaOn ? "Gérer" : "L'activer"}</Link></p>
         <ActionForm action={signOutOtherDevices}><SubmitButton size="sm" variant="outline">Déconnecter tous mes autres appareils</SubmitButton></ActionForm>
         <p className="text-sm"><Link prefetch={false} href="/compte/notifications" className="font-semibold text-[#068132] underline">Mes préférences de notification</Link></p>
+        <details className="text-sm">
+          <summary className="cursor-pointer font-semibold">Mes dernières connexions</summary>
+          {((logins as Login[] | null) ?? []).length === 0 ? <p className="mt-2 text-muted-foreground">Aucune connexion enregistrée depuis l&apos;activation de ce journal.</p> : (
+            <ul className="mt-2 divide-y">{(logins as Login[]).map((l, i) => <li key={i} className="py-1.5">{dt(l.created_at)} · {l.device_label}{l.new_device && <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">nouvel appareil</span>}</li>)}</ul>)}
+          <p className="mt-1 text-xs text-muted-foreground">Seuls le navigateur et le système sont enregistrés, sans adresse IP, pendant 180 jours. Une connexion depuis un nouveau type d&apos;appareil vous est signalée.</p>
+        </details>
+        <details className="text-sm">
+          <summary className="cursor-pointer font-semibold">Changer mon adresse e-mail</summary>
+          <p className="mt-2 text-muted-foreground">Adresse actuelle : {me?.user?.email ?? "aucune"}. Le changement n&apos;est effectif qu&apos;après confirmation par le lien envoyé.</p>
+          <ActionForm action={changeEmail} className="mt-2 grid gap-3 sm:grid-cols-2" resetOnSuccess>
+            <Field label="Nouvelle adresse" htmlFor="ne" required><Input id="ne" name="email" type="email" autoComplete="email" required /></Field>
+            <Field label="Mot de passe actuel" htmlFor="np" required><Input id="np" name="password" type="password" autoComplete="current-password" required /></Field>
+            <div><SubmitButton size="sm">Changer l&apos;adresse</SubmitButton></div>
+          </ActionForm>
+        </details>
       </section>
 
       <section className="space-y-2 rounded-2xl border bg-white p-4" aria-labelledby="c-hist">

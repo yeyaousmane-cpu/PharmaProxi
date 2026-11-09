@@ -4,6 +4,16 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.26 — Consentements opposables, module conformité, sécurité du compte**
+- Consentements : « J'accepte tout », « Je refuse tout », « Personnaliser » de même poids ; aucun choix pré-coché ; refus et retraits enregistrés comme preuves ; message de confirmation officiel ; fuseau horaire, langue, version de la politique, empreinte SHA-256 du texte exact, chaînage anti-falsification.
+- Versions de textes immuables (finalités et politique de confidentialité) ; publication d'une nouvelle version = archivage de l'ancienne.
+- Historique de consentement imprimable / téléchargeable (PDF via l'impression) ; réclamations « je n'ai jamais donné ce consentement » avec référence REC-…, suivi et réponse.
+- Module /conformite (administrateur, DPO, juriste, auditeur en lecture seule) : recherche de preuves, dossier de preuve PRV-…, vérification d'intégrité, export CSV, journal de toutes les consultations et exports, registre des traitements, destinataires/sous-traitants, identité du responsable, habilitations.
+- Sécurité du compte : historique des connexions, alerte sur nouvel appareil, changement d'e-mail avec mot de passe redemandé et confirmation par lien.
+- Patient : tableau de bord (prochain rendez-vous, documents, résultats, notifications), favoris (médecins, pharmacies, établissements, laboratoires).
+- Langues : architecture FR/EN/AR avec sens droite-à-gauche ; l'anglais et l'arabe ne sont proposés qu'après validation humaine d'au moins 10 textes.
+- Tests : 8 tests base de données dédiés + 29 vérifications de bout en bout (tests/e2e/v026.mjs).
+
 **v0.25 — Confidentialité, centre d'aide, pages institutionnelles**
 - Consentements : 7 finalités décrites (4 sur consentement, 3 sur d'autres bases légales), texte versionné automatiquement ; registre de preuves en ajout seul (utilisateur, finalité, version du texte, données, destinataires, date, méthode) ; retrait sans suppression automatique ; consentements facultatifs à l'inscription, séparés des conditions.
 - Centre de confidentialité (`/compte/confidentialite`) : consentements et historique, export JSON des données du compte, demandes d'accès / rectification / export / suppression / opposition avec suivi, double authentification, déconnexion des autres appareils, historique des actions sensibles.
@@ -195,6 +205,15 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 - **Membres d'une pharmacie** : l'écran de gestion de l'équipe existe.
 
 ## ⚪ Non configuré (nécessite des identifiants ou décisions externes)
+
+**Restant après v0.26 (non fait, à ne pas présenter comme disponible)**
+- Code par SMS / connexion par téléphone : nécessite un fournisseur SMS choisi et autorisé.
+- Identité du responsable du traitement, DPO, formalités APDP, contrats des sous-traitants : à compléter et faire valider par un juriste (les mentions « À compléter » / « à vérifier » restent affichées).
+- Santé mentale : circuit de validation médicale des contenus (Brouillon → Validé → Publié → À actualiser), quiz, médias.
+- Passeport santé partageable, espace institutions et statistiques, historique des accès aux documents, catégories et préférences de notifications.
+- Traductions EN/AR : à saisir et valider par des traducteurs compétents (aucune traduction automatique des contenus médicaux).
+- Revue visuelle complète en arabe (droite-à-gauche), système de design complet, tests de restauration des sauvegardes.
+
 
 | Élément | Action requise |
 |---|---|

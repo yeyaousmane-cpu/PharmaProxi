@@ -1,4 +1,5 @@
 import { trackView } from "@/lib/listing-stats";
+import { FavoriteButton } from "@/components/favorite-button";
 import { TrackClicks } from "@/components/stats/track";
 import { RecentTracker } from "@/components/recent/recent-tracker";
 import { notFound } from "next/navigation";
@@ -79,6 +80,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
             <h1 className="text-2xl font-bold text-brand-deep">{label}</h1>
             {d.status === "verified" && <VerifiedBadge />}
             {d.is_demo && <DemoBadge />}
+            {isPublic && <span className="ms-auto"><FavoriteButton kind="medecin" targetId={d.id} label={label} href={`/medecins/${d.id}`} /></span>}
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {specs.map((s) => <Badge key={s.id} className="border-sky-200 bg-brand-sky text-brand-blue">{s.name}</Badge>)}

@@ -167,3 +167,13 @@ Chiffres agrégés et anonymes de la demande exprimée sur SantéProxi. Ils ne m
 1. N'écrire que des articles décrivant des fonctions réellement disponibles ; enregistrer d'abord en brouillon, relire, puis publier.
 2. Les articles marqués « À améliorer » (majorité d'avis « Non ») sont à reprendre en priorité.
 3. Demandes d'aide : répondre dans les délais cibles (urgente 4 h, haute 24 h, normale 48 h, basse 72 h). Une « note interne » n'est jamais visible par le demandeur. Pour une demande sans compte, répondre aussi par e-mail ou téléphone.
+
+
+## Conformité et consentements — v0.26
+- Accès : menu Administration → « Conformité et consentements » (/conformite). Rôles : administrateur, DPO et juriste (modification), auditeur (lecture seule). Attribuer un rôle : /conformite/habilitations.
+- Retrouver la preuve d'un consentement : /conformite/preuves → chercher la personne par e-mail → filtrer → « Dossier de preuve ». Chaque consultation et chaque export est journalisé (/conformite/journal).
+- Vérifier l'intégrité : page d'accueil du module → « Vérifier maintenant ». Une anomalie signifie qu'une preuve a été modifiée hors application : prévenir immédiatement le responsable technique et le DPO.
+- Réclamation d'un patient : /conformite/reclamations → changer le statut, noter destinataires concernés, actions correctives et compte rendu ; la personne est notifiée.
+- Nouvelle politique de confidentialité : /conformite/politique → nouveau numéro de version ; l'ancienne est archivée, jamais effacée.
+- Registre des traitements : /conformite/registre. Un traitement ne peut être marqué « validé » qu'avec le nom et la qualité du juriste ou DPO qui l'a validé.
+- Identité du responsable du traitement : /conformite/identite. Tant qu'un champ est vide, la page publique affiche « À compléter ».
