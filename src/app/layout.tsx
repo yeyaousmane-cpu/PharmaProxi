@@ -13,7 +13,7 @@ import { isSimpleMode } from "@/lib/simple-mode";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "SantéProxi — Toute la santé, près de chez vous", template: "%s · SantéProxi" },
+  title: { default: "SantéProxi — La santé, plus proche de vous", template: "%s · SantéProxi" },
   description: "Le point d'accès numérique à la santé au Mali : pharmacies et médicaments, médecins et rendez-vous, laboratoires et prix des analyses, urgences, dossier santé personnel.",
   applicationName: "SantéProxi",
   manifest: "/manifest.webmanifest",

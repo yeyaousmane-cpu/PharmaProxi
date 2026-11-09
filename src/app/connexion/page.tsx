@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PasswordInput } from "@/components/auth/password-input";
 import { AuthShell } from "@/components/auth-shell";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Field, Input } from "@/components/ui/input";
@@ -19,12 +20,13 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
           <Input id="email" name="email" type="email" autoComplete="email" required inputMode="email" />
         </Field>
         <Field label="Mot de passe" htmlFor="password" required>
-          <Input id="password" name="password" type="password" autoComplete="current-password" required />
+          <PasswordInput id="password" name="password" autoComplete="current-password" />
         </Field>
         <SubmitButton className="w-full" pendingText="Connexion…">Se connecter</SubmitButton>
       </ActionForm>
       <div className="mt-4 flex flex-col items-center gap-2 text-sm">
         <Link prefetch={false} href="/mot-de-passe-oublie" className="text-primary hover:underline">Mot de passe oublié ?</Link>
+        <Link prefetch={false} href="/aide/mon-compte" className="text-muted-foreground hover:underline">Besoin d&apos;aide pour vous connecter ?</Link>
         <p>
           Pas encore de compte ?{" "}
           <Link prefetch={false} href={`/inscription${sp.suite ? `?suite=${encodeURIComponent(sp.suite)}` : ""}`} className="font-semibold text-primary hover:underline">Créer un compte</Link>

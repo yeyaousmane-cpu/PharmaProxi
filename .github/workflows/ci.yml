@@ -1,0 +1,99 @@
+# Intégration continue PharmaProxi : à chaque push et pull request.
+#  1. qualité   : types, tests unitaires, tests base de données (RLS, concurrence, charge), build
+#  2. parcours  : application complète + pile Supabase locale (GoTrue, PostgREST) + Chromium
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualite:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PP_TEST_PG: postgres://postgres@localhost:5432/postgres
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:unit
+      - run: npm run test:db
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
+
+  parcours:
+    needs: qualite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["54322:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      DEMO_PASSWORD: ci-demo-password-2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Binaires GoTrue et PostgREST
+        run: |
+          mkdir -p /tmp/supabase-bin && cd /tmp/supabase-bin
+          curl -fsSL https://github.com/supabase/auth/releases/download/v2.180.0/auth-v2.180.0-x86.tar.gz | tar -xz
+          curl -fsSL https://github.com/PostgREST/postgrest/releases/download/v12.2.12/postgrest-v12.2.12-linux-static-x86-64.tar.xz | tar -xJ
+      - name: Pile Supabase locale
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          BIN=/tmp/supabase-bin PGURL=postgres://postgres@localhost:54322 tests/e2e/local-stack/start.sh | tee /tmp/stack.env
+          {
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000"
+            echo "NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(grep ANON_KEY /tmp/stack.env | cut -d= -f2)"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$(grep SERVICE_KEY /tmp/stack.env | cut -d= -f2)"
+            echo "CRON_SECRET=ci-cron-secret"
+            echo "APP_ENV=development"
+            echo "DEMO_PASSWORD=$DEMO_PASSWORD"
+          } > .env.local
+      - run: npx playwright install --with-deps chromium
+      - run: npm run demo:install
+      - run: npm run build
+      - name: Parcours navigateur
+        run: |
+          (npm start > /tmp/next.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/api/health > /dev/null && break; sleep 1; done
+          node tests/e2e/flows.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: captures-e2e
+          path: tests/e2e/screenshots/
+      - if: failure()
+        run: tail -100 /tmp/next.log; tail -50 /tmp/pp-e2e/*.log

@@ -11,6 +11,7 @@ import { allow, blocked, failure } from "@/lib/limiter";
 import { clientIp } from "@/lib/request";
 import { safeNext } from "@/lib/redirect";
 import { SITE_URL } from "@/lib/env";
+import { applyPendingConsents } from "@/lib/consents";
 
 export async function signIn(_: ActionState, fd: FormData): Promise<ActionState> {
   const parsed = signInSchema.safeParse(formObject(fd));
@@ -28,6 +29,7 @@ export async function signIn(_: ActionState, fd: FormData): Promise<ActionState>
     await Promise.all(keys.map((k) => failure(k, window)));
     return { error: humanizeError(error) };
   }
+  await applyPendingConsents(supabase);
   // Double authentification activée : demander le code avant d'ouvrir la session
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   const suite = safeNext(fd.get("suite"), "/");
@@ -46,13 +48,14 @@ export async function signUp(_: ActionState, fd: FormData): Promise<ActionState>
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { full_name: parsed.data.full_name, phone: parsed.data.phone ?? null },
+      data: { full_name: parsed.data.full_name, phone: parsed.data.phone ?? null, consents_pending: optionalConsents(fd) },
       emailRedirectTo: `${SITE_URL}/auth/callback?suite=${encodeURIComponent(next)}`,
     },
   });
   if (error) return { error: humanizeError(error) };
   // Adresse déjà inscrite : Supabase renvoie un utilisateur sans identité ; pas d'e-mail dans ce cas
   if (data.user && (data.user.identities?.length ?? 0) > 0) await sendWelcomeEmail(data.user.id, parsed.data.email, parsed.data.full_name);
+  if (data.session) await applyPendingConsents(supabase);
   if (!data.session) {
     return { ok: true, message: "Compte créé. Confirmez votre adresse grâce au lien envoyé par e-mail, puis connectez-vous." };
   }
@@ -77,7 +80,9 @@ export async function updatePassword(_: ActionState, fd: FormData): Promise<Acti
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password: pw });
   if (error) return { error: humanizeError(error) };
-  return { ok: true, message: "Mot de passe mis à jour." };
+  // Par sécurité, les sessions ouvertes sur d'autres appareils sont fermées
+  await supabase.auth.signOut({ scope: "others" });
+  return { ok: true, message: "Mot de passe mis à jour. Vos autres appareils ont été déconnectés." };
 }
 
 export async function signOut() {
@@ -99,3 +104,9 @@ async function sendWelcomeEmail(userId: string, email: string, name: string) {
     /* l'inscription ne doit jamais échouer à cause de l'e-mail */
   }
 }
+
+/** Consentements facultatifs cochés à l'inscription (choix séparés des conditions obligatoires). */
+function optionalConsents(fd: FormData) {
+  return ["communications", "enquetes"].filter((c) => fd.get(`consent_${c}`) === "on");
+}
+

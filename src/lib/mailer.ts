@@ -43,7 +43,7 @@ export function renderEmail({ title, body, link, name }: { title: string; body: 
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #dde7e1">
 <tr><td><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td height="6" style="background:#14B53A;font-size:0">&nbsp;</td><td height="6" style="background:#FCD116;font-size:0">&nbsp;</td><td height="6" style="background:#CE1126;font-size:0">&nbsp;</td></tr></table></td></tr>
 <tr><td style="padding:22px 26px 6px;font-size:22px;font-weight:bold;color:#068132">SantéProxi</td></tr>
-<tr><td style="padding:0 26px;font-size:13px;color:#5b6b63">Toute la santé, près de chez vous.</td></tr>
+<tr><td style="padding:0 26px;font-size:13px;color:#5b6b63">La santé, plus proche de vous.</td></tr>
 <tr><td style="padding:22px 26px 8px;font-size:15px">
 <h1 style="margin:0 0 16px;font-size:20px;color:#052D1E">${esc(title)}</h1>
 <p style="margin:0 0 14px">${esc(hello)}</p>${paragraphs}

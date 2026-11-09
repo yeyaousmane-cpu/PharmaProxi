@@ -52,6 +52,7 @@ export async function SiteHeader({ session }: { session: SessionInfo | null }) {
       { href: "/cliniques", label: "Cliniques et hôpitaux", hint: "Établissements de santé" },
       { href: "/carte", label: "Carte", hint: "Tout autour de moi" },
       { href: "/urgences", label: "Urgences", hint: "Services d'urgence, ambulances", tone: "red" },
+      { href: "/aide", label: "Centre d'aide", hint: "Questions fréquentes, contacter l'équipe" },
     ] },
   ];
   const account: NavLink[] = session
@@ -61,6 +62,8 @@ export async function SiteHeader({ session }: { session: SessionInfo | null }) {
         { href: "/ma-sante", label: "Mon espace santé" },
         { href: "/ma-sante/dossier", label: "🔒 Mon dossier santé" },
         { href: "/compte/notifications", label: `Notifications${session.unread ? ` (${session.unread})` : ""}` },
+        { href: "/compte/confidentialite", label: "Mes données et confidentialité" },
+        { href: "/compte/aide", label: "Mes demandes d'aide" },
         roles.includes("pharmacist") && { href: "/pharmacien", label: "Espace pharmacien" },
         session.doctor && { href: "/medecin", label: "Espace médecin" },
         session.clinics > 0 && { href: "/clinique", label: "Mes établissements" },

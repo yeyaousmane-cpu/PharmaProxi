@@ -4,6 +4,27 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.25 — Confidentialité, centre d'aide, pages institutionnelles**
+- Consentements : 7 finalités décrites (4 sur consentement, 3 sur d'autres bases légales), texte versionné automatiquement ; registre de preuves en ajout seul (utilisateur, finalité, version du texte, données, destinataires, date, méthode) ; retrait sans suppression automatique ; consentements facultatifs à l'inscription, séparés des conditions.
+- Centre de confidentialité (`/compte/confidentialite`) : consentements et historique, export JSON des données du compte, demandes d'accès / rectification / export / suppression / opposition avec suivi, double authentification, déconnexion des autres appareils, historique des actions sensibles.
+- Gouvernance (`/admin/confidentialite`) : traitement des demandes (notification de la personne), fiche de preuve des consentements (consultation journalisée), registre des traitements (projet), vérification de l'intégrité du journal d'audit.
+- Journal d'audit chaîné (empreinte SHA-256 de l'entrée précédente) : modification et suppression refusées ; une altération directe en base est détectée.
+- Page publique « Votre santé, vos données » (sections A à G), limitée aux mesures réellement en place ; les mesures en cours (sauvegardes, procédure d'incident, formalités APDP) sont signalées comme telles.
+- Centre d'aide (`/aide`) : 14 rubriques, 30 articles décrivant uniquement des fonctions existantes, recherche tolérante aux accents, fautes et synonymes avec surlignage, message « aucun résultat », avis utile/inutile (une voix par visiteur), articles liés, tickets avec numéro de suivi (avec ou sans compte), échanges, notes internes, statuts, priorités et délais cibles ; rédaction et suivi dans `/admin/aide`.
+- Pages « Qui sommes-nous ? » (10 sections, chiffres sourcés et datés) et Santé mentale (refonte : sommaire, gestes du quotidien, sommeil, signes, professionnels, aide à un proche, réalités africaines, sources OMS).
+- Inscription et connexion : afficher/masquer le mot de passe, indicateur de robustesse, aide à la connexion ; changement de mot de passe = déconnexion des autres appareils.
+- Tests : 6 tests base de données dédiés (200 au total passés), 38 vérifications navigateur (`tests/e2e/v025.mjs`), 105 tests unitaires.
+- Non fait (dépend d'un prestataire ou d'une décision) : inscription et connexion par SMS (prestataire SMS), voix de synthèse et reconnaissance vocale en langues nationales, téléconsultation, accès d'urgence « bris de glace », hébergement des données au Mali, rôles « rédacteur » et « agent support » distincts de l'administrateur.
+
+**v0.24 — SOS Santé : numéros d'urgence et nouveaux slogans**
+- Table `emergency_contacts` (pays, région, mission, numéro principal ou complémentaire, statut à vérifier / vérifié / à actualiser, source officielle, date de vérification), lecture publique des seuls numéros actifs, écriture réservée à l'administration (RLS vérifiée : un visiteur anonyme ne peut ni écrire ni voir les numéros masqués).
+- Page SOS : cartes par service, bouton « Appeler maintenant » (lien tel:, indicatif +223 ajouté aux numéros à 8 chiffres), bouton « Copier », messages de sécurité, statut de vérification et source visibles pour chaque numéro.
+- Administration `/admin/urgences` : ajouter, modifier, masquer, supprimer ; un numéro ne peut passer « vérifié » sans source.
+- 10 numéros communiqués par le porteur du projet chargés au statut « à vérifier » (36061, 122, 101, 111, 144, 145 et 4 contacts complémentaires) ; 15, 17 et 18 non ajoutés.
+- Accueil : slogan « La santé, plus proche de vous. » sous le logo, visible sans défiler sur mobile ; bandeau SOS ; signature « Mieux vivre, mieux se soigner. » en pied de page ; texte de l'assistant corrigé (plus de promesse de « bon médicament sans ordonnance »).
+- Tests : 20 vérifications navigateur (`tests/e2e/sos-urgences.mjs`) et 105 tests unitaires passés.
+- À faire par l'équipe : confirmer chaque numéro auprès des autorités (sites officiels non accessibles depuis l'environnement de développement) puis le passer en « vérifié ».
+
 **Base de données et sécurité**
 - 11 migrations SQL versionnées, 47 tables, RLS sur toutes, clés étrangères, index (trigrammes pour la recherche), contraintes d'intégrité et longueurs de texte bornées.
 - Rôles client / pharmacien / livreur / administrateur ; aucune auto-attribution possible.

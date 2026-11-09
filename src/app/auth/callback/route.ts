@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/redirect";
+import { applyPendingConsents } from "@/lib/consents";
 
 /** Retour des liens e-mail (confirmation d'inscription, réinitialisation du mot de passe). */
 export async function GET(request: NextRequest) {
@@ -10,7 +11,10 @@ export async function GET(request: NextRequest) {
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(next, url.origin));
+    if (!error) {
+      await applyPendingConsents(supabase);
+      return NextResponse.redirect(new URL(next, url.origin));
+    }
   }
   return NextResponse.redirect(new URL("/connexion?erreur=lien", url.origin));
 }

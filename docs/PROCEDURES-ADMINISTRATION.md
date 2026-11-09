@@ -145,3 +145,25 @@ Chiffres agrégés et anonymes de la demande exprimée sur SantéProxi. Ils ne m
    - toute incohérence signifie qu'une modification a été faite en dehors de l'application : identifier qui (journal d'audit, journaux Supabase) avant de corriger.
 5. **Abus** (rafale de demandes, de signalements) : les limites en base bloquent automatiquement ; suspendre le compte en retirant ses rôles si nécessaire.
 6. **Restauration de sauvegarde** : voir README §9. Après restauration, lancer le contrôle d'intégrité.
+
+## Numéros d'urgence (SOS Santé) — v0.24
+
+1. Ouvrir **Administration › Numéros d'urgence** (`/admin/urgences`).
+2. Pour chaque numéro « à vérifier » : consulter la source officielle (ministère de la Santé, Police nationale, Protection civile) ou passer un appel de test.
+3. Ouvrir la ligne, choisir le statut **Vérifié**, saisir la date et la source (lien ou note « appel de test le … »), puis **Enregistrer**. Sans source, l'enregistrement est refusé.
+4. Un numéro qui ne répond plus : statut **À actualiser**, ou décocher « Affiché sur la page SOS ».
+5. Pour un autre pays : saisir son code ISO (ex. SN, CI) ; la page SOS actuelle affiche le Mali (ML).
+6. Ne pas ajouter les anciens numéros 15, 17 et 18 sans confirmation officielle.
+
+## Données personnelles et centre d'aide — v0.25
+
+**Demandes sur les données** (`/admin/confidentialite`)
+1. Chaque nouvelle demande crée une notification pour les administrateurs.
+2. Passer la demande « En cours », effectuer l'action (export, correction, suppression du compte…), puis « Traitée » avec une réponse claire : la personne est notifiée.
+3. En cas de réclamation sur un consentement, ouvrir la « Fiche de preuve » (consultation journalisée) : elle montre chaque choix, la version du texte et la date.
+4. Une fois par mois, cliquer « Vérifier maintenant » sous « Intégrité du journal d'audit ». En cas d'anomalie : traiter comme un incident de sécurité.
+
+**Centre d'aide** (`/admin/aide`)
+1. N'écrire que des articles décrivant des fonctions réellement disponibles ; enregistrer d'abord en brouillon, relire, puis publier.
+2. Les articles marqués « À améliorer » (majorité d'avis « Non ») sont à reprendre en priorité.
+3. Demandes d'aide : répondre dans les délais cibles (urgente 4 h, haute 24 h, normale 48 h, basse 72 h). Une « note interne » n'est jamais visible par le demandeur. Pour une demande sans compte, répondre aussi par e-mail ou téléphone.

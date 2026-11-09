@@ -8,7 +8,8 @@ export function SiteFooter({ simple = false }: { simple?: boolean }) {
       <div className="container-page grid gap-6 py-8 text-sm sm:grid-cols-3">
         <div>
           <p className="font-bold text-brand-deep">SantéProxi</p>
-          <p className="mt-1 text-muted-foreground">Toute la santé, près de chez vous.</p>
+          <p className="mt-1 font-semibold text-[#068132]">La santé, plus proche de vous.</p>
+          <p className="text-sm italic text-muted-foreground">Mieux vivre, mieux se soigner.</p>
           <p className="mt-3 text-xs text-muted-foreground">
             Service de mise en relation. Ne remplace pas l&apos;avis d&apos;un professionnel de santé. En cas d&apos;urgence, contactez les services d&apos;urgence.
           </p>
@@ -44,6 +45,9 @@ export function SiteFooter({ simple = false }: { simple?: boolean }) {
           <Link prefetch={false} href="/urgences" className="hover:underline">Urgences</Link>
           <Link prefetch={false} href="/carte" className="hover:underline">Carte</Link>
           <Link prefetch={false} href="/infos/securite" className="hover:underline">Bon usage et sécurité</Link>
+          <Link prefetch={false} href="/qui-sommes-nous" className="hover:underline">Qui sommes-nous ?</Link>
+          <Link prefetch={false} href="/aide" className="hover:underline">Centre d&apos;aide</Link>
+          <Link prefetch={false} href="/votre-sante-vos-donnees" className="hover:underline">Votre santé, vos données</Link>
           <Link prefetch={false} href="/infos/confidentialite" className="hover:underline">Confidentialité</Link>
           <Link prefetch={false} href="/infos/conditions" className="hover:underline">Conditions d&apos;utilisation</Link>
           <Link prefetch={false} href="/infos/contact" className="hover:underline">Contact</Link>
