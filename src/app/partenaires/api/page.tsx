@@ -15,7 +15,7 @@ export default function ApiDoc() {
     <div className="container-page max-w-3xl space-y-5 py-6">
       <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Code2 className="size-7 text-brand-blue" aria-hidden /> API pour les partenaires</h1>
       <p className="text-muted-foreground">Une API REST en lecture seule permet aux partenaires (structures de santé, assureurs, applications, chercheurs) de réutiliser les données publiques de l&apos;annuaire : pharmacies, gardes, laboratoires, analyses et prix déclarés.</p>
-      <ul className="list-disc space-y-1 pl-5 text-sm">
+      <ul className="list-disc space-y-1 ps-5 text-sm">
         <li>Sans clé, réponses en JSON, 60 requêtes par minute et par adresse.</li>
         <li><strong>Aucune donnée personnelle ni de santé</strong> : pas de comptes, pas de commandes, pas de dossier santé, pas de recherches individuelles.</li>
         <li>Chaque établissement porte un identifiant SantéProxi stable (PP-PH-…, PP-LB-…, PP-ET-…, PP-MD-…). Il ne remplace pas les identifiants des référentiels officiels ; une correspondance pourra être ajoutée avec les autorités.</li>

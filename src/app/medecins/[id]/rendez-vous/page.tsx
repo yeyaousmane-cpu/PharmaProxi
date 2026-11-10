@@ -114,7 +114,7 @@ async function InstantFlow({ sp, href, siteId, doctorId, today, cancelHours, typ
                   <Link prefetch={false} href={href({ type: t.id, creneau: undefined, debut: undefined })} className="flex flex-col gap-1 rounded-lg border p-3 hover:border-brand-blue sm:flex-row sm:items-center sm:justify-between">
                     <span className="min-w-0">
                       <span className="font-semibold">{t.name}</span>
-                      {t.audience !== "all" && <Badge className="ml-2 bg-white">{AUDIENCE_LABEL[t.audience]}</Badge>}
+                      {t.audience !== "all" && <Badge className="ms-2 bg-white">{AUDIENCE_LABEL[t.audience]}</Badge>}
                       {t.instructions && <span className="block text-xs text-muted-foreground">{t.instructions}</span>}
                     </span>
                     <span className="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
@@ -216,9 +216,9 @@ async function InstantFlow({ sp, href, siteId, doctorId, today, cancelHours, typ
         <CardContent className="space-y-3">
           {error && <Alert tone="error" title="Les créneaux n'ont pas pu être chargés. Réessayez." />}
           <div className="flex items-center justify-between gap-2">
-            {prev ? <Link prefetch={false} href={href({ debut: prev })} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><ChevronLeft aria-hidden /> Précédent</Link> : <span />}
+            {prev ? <Link prefetch={false} href={href({ debut: prev })} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><ChevronLeft className="rtl:-scale-x-100" aria-hidden /> Précédent</Link> : <span />}
             <span className="text-sm font-medium">{formatApptDay(days[0])} – {formatApptDay(days[days.length - 1])}</span>
-            {next ? <Link prefetch={false} href={href({ debut: next })} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Suivant <ChevronRight aria-hidden /></Link> : <span />}
+            {next ? <Link prefetch={false} href={href({ debut: next })} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Suivant <ChevronRight className="rtl:-scale-x-100" aria-hidden /></Link> : <span />}
           </div>
           <ul className="grid gap-3 sm:grid-cols-2">
             {days.map((day) => {

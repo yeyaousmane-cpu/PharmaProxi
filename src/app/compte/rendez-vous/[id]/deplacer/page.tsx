@@ -52,9 +52,9 @@ export default async function MovePage({ params, searchParams }: { params: Promi
           <CardHeader>
             <CardTitle>Choisissez le nouveau créneau</CardTitle>
             <div className="flex items-center justify-between gap-2 text-sm">
-              {start > today ? <Link prefetch={false} href={`?debut=${addDays(start, -7) < today ? today : addDays(start, -7)}`} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5"><ChevronLeft className="size-4" aria-hidden /> Précédent</Link> : <span />}
+              {start > today ? <Link prefetch={false} href={`?debut=${addDays(start, -7) < today ? today : addDays(start, -7)}`} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5"><ChevronLeft className="size-4 rtl:-scale-x-100" aria-hidden /> Précédent</Link> : <span />}
               <span className="text-muted-foreground">{formatApptDay(`${start}T12:00:00Z`)} – {formatApptDay(`${addDays(start, 6)}T12:00:00Z`)}</span>
-              <Link prefetch={false} href={`?debut=${addDays(start, 7)}`} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5">Suivant <ChevronRight className="size-4" aria-hidden /></Link>
+              <Link prefetch={false} href={`?debut=${addDays(start, 7)}`} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5">Suivant <ChevronRight className="size-4 rtl:-scale-x-100" aria-hidden /></Link>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">

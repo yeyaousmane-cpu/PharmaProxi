@@ -10,7 +10,8 @@ import { Alert } from "@/components/ui/alert";
 import { FlashToast } from "@/components/flash-toast";
 import { readFlash } from "@/lib/flash";
 import { isSimpleMode } from "@/lib/simple-mode";
-import { htmlLangDir } from "@/lib/i18n";
+import { getMessages, getT, htmlLangDir } from "@/lib/i18n";
+import { I18nProvider } from "@/i18n/client";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -30,12 +31,13 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [session, flash, simple, ld] = await Promise.all([getSession(), readFlash(), isSimpleMode(), htmlLangDir()]);
+  const [session, flash, simple, ld, { messages }, t] = await Promise.all([getSession(), readFlash(), isSimpleMode(), htmlLangDir(), getMessages(), getT()]);
   return (
     <html lang={ld.lang} dir={ld.dir} className={simple ? "simple" : undefined}>
       <body className="min-h-dvh">
-        <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:p-2">
-          Aller au contenu
+        <I18nProvider lang={ld.lang} messages={messages}>
+        <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:p-2">
+          {t("nav.skip")}
         </a>
         <SiteHeader session={session} />
         <NetworkStatus />
@@ -50,6 +52,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SiteFooter simple={simple} />
         <MobileNav />
         <FlashToast message={flash} />
+        </I18nProvider>
       </body>
     </html>
   );

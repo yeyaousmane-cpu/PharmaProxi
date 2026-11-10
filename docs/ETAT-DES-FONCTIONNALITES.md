@@ -4,6 +4,16 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.27 — Fiabilité médicale, prévention, multilingue FR/EN/AR, écoute et voix**
+- Circuit de validation médicale complet : Brouillon → En attente de validation → Validée → Publiée → À actualiser (date de révision dépassée, avertissement public) → Archivée ; date de révision fixée à un an à chaque validation, modifiable par le validateur ; archivage avec historique conservé ; liste « À actualiser » dans l'espace de rédaction. Sources, nom et qualité du valideur, dates déjà affichés (0.19).
+- Santé mentale : catégorie dédiée ; la page affiche les fiches validées (aucune pour l'instant) et signale que ses repères généraux attendent une relecture professionnelle.
+- Prévention : calendrier public (/prevention) des campagnes, dépistages, vaccinations, sensibilisation et journées mondiales, filtres par type et région, source officielle obligatoire pour publier, administration /admin/prevention. Aucun événement n'est pré-rempli.
+- Langues : interface complète en français, anglais et arabe (dictionnaires src/i18n, ~290 textes), RTL intégral (propriétés logiques sur 94 fichiers, icônes directionnelles retournées, police arabe système, numéros/e-mails isolés), sélecteur dans l'en-tête et le pied de page, changement instantané sans perte des saisies, préférence sur l'appareil + dans le profil (retrouvée à la connexion), retour à la langue précédente. Langues nationales : seules les traductions validées s'affichent. Les pages pas encore traduites et les contenus médicaux restent en français (balisés lang="fr", de gauche à droite).
+- Écoute : bouton « Écouter » (lecture, pause, reprise, arrêt, réécoute, vitesse, progression, lecture depuis un passage, choix de la voix, langue indiquée) sur SOS, fiches santé, santé mentale, premiers secours, aide, prévention. Utilise les voix de l'appareil ; message explicite si aucune voix.
+- « Parler à SantéProxi » (/parler) : micro sur appui seulement, information préalable, indicateur d'enregistrement, arrêt automatique à 15 s, texte corrigeable, interprétation locale (FR/EN/AR) en propositions de pages, urgence vitale en premier, refus de tout diagnostic, actions sensibles confirmées sur la page de destination, tout faisable par écrit.
+- Page /langues : disponibilité réelle par langue, vérifiée sur l'appareil.
+- Tests : 3 tests base de données, 15 tests unitaires (dictionnaires complets, variables, interprétation), 32 vérifications de bout en bout (tests/e2e/v027.mjs) dont RTL sans débordement sur 12 pages × mobile/tablette/ordinateur.
+
 **v0.26 — Consentements opposables, module conformité, sécurité du compte**
 - Consentements : « J'accepte tout », « Je refuse tout », « Personnaliser » de même poids ; aucun choix pré-coché ; refus et retraits enregistrés comme preuves ; message de confirmation officiel ; fuseau horaire, langue, version de la politique, empreinte SHA-256 du texte exact, chaînage anti-falsification.
 - Versions de textes immuables (finalités et politique de confidentialité) ; publication d'une nouvelle version = archivage de l'ancienne.
@@ -211,7 +221,9 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 - Identité du responsable du traitement, DPO, formalités APDP, contrats des sous-traitants : à compléter et faire valider par un juriste (les mentions « À compléter » / « à vérifier » restent affichées).
 - Santé mentale : circuit de validation médicale des contenus (Brouillon → Validé → Publié → À actualiser), quiz, médias.
 - Passeport santé partageable, espace institutions et statistiques, historique des accès aux documents, catégories et préférences de notifications.
-- Traductions EN/AR : à saisir et valider par des traducteurs compétents (aucune traduction automatique des contenus médicaux).
+- Traductions EN/AR de l'interface : rédigées en 0.27, à relire par des locuteurs natifs (Administration → Langues permet de corriger chaque texte). Contenus médicaux : jamais traduits automatiquement, à faire traduire et valider par des professionnels.
+- Pages encore en français uniquement : la plupart des pages de contenu, des espaces professionnels et de l'administration (le menu, les pages SOS, connexion, inscription, prévention, langues, voix et les états communs sont traduits).
+- Synthèse vocale et reconnaissance en langues nationales : aucun moteur fiable vérifié à ce jour ; seuls les messages enregistrés par des locuteurs (guides audio) sont proposés.
 - Revue visuelle complète en arabe (droite-à-gauche), système de design complet, tests de restauration des sauvegardes.
 
 

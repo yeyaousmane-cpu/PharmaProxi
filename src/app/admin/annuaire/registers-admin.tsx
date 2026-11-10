@@ -81,7 +81,7 @@ export async function RegisterAdmin({ sp }: { sp: SP }) {
                   </span>
                   <ActionForm action={setRegisterPublished}>
                     <input type="hidden" name="id" value={r.id} /><input type="hidden" name="published" value={r.is_published ? "false" : "true"} />
-                    {!r.is_published && <Badge className="mr-2 bg-muted">Masqué</Badge>}
+                    {!r.is_published && <Badge className="me-2 bg-muted">Masqué</Badge>}
                     <SubmitButton size="sm" variant="outline">{r.is_published ? "Masquer" : "Rendre visible"}</SubmitButton>
                   </ActionForm>
                 </li>

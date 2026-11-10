@@ -63,7 +63,7 @@ export default async function BloodPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <section className="space-y-2 rounded-2xl border bg-white p-5 text-sm leading-relaxed">
           <h2 className="text-lg font-bold text-brand-deep">Qui peut donner ?</h2>
-          <ul className="list-disc space-y-1 pl-5">
+          <ul className="list-disc space-y-1 ps-5">
             <li>Avoir entre <strong>18 et 60 ans</strong>.</li>
             <li>Peser <strong>au moins 55 kg</strong>.</li>
             <li>Être en bonne santé, et <strong>avoir mangé et bu</strong> avant de venir (ne pas être à jeun).</li>
@@ -73,7 +73,7 @@ export default async function BloodPage() {
         </section>
         <section className="space-y-2 rounded-2xl border bg-white p-5 text-sm leading-relaxed">
           <h2 className="text-lg font-bold text-brand-deep">Comment se passe un don ?</h2>
-          <ol className="list-decimal space-y-1 pl-5">
+          <ol className="list-decimal space-y-1 ps-5">
             <li><strong>Accueil</strong> : présentez une pièce d&apos;identité.</li>
             <li><strong>Entretien médical</strong> : un médecin vérifie que vous pouvez donner.</li>
             <li><strong>Prélèvement</strong> : 10 à 15 minutes, sous surveillance.</li>
@@ -94,7 +94,7 @@ export default async function BloodPage() {
         <p>Le CNTS collecte aussi dans ces sites :</p>
         <div className="grid gap-3 sm:grid-cols-3">
           {Object.entries(SITES).map(([k, v]) => (
-            <div key={k}><p className="font-semibold">{k}</p><ul className="mt-1 list-disc space-y-0.5 pl-5 text-muted-foreground">{v.map((s) => <li key={s}>{s}</li>)}</ul></div>
+            <div key={k}><p className="font-semibold">{k}</p><ul className="mt-1 list-disc space-y-0.5 ps-5 text-muted-foreground">{v.map((s) => <li key={s}>{s}</li>)}</ul></div>
           ))}
         </div>
         <p className="text-muted-foreground">Dans les régions, renseignez-vous auprès de l&apos;hôpital régional : le pays compte plusieurs banques de sang.</p>

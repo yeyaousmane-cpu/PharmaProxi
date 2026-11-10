@@ -1,4 +1,5 @@
 "use server";
+import { chooseLanguage } from "@/app/actions/v027";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { z } from "zod";
@@ -72,10 +73,7 @@ export async function toggleSupportLine(_: ActionState, fd: FormData): Promise<A
 
 // ---------------- Langues ----------------
 export async function setLanguage(fd: FormData) {
-  const lang = str(fd, "lang");
-  const jar = await cookies();
-  if (lang in LANGS && lang !== "fr") jar.set(LANG_COOKIE, lang, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
-  else jar.delete(LANG_COOKIE);
+  await chooseLanguage(str(fd, "lang"));
   revalidatePath("/", "layout");
 }
 

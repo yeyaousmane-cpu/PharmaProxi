@@ -25,7 +25,7 @@ export function StockRow({ line, readOnly }: { line: StockLine; readOnly: boolea
           <input type="checkbox" name="inventory_id" value={line.id} form="confirm-fresh" aria-label={`Sélectionner ${line.label}`} className="mt-1 size-4" />
           <div>
             <Link prefetch={false} href={`/pharmacien/stocks/${line.id}`} className="font-medium hover:underline">{line.label}</Link>
-            {line.pending_review && <span className="ml-2 text-xs text-muted-foreground">(fiche en vérification)</span>}
+            {line.pending_review && <span className="ms-2 text-xs text-muted-foreground">(fiche en vérification)</span>}
             <div className="mt-1"><FreshnessBadge freshness={line.freshness} updatedAt={line.stock_updated_at} /></div>
           </div>
         </div>

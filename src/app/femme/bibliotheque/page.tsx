@@ -50,7 +50,7 @@ export default async function LibraryPage() {
       </section>
       <section className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
         <h2 className="mb-2 font-bold">Quand consulter pour vos règles ?</h2>
-        <ul className="list-disc space-y-1 pl-5 text-sm">{CONSULT_CYCLE.map((c) => <li key={c}>{c}</li>)}</ul>
+        <ul className="list-disc space-y-1 ps-5 text-sm">{CONSULT_CYCLE.map((c) => <li key={c}>{c}</li>)}</ul>
       </section>
     </div>
   );

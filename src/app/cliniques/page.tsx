@@ -140,7 +140,7 @@ export default async function ClinicsPage({ searchParams }: { searchParams: Prom
                   {c.emergency_24h && <Badge className="shrink-0 border-red-200 bg-red-50 text-red-800"><Siren className="size-3" aria-hidden /> Urgences 24 h/24</Badge>}
                 </div>
                 <p className="mt-2 flex items-start gap-1 text-sm"><MapPin className="mt-0.5 size-4 shrink-0 text-brand-blue" aria-hidden />{c.address} — {[c.commune_name, c.region_name].filter(Boolean).join(", ")}
-                  {c.distance_km !== null ? <span className="ml-1 text-muted-foreground">({formatDistance(c.distance_km)})</span> : null}</p>
+                  {c.distance_km !== null ? <span className="ms-1 text-muted-foreground">({formatDistance(c.distance_km)})</span> : null}</p>
                 {c.specialties.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">{c.specialties.slice(0, 8).map((s) => <Badge key={s.id} className="border-sky-200 bg-brand-sky text-brand-blue">{s.name}</Badge>)}</div>
                 )}

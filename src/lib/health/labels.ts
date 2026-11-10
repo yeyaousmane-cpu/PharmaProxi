@@ -18,6 +18,7 @@ export const HEALTH_STATUS: Record<string, { label: string; className: string }>
   validated: { label: "Validée, non publiée", className: "border-sky-200 bg-sky-50 text-sky-800" },
   published: { label: "Publiée", className: "border-emerald-200 bg-emerald-50 text-emerald-800" },
   unpublished: { label: "Dépubliée", className: "bg-muted text-muted-foreground" },
+  archived: { label: "Archivée", className: "bg-slate-200 text-slate-700" },
 };
 /** Ordre et titres des sections du modèle standard de fiche. */
 export const HEALTH_SECTIONS: [string, string][] = [
@@ -40,6 +41,6 @@ export type HealthArticle = {
   recommendation: string | null; body: Record<string, string>; myths: { idee: string; verite: string }[]; faq: { q: string; r: string }[];
   exam_codes: string[]; specialty_codes: string[]; is_featured: boolean; status: string; author_name: string | null;
   validator_name: string | null; validator_credentials: string | null; validated_at: string | null; published_at: string | null;
-  reviewed_at: string | null; review_note: string | null; created_at: string; updated_at: string; category_id: string;
+  reviewed_at: string | null; lang?: string; next_review_on?: string | null; archived_at?: string | null; review_note: string | null; created_at: string; updated_at: string; category_id: string;
 };
 export type HealthSource = { id: string; title: string; organization: string; url: string | null; published_on: string | null; accessed_on: string; sort_order: number };

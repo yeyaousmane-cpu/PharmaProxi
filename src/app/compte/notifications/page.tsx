@@ -24,7 +24,7 @@ export default async function NotificationsPage() {
         <ul className="mt-4 divide-y rounded-xl border bg-white">
           {data.map((n) => (
             <li key={n.id} className={cn("p-4", !n.read_at && "bg-accent/50")}>
-              <p className="font-semibold">{!n.read_at && <span className="mr-2 inline-block size-2 rounded-full bg-mali-red" aria-label="Non lue" />}{n.title}</p>
+              <p className="font-semibold">{!n.read_at && <span className="me-2 inline-block size-2 rounded-full bg-mali-red" aria-label="Non lue" />}{n.title}</p>
               {n.body && <p className="text-sm">{n.body}</p>}
               <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(n.created_at)}{n.link ? <> · <Link prefetch={false} href={n.link} className="text-primary underline">Ouvrir</Link></> : null}</p>
             </li>

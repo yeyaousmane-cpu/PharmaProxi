@@ -147,8 +147,8 @@ export default async function AdminServices({ searchParams }: { searchParams: Pr
             <CardHeader><CardTitle>Alertes de disponibilité demandées</CardTitle></CardHeader>
             <CardContent>
               {o.alerts.length === 0 ? <p className="text-sm text-muted-foreground">Aucune alerte sur la période.</p> : (
-                <table className="w-full text-sm"><thead><tr className="text-left text-xs text-muted-foreground"><th className="py-1">Produit</th><th>Zone</th><th className="text-right">Demandes</th><th className="text-right">Satisfaites</th></tr></thead>
-                  <tbody>{o.alerts.map((a, i) => <tr key={i} className="border-t"><td className="py-1.5">{a.produit}</td><td>{a.region}</td><td className="text-right font-semibold">{a.n}</td><td className="text-right">{a.satisfaites}</td></tr>)}</tbody></table>
+                <table className="w-full text-sm"><thead><tr className="text-start text-xs text-muted-foreground"><th className="py-1">Produit</th><th>Zone</th><th className="text-end">Demandes</th><th className="text-end">Satisfaites</th></tr></thead>
+                  <tbody>{o.alerts.map((a, i) => <tr key={i} className="border-t"><td className="py-1.5">{a.produit}</td><td>{a.region}</td><td className="text-end font-semibold">{a.n}</td><td className="text-end">{a.satisfaites}</td></tr>)}</tbody></table>
               )}
             </CardContent>
           </Card>
@@ -156,8 +156,8 @@ export default async function AdminServices({ searchParams }: { searchParams: Pr
             <CardHeader><CardTitle>Recherches de médicaments sans résultat</CardTitle></CardHeader>
             <CardContent>
               {o.searches.length === 0 ? <p className="text-sm text-muted-foreground">Rien à signaler sur la période.</p> : (
-                <table className="w-full text-sm"><thead><tr className="text-left text-xs text-muted-foreground"><th className="py-1">Recherche</th><th>Zone</th><th className="text-right">Fois</th></tr></thead>
-                  <tbody>{o.searches.map((a, i) => <tr key={i} className="border-t"><td className="py-1.5">{a.recherche}</td><td>{a.region}</td><td className="text-right font-semibold">{a.n}</td></tr>)}</tbody></table>
+                <table className="w-full text-sm"><thead><tr className="text-start text-xs text-muted-foreground"><th className="py-1">Recherche</th><th>Zone</th><th className="text-end">Fois</th></tr></thead>
+                  <tbody>{o.searches.map((a, i) => <tr key={i} className="border-t"><td className="py-1.5">{a.recherche}</td><td>{a.region}</td><td className="text-end font-semibold">{a.n}</td></tr>)}</tbody></table>
               )}
             </CardContent>
           </Card>

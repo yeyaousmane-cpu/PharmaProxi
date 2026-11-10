@@ -68,7 +68,7 @@ export default async function LabPage({ params }: { params: Promise<{ id: string
               <ul className="divide-y text-sm">{exams.filter((e) => e.medical_exams!.category === c).map((e) => (
                 <li key={e.medical_exams!.name} className="flex flex-wrap items-baseline justify-between gap-2 py-2">
                   <span>{e.medical_exams!.name}{e.delay ? <span className="text-xs text-muted-foreground"> · résultat : {e.delay}</span> : null}</span>
-                  <span className="text-right"><strong>{e.price_xof !== null ? formatXof(e.price_xof) : "Prix non communiqué"}</strong>{e.price_note ? <span className="block text-xs text-muted-foreground">{e.price_note}</span> : null}</span>
+                  <span className="text-end"><strong>{e.price_xof !== null ? formatXof(e.price_xof) : "Prix non communiqué"}</strong>{e.price_note ? <span className="block text-xs text-muted-foreground">{e.price_note}</span> : null}</span>
                 </li>))}</ul>
             </div>))
         )}

@@ -38,7 +38,7 @@ export function HelpMarkdown({ text, q }: { text: string; q?: string }) {
     <div className="space-y-4 text-[1.05rem] leading-relaxed">
       {blocks.map((b, i) => {
         const lines = b.split("\n").map((l) => l.trim()).filter(Boolean);
-        if (lines.every((l) => l.startsWith("- "))) return <ul key={i} className="list-disc space-y-1.5 pl-6">{lines.map((l, j) => <li key={j}>{inline(l.slice(2), mark)}</li>)}</ul>;
+        if (lines.every((l) => l.startsWith("- "))) return <ul key={i} className="list-disc space-y-1.5 ps-6">{lines.map((l, j) => <li key={j}>{inline(l.slice(2), mark)}</li>)}</ul>;
         if (lines.every((l) => /^\d+\.\s/.test(l))) return (
           <ol key={i} className="space-y-2">{lines.map((l, j) => (
             <li key={j} className="flex gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#068132] text-sm font-bold text-white">{j + 1}</span>

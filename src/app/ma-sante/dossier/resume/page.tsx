@@ -22,9 +22,9 @@ function Line({ i, lang }: { i: Item; lang: Lang }) {
   return (
     <li className="py-1">
       <span className="font-semibold">{i.title}</span>
-      {i.severity && <span className={cn("ml-1 text-xs font-bold uppercase", i.severity === "grave" ? "text-red-700" : "text-amber-700")}>({SEVERITY[i.severity][lang]})</span>}
+      {i.severity && <span className={cn("ms-1 text-xs font-bold uppercase", i.severity === "grave" ? "text-red-700" : "text-amber-700")}>({SEVERITY[i.severity][lang]})</span>}
       {meta && <span className="text-muted-foreground"> — {meta}</span>}
-      {extra.map((e) => <span key={e} className="block whitespace-pre-line pl-3 text-[13px]">{e}</span>)}
+      {extra.map((e) => <span key={e} className="block whitespace-pre-line ps-3 text-[13px]">{e}</span>)}
     </li>
   );
 }
@@ -108,7 +108,7 @@ export default async function Resume({ searchParams }: { searchParams: Promise<{
 
         <Block title={tr("current", lang)} empty={!(treatments ?? []).length && !recentRx.length}>
           <ul className="text-sm">
-            {(treatments ?? []).map((t) => { const h = allergyMatches(t.name, allergyNames); return <li key={t.name} className="py-1"><span className="font-semibold">{t.name}</span>{t.dose_note ? ` — ${t.dose_note}` : ""} · {t.times.join(", ")}{h.length > 0 && <span className="ml-1 font-bold text-red-700">⚠ {lang === "en" ? "similar to declared allergy" : "ressemble à une allergie déclarée"} ({h.join(", ")})</span>}</li>; })}
+            {(treatments ?? []).map((t) => { const h = allergyMatches(t.name, allergyNames); return <li key={t.name} className="py-1"><span className="font-semibold">{t.name}</span>{t.dose_note ? ` — ${t.dose_note}` : ""} · {t.times.join(", ")}{h.length > 0 && <span className="ms-1 font-bold text-red-700">⚠ {lang === "en" ? "similar to declared allergy" : "ressemble à une allergie déclarée"} ({h.join(", ")})</span>}</li>; })}
             {recentRx.filter((r) => !(treatments ?? []).some((t) => t.name.endsWith(r.title))).map((i) => <Line key={i.id} i={i} lang={lang} />)}
           </ul>
         </Block>

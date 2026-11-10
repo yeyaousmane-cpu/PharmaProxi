@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ListenButton } from "@/components/speech/listen-button";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { HelpMarkdown } from "@/components/help/help-markdown";
@@ -37,7 +38,8 @@ export default async function HelpArticlePage({ params, searchParams }: { params
   return (
     <div className="container-page max-w-3xl space-y-6 py-6">
       <Breadcrumb items={[["Centre d'aide", "/aide"], [r.catTitle, `/aide/${r.a.category_slug}`], [r.a.section, null]]} />
-      <article className="space-y-4 rounded-2xl border bg-white p-5 md:p-8">
+      <ListenButton targetId="aide-texte" lang="fr" />
+      <article id="aide-texte" lang="fr" dir="ltr" className="space-y-4 rounded-2xl border bg-white p-5 md:p-8">
         <h1 className="text-2xl font-extrabold text-[#052D1E] md:text-3xl">{r.a.title}</h1>
         <p className="text-lg text-muted-foreground">{r.a.summary}</p>
         <HelpMarkdown text={r.a.body} q={q} />

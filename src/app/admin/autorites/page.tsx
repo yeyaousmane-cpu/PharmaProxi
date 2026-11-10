@@ -50,7 +50,7 @@ export default async function AdminAuthorities() {
       <section className="space-y-2">
         <h2 className="text-lg font-bold">Journal des consultations (100 dernières)</h2>
         <div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full min-w-[600px] text-sm">
-          <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="p-2">Date</th><th>Personne</th><th>Institution</th><th>Tableau</th><th>Filtres</th></tr></thead>
+          <thead><tr className="border-b text-start text-xs text-muted-foreground"><th className="p-2">Date</th><th>Personne</th><th>Institution</th><th>Tableau</th><th>Filtres</th></tr></thead>
           <tbody>{(log ?? []).map((l) => <tr key={l.id} className="border-b last:border-0"><td className="p-2">{formatDateTime(l.at)}</td><td>{nm(l.profiles as P)}</td><td>{l.scope}</td><td>{l.action}</td><td className="text-xs text-muted-foreground">{JSON.stringify(l.params)}</td></tr>)}</tbody>
         </table></div>
       </section>

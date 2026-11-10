@@ -21,9 +21,9 @@ export function PasswordInput({ id, name, autoComplete, meter = false, required 
       <div className="relative">
         <input id={id} name={name} type={shown ? "text" : "password"} autoComplete={autoComplete} required={required} minLength={minLength} maxLength={72}
           value={value} onChange={(e) => setValue(e.target.value)} aria-describedby={meter ? `${id}-meter` : undefined}
-          className="flex h-11 w-full rounded-md border border-input bg-background px-3 pr-12 text-base shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+          className="flex h-11 w-full rounded-md border border-input bg-background px-3 pe-12 text-base shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
         <button type="button" onClick={() => setShown((v) => !v)} aria-label={shown ? "Masquer le mot de passe" : "Afficher le mot de passe"} aria-pressed={shown}
-          className="absolute right-1 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:text-foreground">
+          className="absolute end-1 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:text-foreground">
           {shown ? <EyeOff className="size-5" aria-hidden /> : <Eye className="size-5" aria-hidden />}
         </button>
       </div>

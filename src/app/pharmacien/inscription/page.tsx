@@ -17,7 +17,7 @@ export default async function RegisterPharmacy() {
     <div className="mx-auto max-w-3xl">
       <h1 className="text-2xl font-bold">Inscrire ma pharmacie</h1>
       <Alert tone="info" className="my-4" title="Comment se déroule la vérification ?">
-        <ol className="list-decimal space-y-1 pl-4">
+        <ol className="list-decimal space-y-1 ps-4">
           <li>Vous renseignez les informations de la pharmacie et du pharmacien responsable.</li>
           <li>Vous déposez les justificatifs (autorisation d&apos;ouverture, inscription à l&apos;Ordre, pièce d&apos;identité…).</li>
           <li>Un administrateur habilité les examine. La pharmacie n&apos;est visible du public qu&apos;après validation.</li>

@@ -42,7 +42,7 @@ export default async function DeliveryDetail({ params }: { params: Promise<{ id:
             <a href={`tel:${ph.phone}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Phone aria-hidden /> {formatPhone(ph.phone)}</a>
             {ph.latitude !== null && <a href={directionsUrl(ph.latitude, ph.longitude)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Navigation aria-hidden /> Itinéraire</a>}
           </div>
-          <ul className="list-disc pl-5">{(o.order_items ?? []).map((i: { product_label: string; quantity: number }, k: number) => <li key={k}>{i.quantity} × {i.product_label}</li>)}</ul>
+          <ul className="list-disc ps-5">{(o.order_items ?? []).map((i: { product_label: string; quantity: number }, k: number) => <li key={k}>{i.quantity} × {i.product_label}</li>)}</ul>
           {st === "courier_assigned" && <AdvanceButton orderId={o.id} to="in_delivery" label="Colis collecté — démarrer la livraison" confirm="Confirmez-vous avoir collecté le colis scellé ?" />}
         </CardContent></Card>
       <Card><CardHeader><CardTitle>2. Remise</CardTitle></CardHeader>
@@ -51,7 +51,7 @@ export default async function DeliveryDetail({ params }: { params: Promise<{ id:
           <p>{d.dropoff_address}{d.dropoff_landmark ? ` — repère : ${d.dropoff_landmark}` : ""}</p>
           {d.instructions && <p className="rounded bg-muted p-2">{d.instructions}</p>}
           <a href={`tel:${d.dropoff_contact_phone}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Phone aria-hidden /> {formatPhone(d.dropoff_contact_phone)}</a>
-          {d.dropoff_latitude !== null && <a href={directionsUrl(d.dropoff_latitude, d.dropoff_longitude)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "ml-2")}><Navigation aria-hidden /> Itinéraire</a>}
+          {d.dropoff_latitude !== null && <a href={directionsUrl(d.dropoff_latitude, d.dropoff_longitude)} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "ms-2")}><Navigation aria-hidden /> Itinéraire</a>}
           <p>À encaisser : <strong>{formatXof(o.total_xof)}</strong> · {PAYMENT_LABEL[o.payment_status]}</p>
           {st === "in_delivery" && (
             <div className="space-y-3 pt-2">

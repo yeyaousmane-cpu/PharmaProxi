@@ -55,20 +55,20 @@ export function OrderItems({ items, subtotal, fee, total, paymentMethod, payment
     <div className="text-sm">
       <table className="w-full">
         <caption className="sr-only">Produits de la commande</caption>
-        <thead><tr className="border-b text-left text-muted-foreground"><th className="py-1 font-medium">Produit</th><th className="py-1 text-right font-medium">Qté</th><th className="py-1 text-right font-medium">Montant</th></tr></thead>
+        <thead><tr className="border-b text-start text-muted-foreground"><th className="py-1 font-medium">Produit</th><th className="py-1 text-end font-medium">Qté</th><th className="py-1 text-end font-medium">Montant</th></tr></thead>
         <tbody>
           {items.map((i) => (
             <tr key={i.id} className="border-b">
-              <td className="py-2">{i.product_label}{i.requires_prescription ? <span className="ml-1 text-xs text-sky-700">(ordonnance)</span> : null}</td>
-              <td className="py-2 text-right">{i.quantity}</td>
-              <td className="py-2 text-right">{formatXof(i.quantity * i.unit_price_xof)}</td>
+              <td className="py-2">{i.product_label}{i.requires_prescription ? <span className="ms-1 text-xs text-sky-700">(ordonnance)</span> : null}</td>
+              <td className="py-2 text-end">{i.quantity}</td>
+              <td className="py-2 text-end">{formatXof(i.quantity * i.unit_price_xof)}</td>
             </tr>
           ))}
         </tbody>
         <tfoot>
-          <tr><td colSpan={2} className="pt-2">Sous-total</td><td className="pt-2 text-right">{formatXof(subtotal)}</td></tr>
-          {fee > 0 && <tr><td colSpan={2}>Frais de livraison</td><td className="text-right">{formatXof(fee)}</td></tr>}
-          <tr className="font-bold"><td colSpan={2}>Total</td><td className="text-right">{formatXof(total)}</td></tr>
+          <tr><td colSpan={2} className="pt-2">Sous-total</td><td className="pt-2 text-end">{formatXof(subtotal)}</td></tr>
+          {fee > 0 && <tr><td colSpan={2}>Frais de livraison</td><td className="text-end">{formatXof(fee)}</td></tr>}
+          <tr className="font-bold"><td colSpan={2}>Total</td><td className="text-end">{formatXof(total)}</td></tr>
         </tfoot>
       </table>
       <p className="mt-2 text-muted-foreground">{PAYMENT_METHOD_LABEL[paymentMethod]} · <span className="font-medium text-foreground">{PAYMENT_LABEL[paymentStatus]}</span></p>

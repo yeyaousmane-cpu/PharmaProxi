@@ -42,7 +42,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
                   <p className="font-bold text-brand-deep">{g.ingredient}{g.dosage ? ` · ${g.dosage}` : ""}{g.form ? ` · ${g.form}` : ""}</p>
                   <p className="text-sm text-muted-foreground">{g.products} produit(s) : {g.brands.slice(0, 6).join(", ")}{g.brands.length > 6 ? "…" : ""}</p>
                 </div>
-                <div className="text-right text-sm">
+                <div className="text-end text-sm">
                   {g.min_price !== null ? (
                     <><p className="text-xs text-muted-foreground">Prix déclarés</p><p className="text-lg font-bold">{g.min_price === g.max_price ? formatXof(g.min_price) : `${formatXof(g.min_price)} – ${formatXof(g.max_price)}`}</p><p className="text-xs text-muted-foreground">dans {g.pharmacies} pharmacie(s)</p></>
                   ) : <p className="text-xs text-muted-foreground">Aucun prix déclaré récemment</p>}
@@ -55,7 +55,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
       )}
       <section className="space-y-2 rounded-2xl border bg-white p-5 text-sm leading-relaxed">
         <h2 className="flex items-center gap-2 text-lg font-bold text-brand-deep"><Info className="size-5 text-primary" aria-hidden /> Bon à savoir</h2>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li>Un <strong>générique</strong> contient le même principe actif, au même dosage, que le médicament de marque.</li>
           <li><strong>Ne changez jamais de médicament sans l&apos;avis de votre pharmacien</strong> : il vérifie que le produit convient (forme, excipients, allergies, enfant, grossesse).</li>
           <li>Les prix affichés sont ceux déclarés par les pharmacies au cours des 30 derniers jours : faites-les confirmer.</li>

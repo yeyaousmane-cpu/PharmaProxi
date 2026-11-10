@@ -71,14 +71,14 @@ export default async function Measures({ searchParams }: { searchParams: Promise
           points={chron.map((m) => kind === "tension" ? { t: m.measured_at, a: m.systolic!, b: m.diastolic } : { t: m.measured_at, a: Number(m.glucose_gl) })} />
         {list.length === 0 ? <p className="text-sm text-muted-foreground">Aucune mesure pour le moment.</p> : (
           <table className="w-full text-sm">
-            <thead><tr className="border-b text-left text-muted-foreground"><th className="py-2">Date</th><th className="py-2">Valeur</th><th className="py-2">Note</th><th className="print:hidden" /></tr></thead>
+            <thead><tr className="border-b text-start text-muted-foreground"><th className="py-2">Date</th><th className="py-2">Valeur</th><th className="py-2">Note</th><th className="print:hidden" /></tr></thead>
             <tbody className="divide-y">
               {list.map((m) => (
                 <tr key={m.id}>
-                  <td className="py-2 pr-2 tabular-nums">{dt(m.measured_at)}</td>
-                  <td className="py-2 pr-2 font-semibold tabular-nums">{kind === "tension" ? `${m.systolic}/${m.diastolic}${m.pulse ? ` · pouls ${m.pulse}` : ""}` : `${String(m.glucose_gl).replace(".", ",")} g/L${m.context ? ` (${CTX[m.context]})` : ""}`}</td>
-                  <td className="py-2 pr-2 text-muted-foreground">{m.note}</td>
-                  <td className="py-2 text-right print:hidden">
+                  <td className="py-2 pe-2 tabular-nums">{dt(m.measured_at)}</td>
+                  <td className="py-2 pe-2 font-semibold tabular-nums">{kind === "tension" ? `${m.systolic}/${m.diastolic}${m.pulse ? ` · pouls ${m.pulse}` : ""}` : `${String(m.glucose_gl).replace(".", ",")} g/L${m.context ? ` (${CTX[m.context]})` : ""}`}</td>
+                  <td className="py-2 pe-2 text-muted-foreground">{m.note}</td>
+                  <td className="py-2 text-end print:hidden">
                     <ActionForm action={deleteMeasure}><input type="hidden" name="id" value={m.id} /><button type="submit" className="rounded p-1.5 text-muted-foreground hover:bg-red-50 hover:text-destructive" aria-label="Supprimer la mesure"><Trash2 className="size-4" /></button></ActionForm>
                   </td>
                 </tr>

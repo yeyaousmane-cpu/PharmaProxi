@@ -11,6 +11,8 @@ import { reportHealthArticle } from "@/app/actions/health";
 import { createClient } from "@/lib/supabase/server";
 import { HEALTH_AUDIENCE, HEALTH_KIND, HEALTH_SECTIONS, HEALTH_STATUS, type HealthArticle, type HealthSource } from "@/lib/health/labels";
 import { formatDate, formatPhone, formatXof } from "@/lib/format";
+import { ListenButton } from "@/components/speech/listen-button";
+import { getLang, getT } from "@/lib/i18n";
 
 export const revalidate = 0;
 const SLUG = /^[a-z0-9-]{3,90}$/;
@@ -47,9 +49,11 @@ export default async function HealthArticlePage({ params }: { params: Promise<{ 
   }));
   const body = a.body ?? {};
   const reviewed = a.reviewed_at ?? a.validated_at;
+  const [t, uiLang] = await Promise.all([getT(), getLang()]);
+  const reviewDue = published && a.next_review_on ? a.next_review_on <= new Date().toISOString().slice(0, 10) : false;
 
   return (
-    <article className="bg-[#EAF6EE]/60">
+    <article id="fiche-texte" lang={a.lang ?? "fr"} dir={a.lang === "ar" ? "rtl" : "ltr"} className="bg-[#EAF6EE]/60">
       <header className="border-b bg-gradient-to-b from-[#EAF6EE] to-white">
         <div className="container-page max-w-4xl py-7">
           <nav aria-label="Fil d'Ariane" className="text-sm text-[#068132]">
@@ -68,7 +72,7 @@ export default async function HealthArticlePage({ params }: { params: Promise<{ 
             {a.audiences.filter((x) => x !== "tous").map((x) => <Badge key={x} className="bg-white text-muted-foreground">{HEALTH_AUDIENCE[x]}</Badge>)}
           </div>
           <h1 className="mt-2 text-2xl font-bold text-[#052D1E] sm:text-3xl">{a.title}</h1>
-          {a.summary && <p className="mt-3 rounded-xl border-l-4 border-[#068132] bg-white p-4 text-base leading-relaxed">{a.summary}</p>}
+          {a.summary && <p className="mt-3 rounded-xl border-s-4 border-[#068132] bg-white p-4 text-base leading-relaxed">{a.summary}</p>}
           <div className="mt-3 flex flex-col gap-1 text-sm">
             {published && a.validator_name && a.validated_at ? (
               <p className="flex items-start gap-1.5 font-medium text-emerald-800"><BadgeCheck className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -77,13 +81,16 @@ export default async function HealthArticlePage({ params }: { params: Promise<{ 
               <p className="flex items-center gap-1.5 font-medium text-amber-800"><AlertTriangle className="size-4" aria-hidden /> Contenu non validé</p>
             )}
             <p className="text-xs text-muted-foreground">
-              {a.author_name ? `Rédaction : ${a.author_name} · ` : ""}{a.published_at ? `Publiée le ${formatDate(a.published_at)} · ` : ""}{reviewed ? `Dernière révision : ${formatDate(reviewed)}` : `Créée le ${formatDate(a.created_at)}`}
+              {a.author_name ? `Rédaction : ${a.author_name} · ` : ""}{a.next_review_on && published ? `${t("rel.review_on", { date: formatDate(a.next_review_on) })} · ` : ""}{a.published_at ? `Publiée le ${formatDate(a.published_at)} · ` : ""}{reviewed ? `Dernière révision : ${formatDate(reviewed)}` : `Créée le ${formatDate(a.created_at)}`}
             </p>
           </div>
         </div>
       </header>
 
       <div className="container-page max-w-4xl space-y-6 py-7">
+        {uiLang !== (a.lang ?? "fr") && <p className="rounded-xl bg-white p-3 text-sm text-muted-foreground" lang={uiLang} dir={uiLang === "ar" ? "rtl" : "ltr"} data-no-listen>{t("lang.content_fr")}</p>}
+        {reviewDue && <Alert tone="warning" title={t("rel.review_due")} />}
+        {published && <ListenButton targetId="fiche-texte" lang={a.lang ?? "fr"} />}
         {published && <AudioGuide target={`fiche:${a.slug}`} label="Écouter cette fiche" />}
         {HEALTH_SECTIONS.filter(([k]) => body[k]).map(([k, label]) => (
           <section key={k} aria-labelledby={`s-${k}`} className={k === "urgence" ? "rounded-2xl border border-red-200 bg-red-50 p-5 text-red-950" : "rounded-2xl border bg-white p-5"}>
@@ -161,7 +168,7 @@ export default async function HealthArticlePage({ params }: { params: Promise<{ 
         <section aria-labelledby="s-sources" className="rounded-2xl border bg-white p-5">
           <h2 id="s-sources" className="flex items-center gap-2 text-lg font-bold"><BookMarked className="size-5 text-[#068132]" aria-hidden /> Sources médicales</h2>
           {sources.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Aucune source enregistrée.</p> : (
-            <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm">
+            <ol className="mt-2 list-decimal space-y-2 ps-5 text-sm">
               {sources.map((s) => (
                 <li key={s.id}>
                   {s.url ? <a href={s.url} target="_blank" rel="noopener noreferrer" className="font-medium text-[#1D5FA8] underline">{s.title}</a> : <span className="font-medium">{s.title}</span>}

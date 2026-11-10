@@ -38,7 +38,7 @@ export default async function Home() {
     <>
       <section className="bogolan border-b">
         <div className="container-page grid items-center gap-8 py-8 md:grid-cols-[1fr_1.2fr] md:py-14">
-          <div className="flex flex-col items-center text-center md:items-start md:text-left">
+          <div className="flex flex-col items-center text-center md:items-start md:text-start">
             <Image src="/logo-santeproxi-sans-slogan.webp" alt="SantéProxi" width={640} height={444} priority className="h-auto w-48 rounded-3xl bg-white p-2 shadow-sm md:w-72" />
             <p className="mt-3 text-2xl font-extrabold text-[#068132] md:text-3xl">La santé, plus proche de vous.</p>
             <p className="mt-2 max-w-md text-muted-foreground">
@@ -59,20 +59,20 @@ export default async function Home() {
           <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-red-700"><Siren className="size-6" aria-hidden /></span>
           <span className="min-w-0"><span className="block font-bold">SOS Santé : numéros d&apos;urgence</span>
             <span className="block text-sm text-white/90">Protection civile, police, numéro vert Santé : appel direct en un geste.</span></span>
-          <span className="ml-auto hidden shrink-0 text-sm font-semibold sm:block">Ouvrir</span>
+          <span className="ms-auto hidden shrink-0 text-sm font-semibold sm:block">Ouvrir</span>
         </Link>
         <div className="mb-3 grid gap-3 lg:grid-cols-2">
         <Link prefetch={false} href="/assistant" className="flex items-center gap-3 rounded-xl border border-emerald-300 bg-[#EAF6EE] p-4 transition hover:border-[#068132] hover:shadow-sm">
           <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#068132] text-white"><Bot className="size-6" aria-hidden /></span>
           <span className="min-w-0"><span className="block font-bold text-[#052D1E]">Assistant santé : posez votre question</span>
             <span className="block text-sm text-muted-foreground">Mal de tête, fièvre, diarrhée, rhume… Une première orientation simple, sans diagnostic, et quand consulter.</span></span>
-          <span className="ml-auto hidden shrink-0 text-sm font-semibold text-[#068132] sm:block">Demander</span>
+          <span className="ms-auto hidden shrink-0 text-sm font-semibold text-[#068132] sm:block">Demander</span>
         </Link>
         <Link prefetch={false} href="/femme" className="flex items-center gap-3 rounded-xl border border-[#D96A91]/40 bg-[#F8E7EF] p-4 transition hover:border-[#D96A91] hover:shadow-sm">
           <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#D96A91] text-white"><Flower2 className="size-6" aria-hidden /></span>
           <span className="min-w-0"><span className="block font-bold text-[#843653]">SantéProxi Femme</span>
             <span className="block text-sm text-muted-foreground">Règles, fertilité, grossesse, symptômes : votre espace privé et protégé.</span></span>
-          <span className="ml-auto hidden shrink-0 text-sm font-semibold text-[#843653] sm:block">Ouvrir</span>
+          <span className="ms-auto hidden shrink-0 text-sm font-semibold text-[#843653] sm:block">Ouvrir</span>
         </Link>
         </div>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

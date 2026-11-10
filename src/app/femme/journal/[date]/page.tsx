@@ -43,9 +43,9 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Link prefetch={false} href={`/femme/journal/${addDays(date, -1)}`} className="rounded-full p-2 hover:bg-[#F8E7EF]" aria-label="Jour précédent"><ChevronLeft aria-hidden /></Link>
+        <Link prefetch={false} href={`/femme/journal/${addDays(date, -1)}`} className="rounded-full p-2 hover:bg-[#F8E7EF]" aria-label="Jour précédent"><ChevronLeft className="rtl:-scale-x-100" aria-hidden /></Link>
         <h1 className="text-lg font-bold capitalize text-[#843653]">{date === today ? "Aujourd'hui, " : ""}{fmt(date, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</h1>
-        {date < today ? <Link prefetch={false} href={`/femme/journal/${addDays(date, 1)}`} className="rounded-full p-2 hover:bg-[#F8E7EF]" aria-label="Jour suivant"><ChevronRight aria-hidden /></Link> : <span className="w-10" />}
+        {date < today ? <Link prefetch={false} href={`/femme/journal/${addDays(date, 1)}`} className="rounded-full p-2 hover:bg-[#F8E7EF]" aria-label="Jour suivant"><ChevronRight className="rtl:-scale-x-100" aria-hidden /></Link> : <span className="w-10" />}
       </div>
       {future ? <p className={F.card}>Vous ne pouvez pas encore noter cette journée.</p> : (
         <section className={F.card}>

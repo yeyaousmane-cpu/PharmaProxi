@@ -117,7 +117,7 @@ export default async function LabsPage({ searchParams }: { searchParams: Promise
                   <p className="text-xs text-muted-foreground">{FACILITY_KINDS[r.kind] ?? r.kind} · {r.city_label ?? r.region_name ?? "Ville non précisée"}</p>
                 </div>
                 {exam && (
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-bold">{r.price_xof !== null ? formatXof(r.price_xof) : "Tarif non communiqué"}</p>
                     {r.price_note && <p className="text-xs text-muted-foreground">{r.price_note}</p>}
                   </div>

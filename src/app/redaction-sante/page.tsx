@@ -9,10 +9,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Select } from "@/components/ui/input";
 import { HEALTH_KIND, HEALTH_STATUS } from "@/lib/health/labels";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-const TABS = [["", "Toutes"], ["draft", "Brouillons"], ["changes_requested", "Corrections"], ["in_review", "À valider"], ["validated", "Validées"], ["published", "Publiées"], ["unpublished", "Dépubliées"], ["rejected", "Rejetées"]] as const;
+const TABS = [["", "Toutes"], ["draft", "Brouillons"], ["changes_requested", "Corrections"], ["in_review", "À valider"], ["validated", "Validées"], ["published", "Publiées"], ["unpublished", "Dépubliées"], ["rejected", "Rejetées"], ["archived", "Archivées"]] as const;
 const one = <T,>(v: T | T[] | null | undefined) => (Array.isArray(v) ? v[0] : v) ?? null;
 
 export default async function EditorialHome({ searchParams }: { searchParams: Promise<{ statut?: string; q?: string }> }) {
@@ -23,12 +23,15 @@ export default async function EditorialHome({ searchParams }: { searchParams: Pr
   let query = supabase.from("health_articles").select("id, title, status, kind, updated_at, author_name, health_categories(name)").order("updated_at", { ascending: false }).limit(200);
   if (statut) query = query.eq("status", statut);
   if (sp.q) query = query.ilike("title", `%${sp.q.replace(/[%,]/g, "")}%`);
-  const [{ data: list }, { data: all }, { data: reports }, { data: staff }] = await Promise.all([
+  const [{ data: list }, { data: all }, { data: reports }, { data: staff }, { data: due }] = await Promise.all([
     query,
     supabase.from("health_articles").select("status"),
     supabase.from("health_reports").select("id, reason, created_at, health_articles(id, title)").eq("status", "open").order("created_at", { ascending: false }).limit(50),
     st.isAdmin ? supabase.from("health_staff").select("user_id, role, display_name, credentials, profiles(full_name)").order("role") : Promise.resolve({ data: [] }),
+    supabase.rpc("health_due_reviews"),
   ]);
+  const dueList = (due as { id: string; title: string; next_review_on: string }[] | null) ?? [];
+  const today = new Date().toISOString().slice(0, 10);
   const count = (k: string) => (all ?? []).filter((a) => !k || a.status === k).length;
 
   return (
@@ -44,6 +47,12 @@ export default async function EditorialHome({ searchParams }: { searchParams: Pr
         </nav>
         {st.editor || st.validator ? <Link prefetch={false} href="/redaction-sante/nouvelle" className={cn(buttonVariants())}><Plus aria-hidden /> Nouvelle fiche</Link> : null}
       </div>
+      {dueList.length > 0 && (
+        <section className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950" aria-label="À actualiser">
+          <p className="font-semibold">À actualiser : {dueList.length} fiche(s) publiée(s) à réviser dans les 30 jours ou en retard</p>
+          <ul className="mt-1 space-y-0.5">{dueList.map((d) => <li key={d.id}><Link prefetch={false} href={`/redaction-sante/${d.id}`} className="underline">{d.title}</Link> — {d.next_review_on < today ? "en retard depuis" : "prévue le"} {formatDate(d.next_review_on)}</li>)}</ul>
+        </section>
+      )}
       {st.validator && count("in_review") > 0 && statut !== "in_review" && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">{count("in_review")} fiche(s) attendent une validation médicale. <Link prefetch={false} href="/redaction-sante?statut=in_review" className="font-semibold underline">Les voir</Link></p>
       )}

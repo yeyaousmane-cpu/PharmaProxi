@@ -46,7 +46,7 @@ export default async function Professionals({ searchParams }: { searchParams: Pr
 
       <section className="space-y-2 rounded-2xl bg-muted/50 p-4 text-sm">
         <p className="font-semibold">Comment ça se passe ?</p>
-        <ol className="list-decimal space-y-1 pl-5">
+        <ol className="list-decimal space-y-1 ps-5">
           <li>Vous envoyez ce formulaire avec la référence de votre autorisation (inscription à l&apos;Ordre, arrêté ou agrément d&apos;ouverture).</li>
           <li>L&apos;équipe vérifie auprès des registres officiels et vous recontacte.</li>
           <li>Vous créez un compte SantéProxi normal ; l&apos;équipe l&apos;autorise et vous recevez une notification pour compléter votre fiche.</li>

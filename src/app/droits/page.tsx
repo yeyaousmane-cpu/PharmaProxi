@@ -24,7 +24,7 @@ export default function DroitsPage() {
       <Link prefetch={false} href="/amo/guide" className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-brand-mint p-4 hover:border-primary">
         <span className="flex items-center gap-3"><ShieldPlus className="size-6 shrink-0 text-primary" aria-hidden />
           <span><span className="block font-semibold text-brand-deep">AMO et INPS : le guide complet</span><span className="text-sm text-muted-foreground">Assurance maladie, inscription à l&apos;INPS, assurance volontaire pour les non-salariés</span></span></span>
-        <ChevronRight className="size-5 shrink-0 text-primary" aria-hidden />
+        <ChevronRight className="size-5 shrink-0 text-primary rtl:-scale-x-100" aria-hidden />
       </Link>
       {GROUPS.map((g) => (
         <section key={g.key} aria-labelledby={`g-${g.key}`} className="space-y-3">

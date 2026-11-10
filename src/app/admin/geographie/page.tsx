@@ -37,11 +37,11 @@ export default async function AdminGeo() {
           <SubmitButton variant="secondary" pendingText="Import…">Importer</SubmitButton></ActionForm></CardContent></Card>
       <Card><CardHeader><CardTitle>Contenu actuel</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
-          <table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="py-1">Région</th><th className="text-right">Cercles</th><th className="text-right">Communes</th><th className="text-right">Quartiers</th></tr></thead>
+          <table className="w-full text-sm"><thead><tr className="border-b text-start"><th className="py-1">Région</th><th className="text-end">Cercles</th><th className="text-end">Communes</th><th className="text-end">Quartiers</th></tr></thead>
             <tbody>{geo.regions.map((r) => {
               const cms = geo.communes.filter((c) => c.region_id === r.id);
-              return <tr key={r.id} className="border-b"><td className="py-1">{r.name}</td><td className="text-right">{geo.circles.filter((c) => c.region_id === r.id).length}</td><td className="text-right">{cms.length}</td>
-                <td className="text-right">{geo.localities.filter((l) => cms.some((c) => c.id === l.commune_id)).length}</td></tr>;
+              return <tr key={r.id} className="border-b"><td className="py-1">{r.name}</td><td className="text-end">{geo.circles.filter((c) => c.region_id === r.id).length}</td><td className="text-end">{cms.length}</td>
+                <td className="text-end">{geo.localities.filter((l) => cms.some((c) => c.id === l.commune_id)).length}</td></tr>;
             })}</tbody></table>
         </CardContent></Card>
     </div>

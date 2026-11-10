@@ -17,7 +17,7 @@ function Danger({ items, title, numbers }: { items: string[]; title: string; num
   return (
     <section className="space-y-2 rounded-2xl border border-red-300 bg-red-50 p-4 text-red-950">
       <h2 className="flex items-center gap-2 text-lg font-bold"><Siren className="size-5" aria-hidden /> {title}</h2>
-      <ul className="list-disc space-y-1 pl-5 text-sm">{items.map((i) => <li key={i}>{i}</li>)}</ul>
+      <ul className="list-disc space-y-1 ps-5 text-sm">{items.map((i) => <li key={i}>{i}</li>)}</ul>
       <p className="text-sm font-semibold">Dans ces cas, allez immédiatement au centre de santé ou à la maternité la plus proche{numbers ? `, ou appelez le ${numbers}` : ""}. <Link prefetch={false} href="/urgences" className="underline">Voir les urgences</Link></p>
     </section>
   );
@@ -27,7 +27,7 @@ function Sources() {
   return (
     <section className="text-xs text-muted-foreground">
       <p className="font-semibold">Sources</p>
-      <ul className="list-disc pl-5">{SOURCES.map((s) => <li key={s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" className="underline">{s.title}</a> — {s.org}, {s.year}</li>)}</ul>
+      <ul className="list-disc ps-5">{SOURCES.map((s) => <li key={s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" className="underline">{s.title}</a> — {s.org}, {s.year}</li>)}</ul>
       <p className="mt-1">Informations générales résumées de ces recommandations ; elles n&apos;ont pas encore été relues par un professionnel de santé de SantéProxi et ne remplacent pas le suivi par une sage-femme ou un médecin.</p>
     </section>
   );
@@ -73,7 +73,7 @@ export default async function PregnancyPage() {
           <p className="text-sm"><strong>Le bébé : </strong>{t.baby}</p>
           <p className="text-sm"><strong>Votre corps : </strong>{t.mother}</p>
           <h3 className="pt-1 text-sm font-bold">À faire pendant ce trimestre</h3>
-          <ul className="list-disc space-y-1 pl-5 text-sm">{t.todo.map((x) => <li key={x}>{x}</li>)}</ul>
+          <ul className="list-disc space-y-1 ps-5 text-sm">{t.todo.map((x) => <li key={x}>{x}</li>)}</ul>
         </section>
         <section className={`${F.card} space-y-3`}>
           <h2 className={F.h2}>Consultations prénatales</h2>
@@ -114,7 +114,7 @@ export default async function PregnancyPage() {
               ))}</ul>
             </>
           ) : <p className="text-sm">Indiquez la date de l&apos;accouchement dans les <Link prefetch={false} href="/femme/reglages" className="underline">réglages</Link>.</p>}
-          <ul className="list-disc space-y-1 pl-5 text-sm">{POSTPARTUM_INFO.map((x) => <li key={x}>{x}</li>)}</ul>
+          <ul className="list-disc space-y-1 ps-5 text-sm">{POSTPARTUM_INFO.map((x) => <li key={x}>{x}</li>)}</ul>
         </section>
         <Danger items={POSTPARTUM_DANGER} title="Signes d'alerte après l'accouchement" numbers={numbers} />
         <FindCare />
@@ -128,7 +128,7 @@ export default async function PregnancyPage() {
     <div className="space-y-4">
       <section className={`${F.card} space-y-3`}>
         <h1 className="text-xl font-bold text-[#843653]">{profile.journey === "menopause" ? "Ménopause" : isTeen(profile) ? "Grossesse : bien s'informer" : "Préparer une grossesse"}</h1>
-        {!isTeen(profile) && <ul className="list-disc space-y-1 pl-5 text-sm">{info.map((x) => <li key={x}>{x}</li>)}</ul>}
+        {!isTeen(profile) && <ul className="list-disc space-y-1 ps-5 text-sm">{info.map((x) => <li key={x}>{x}</li>)}</ul>}
         {isTeen(profile) && <p className="text-sm">Si tu penses être enceinte, parles-en à une personne de confiance et rends-toi dans un centre de santé : une sage-femme peut t&apos;aider en toute confidentialité.</p>}
         <div className="rounded-xl bg-[#F8E7EF] p-3">
           <p className="text-sm font-semibold">Vous êtes enceinte ?</p>

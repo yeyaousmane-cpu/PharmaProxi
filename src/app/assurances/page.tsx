@@ -38,7 +38,7 @@ export default async function InsurancePage() {
                   <span className="flex items-center gap-2 text-lg font-bold text-brand-deep"><ShieldCheck className="size-5 text-primary" aria-hidden />{i.name}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">{i.total} partenaires dont {i.pharmacies} pharmacies · {i.regions} région(s)</span>
                 </span>
-                <ChevronRight className="size-5 shrink-0 text-primary" aria-hidden />
+                <ChevronRight className="size-5 shrink-0 text-primary rtl:-scale-x-100" aria-hidden />
               </Link>
             </li>
           ))}
@@ -46,7 +46,7 @@ export default async function InsurancePage() {
       )}
       <section className="rounded-2xl border bg-white p-5 text-sm leading-relaxed">
         <h2 className="text-lg font-bold text-brand-deep">Bon à savoir</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
+        <ul className="mt-2 list-disc space-y-1 ps-5">
           <li>Ayez toujours sur vous votre <strong>carte d&apos;assuré</strong> et, pour les médicaments, l&apos;<strong>ordonnance</strong>.</li>
           <li>Le taux de prise en charge, les plafonds et les médicaments couverts dépendent de <strong>votre contrat</strong> : en cas de doute, appelez votre assureur avant les soins.</li>
           <li>Les listes de partenaires changent : SantéProxi affiche la liste communiquée par l&apos;assureur, à la date indiquée.</li>

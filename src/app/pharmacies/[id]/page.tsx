@@ -139,11 +139,11 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
                     {i.packaging && <span className="text-xs text-muted-foreground"> — {i.packaging}</span>}
                     <div className="mt-1"><FreshnessBadge freshness={i.freshness} updatedAt={i.stock_updated_at} /></div>
                   </div>
-                  <div className="shrink-0 sm:text-right">
+                  <div className="shrink-0 sm:text-end">
                     <p className="font-semibold">{formatXof(i.price_xof)}</p>
                     {amo.products[i.catalog_id]?.amo && (amoStatus && i.price_xof !== null ? (
-                      <p className="text-xs font-semibold text-brand-deep"><ShieldPlus className="mr-1 inline size-3" aria-hidden />Carte AMO : ≈ {formatXof(amoPatientShare(i.price_xof, amo.products[i.catalog_id].tariff, amo.products[i.catalog_id].rate))}</p>
-                    ) : <p className="text-xs text-brand-deep"><ShieldPlus className="mr-1 inline size-3" aria-hidden />Liste AMO</p>)}
+                      <p className="text-xs font-semibold text-brand-deep"><ShieldPlus className="me-1 inline size-3" aria-hidden />Carte AMO : ≈ {formatXof(amoPatientShare(i.price_xof, amo.products[i.catalog_id].tariff, amo.products[i.catalog_id].rate))}</p>
+                    ) : <p className="text-xs text-brand-deep"><ShieldPlus className="me-1 inline size-3" aria-hidden />Liste AMO</p>)}
                   </div>
                 </li>
               ))}

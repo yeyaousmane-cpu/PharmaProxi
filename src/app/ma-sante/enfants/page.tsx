@@ -41,9 +41,9 @@ export default async function Children() {
                   <span>
                     <span className="block text-lg font-bold text-brand-deep">{k.first_name} <span className="text-sm font-normal text-muted-foreground">· {ageLabel(k.birth_date)}</span></span>
                     <span className="text-sm">{next ? <>Prochain rendez-vous : <strong>{next.label}</strong>{next.due >= today ? ` le ${formatDate(next.due)}` : ""}</> : "Tous les vaccins du calendrier sont notés."}</span>
-                    {late > 0 && <Badge className="ml-2 border-amber-200 bg-amber-50 text-amber-900">{late} {STATUS_LABEL.en_retard.toLowerCase()}</Badge>}
+                    {late > 0 && <Badge className="ms-2 border-amber-200 bg-amber-50 text-amber-900">{late} {STATUS_LABEL.en_retard.toLowerCase()}</Badge>}
                   </span>
-                  <ChevronRight className="size-5 shrink-0 text-primary" aria-hidden />
+                  <ChevronRight className="size-5 shrink-0 text-primary rtl:-scale-x-100" aria-hidden />
                 </Link>
               </li>
             );

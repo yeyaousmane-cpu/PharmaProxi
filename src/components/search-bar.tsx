@@ -76,7 +76,7 @@ export function SearchBar({
       <form ref={formRef} action="/recherche" method="get" role="search" className="space-y-3">
         <div className="relative">
           <label htmlFor="q" className="sr-only">Quel médicament recherchez-vous ?</label>
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <input
             id="q" name="q" value={q} required minLength={2} maxLength={100} autoComplete="off"
             placeholder="Quel médicament recherchez-vous ?"
@@ -93,11 +93,11 @@ export function SearchBar({
               if (e.key === "Escape") setOpen(false);
             }}
             className={cn(
-              "w-full rounded-xl border-2 border-primary/30 bg-white pl-11 pr-14 shadow-sm outline-none focus:border-primary",
+              "w-full rounded-xl border-2 border-primary/30 bg-white ps-11 pe-14 shadow-sm outline-none focus:border-primary",
               large ? "h-14 text-lg" : "h-12 text-base",
             )}
           />
-          <VoiceSearch className="absolute right-2 top-1/2 -translate-y-1/2" onText={(t) => { setQ(t); setOpen(false); setTimeout(() => formRef.current?.requestSubmit(), 0); }} />
+          <VoiceSearch className="absolute end-2 top-1/2 -translate-y-1/2" onText={(t) => { setQ(t); setOpen(false); setTimeout(() => formRef.current?.requestSubmit(), 0); }} />
           {open && items.length > 0 && (
             <ul id={listId} role="listbox" className="absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-xl border bg-white py-1 shadow-lg">
               {items.map((s, i) => (

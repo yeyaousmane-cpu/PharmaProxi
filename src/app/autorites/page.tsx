@@ -93,7 +93,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
         <label className="text-sm">Période<Select name="jours" defaultValue={String(days)} className="mt-1 h-10 w-48">{PERIODS.map(([d, l]) => <option key={d} value={d}>{l}</option>)}</Select></label>
         <label className="text-sm">Mot à suivre<Input name="terme" defaultValue={term} className="mt-1 h-10 w-44" minLength={3} maxLength={40} /></label>
         <Button type="submit" size="sm">Afficher</Button>
-        <span className="ml-auto text-xs text-muted-foreground">{regionName} · du {new Date(from).toLocaleDateString("fr-FR")} au {new Date(to).toLocaleDateString("fr-FR")}</span>
+        <span className="ms-auto text-xs text-muted-foreground">{regionName} · du {new Date(from).toLocaleDateString("fr-FR")} au {new Date(to).toLocaleDateString("fr-FR")}</span>
       </form>
 
       <DataLegend />
@@ -110,7 +110,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
           <>
             <ol className="space-y-2 text-sm">{uf.map((r) => (
               <li key={r.query} className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1">
-                <span className="font-medium">{r.query}</span><span className="text-right tabular-nums">{fmtN(r.unfound)} sur {fmtN(r.searches)}</span>
+                <span className="font-medium">{r.query}</span><span className="text-end tabular-nums">{fmtN(r.unfound)} sur {fmtN(r.searches)}</span>
                 <span className="col-span-2"><Bar v={Number(r.unfound)} max={Number(uf[0].unfound)} tone="bg-amber-500" /></span>
               </li>))}</ol>
             <a href={`/autorites/export?type=introuvables&${qs}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><Download className="size-4" aria-hidden /> Télécharger (CSV)</a>
@@ -136,7 +136,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
       <Section id="regions" data={["mesure", "administratif"]} title="Par région" icon={Store} note="Recherches et taux d'échec sur la période ; pharmacies vérifiées, avec stocks mis à jour depuis moins de 30 jours, et de garde en ce moment.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
-            <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="py-2">Région</th><th>Recherches</th><th>Sans résultat</th><th>Pharmacies</th><th>Stocks à jour</th><th>De garde maintenant</th></tr></thead>
+            <thead><tr className="border-b text-start text-xs text-muted-foreground"><th className="py-2">Région</th><th>Recherches</th><th>Sans résultat</th><th>Pharmacies</th><th>Stocks à jour</th><th>De garde maintenant</th></tr></thead>
             <tbody>{rg.map((r) => <tr key={r.region_id} className="border-b last:border-0"><td className="py-2 font-medium">{r.region}</td><td>{fmtN(r.searches)}</td><td>{r.unfound_rate !== null ? `${r.unfound_rate} %` : "—"}</td><td>{r.pharmacies}</td><td>{r.fresh_stock}</td><td className={cn(r.pharmacies > 0 && r.on_duty_now === 0 && "font-semibold text-amber-700")}>{r.on_duty_now}</td></tr>)}</tbody>
           </table>
         </div>
@@ -153,7 +153,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
       <Section id="amo" data={["declare"]} title="AMO : prix déclarés comparés au tarif de référence" icon={Pill} note="Prix déclarés par les pharmacies vérifiées au cours des 30 derniers jours, pour les médicaments de la liste AMO (au moins 3 prix). Le tarif de référence vient de la liste AMO intégrée, qui doit être mise à jour avec la CANAM.">
         {am.length ? (
           <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
-            <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="py-2">Médicament</th><th>Tarif AMO</th><th>Prix déclarés (min – moy. – max)</th><th>Écart moyen</th></tr></thead>
+            <thead><tr className="border-b text-start text-xs text-muted-foreground"><th className="py-2">Médicament</th><th>Tarif AMO</th><th>Prix déclarés (min – moy. – max)</th><th>Écart moyen</th></tr></thead>
             <tbody>{am.map((a) => <tr key={a.product} className="border-b last:border-0"><td className="py-2 font-medium">{a.product}</td><td>{formatXof(a.tariff)}</td><td>{formatXof(a.min_price)} – {formatXof(a.avg_price)} – {formatXof(a.max_price)} <span className="text-xs text-muted-foreground">({a.prices} prix)</span></td>
               <td className={cn("font-semibold", a.gap_pct > 20 ? "text-amber-700" : "text-brand-deep")}>{a.gap_pct > 0 ? "+" : ""}{a.gap_pct} %</td></tr>)}</tbody>
           </table></div>
@@ -166,7 +166,7 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
           {tc?.questions?.length ? <ul className="space-y-1 text-sm">{tc.questions.map((x) => <li key={x.about} className="flex justify-between"><span>{QUESTION_ABOUT[x.about] ?? x.about}</span><span>{fmtN(x.n)}</span></li>)}</ul> : <Empty />}
           {tc?.urgent_questions !== null && tc?.urgent_questions !== undefined && <p className="text-sm">Questions avec signes d&apos;urgence possibles : <strong>{fmtN(tc.urgent_questions)}</strong></p>}
           <p className="pt-2 text-sm font-semibold">Fiches santé les plus lues</p>
-          {tc?.articles?.length ? <ol className="list-decimal space-y-1 pl-5 text-sm">{tc.articles.map((a) => <li key={a.slug}><Link prefetch={false} href={`/sante/fiche/${a.slug}`} className="underline">{a.title}</Link> · {fmtN(a.n)}</li>)}</ol> : <Empty />}
+          {tc?.articles?.length ? <ol className="list-decimal space-y-1 ps-5 text-sm">{tc.articles.map((a) => <li key={a.slug}><Link prefetch={false} href={`/sante/fiche/${a.slug}`} className="underline">{a.title}</Link> · {fmtN(a.n)}</li>)}</ol> : <Empty />}
         </Section>
         {bl ? (
           <Section id="sang" data={["mesure"]} title="Mobilisation pour le don de sang" icon={Droplet} note="Personnes inscrites pour être prévenues des besoins en sang (volontaires).">
@@ -181,14 +181,14 @@ export default async function AuthorityDashboard({ searchParams }: { searchParam
       {sp2 && (
         <Section id="offre" data={["administratif", "declare"]} title="Offre de soins référencée" icon={Building2} note={`Structures publiées sur SantéProxi (pharmacies inscrites et vérifiées, autres officines de l'annuaire, établissements et laboratoires référencés, soins à domicile) et médecins du tableau de l'Ordre${sp2.register_year ? ` ${sp2.register_year}` : ""}. Ce sont des comptes d'établissements publics, pas de personnes. Le référencement n'est pas encore complet : un chiffre bas peut signaler un manque de référencement autant qu'un manque de structures.`}>
           <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
-            <thead><tr className="text-left text-xs text-muted-foreground"><th className="py-1">Région</th><th>Pharmacies inscrites</th><th>Autres officines</th><th>Médecins (tableau)</th><th>Établissements</th><th>Laboratoires</th><th>Prise de sang à domicile</th><th>Soins à domicile</th></tr></thead>
+            <thead><tr className="text-start text-xs text-muted-foreground"><th className="py-1">Région</th><th>Pharmacies inscrites</th><th>Autres officines</th><th>Médecins (tableau)</th><th>Établissements</th><th>Laboratoires</th><th>Prise de sang à domicile</th><th>Soins à domicile</th></tr></thead>
             <tbody>{sp2.by_region.map((r) => (
               <tr key={r.region_id} className="border-t"><td className="py-1.5 font-medium">{r.region}</td><td>{r.pharmacies}</td><td>{r.pharmacies_listed}</td><td>{r.doctors_register}</td><td>{r.health_facilities}</td><td>{r.labs}</td><td>{r.home_sampling}</td><td>{r.home_care}</td></tr>))}</tbody>
           </table></div>
           {weak.length > 0 && (
             <div className="rounded-xl bg-amber-50 p-3 text-sm">
               <p className="font-semibold text-amber-900">Zones où l&apos;accès à l&apos;information sanitaire paraît difficile</p>
-              <ul className="mt-1 list-disc pl-5">{weak.map((r) => <li key={r.region_id}>{r.region} : {[r.pharmacies + r.pharmacies_listed === 0 && "aucune pharmacie référencée", r.labs === 0 && "aucun laboratoire référencé", (unfoundBy.get(r.region_id) ?? 0) >= 40 && `${unfoundBy.get(r.region_id)} % de recherches sans résultat`].filter(Boolean).join(" ; ")}</li>)}</ul>
+              <ul className="mt-1 list-disc ps-5">{weak.map((r) => <li key={r.region_id}>{r.region} : {[r.pharmacies + r.pharmacies_listed === 0 && "aucune pharmacie référencée", r.labs === 0 && "aucun laboratoire référencé", (unfoundBy.get(r.region_id) ?? 0) >= 40 && `${unfoundBy.get(r.region_id)} % de recherches sans résultat`].filter(Boolean).join(" ; ")}</li>)}</ul>
             </div>)}
           <div className="grid gap-4 md:grid-cols-2">
             <div><h3 className="mb-2 text-sm font-semibold">Spécialités médicales (tableau de l&apos;Ordre)</h3>

@@ -57,7 +57,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
         </div>
         <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           {details.filter(([, v]) => v).map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-3 border-b py-1"><dt className="text-muted-foreground">{k}</dt><dd className="text-right font-medium">{v}</dd></div>
+            <div key={k} className="flex justify-between gap-3 border-b py-1"><dt className="text-muted-foreground">{k}</dt><dd className="text-end font-medium">{v}</dd></div>
           ))}
         </dl>
         {amoProduct?.amo && (
@@ -86,7 +86,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
               <li key={e.catalog_id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span>{e.is_same ? <strong>{e.brand_name} (ce produit)</strong> : <Link prefetch={false} href={`/produits/${e.catalog_id}`} className="font-medium text-primary hover:underline">{e.brand_name}</Link>}
                   <span className="text-muted-foreground">{[e.form, e.packaging, e.manufacturer].filter(Boolean).length ? ` · ${[e.form, e.packaging, e.manufacturer].filter(Boolean).join(" · ")}` : ""}</span></span>
-                <span className="text-right">{e.min_price !== null ? <><strong>{e.min_price === e.max_price ? formatXof(e.min_price) : `${formatXof(e.min_price)} – ${formatXof(e.max_price)}`}</strong> <span className="text-xs text-muted-foreground">· {e.pharmacies} pharmacie(s)</span></> : <span className="text-xs text-muted-foreground">prix non déclaré</span>}</span>
+                <span className="text-end">{e.min_price !== null ? <><strong>{e.min_price === e.max_price ? formatXof(e.min_price) : `${formatXof(e.min_price)} – ${formatXof(e.max_price)}`}</strong> <span className="text-xs text-muted-foreground">· {e.pharmacies} pharmacie(s)</span></> : <span className="text-xs text-muted-foreground">prix non déclaré</span>}</span>
               </li>
             ))}
           </ul>

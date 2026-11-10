@@ -16,7 +16,7 @@ export default async function AudioKit() {
       </header>
       <section className="rounded-lg border p-4">
         <h2 className="font-bold">Consignes pour la personne qui enregistre</h2>
-        <ol className="mt-2 list-decimal space-y-1 pl-5">
+        <ol className="mt-2 list-decimal space-y-1 ps-5">
           <li>Lisez le texte français, puis dites-le dans votre langue, avec des mots simples. Gardez exactement le même sens : n&apos;ajoutez ni ne retirez aucun conseil.</li>
           <li>Enregistrez dans un endroit calme, téléphone à 20 cm de la bouche. Un message vocal WhatsApp convient.</li>
           <li>Parlez lentement. Une page = un enregistrement (moins de 2 minutes).</li>

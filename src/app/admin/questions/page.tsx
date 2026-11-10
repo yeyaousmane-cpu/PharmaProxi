@@ -30,7 +30,7 @@ export default async function AdminQuestions() {
                 <p>{q.question}</p>
                 <ActionForm action={moderateQuestion}><input type="hidden" name="question_id" value={q.id} /><input type="hidden" name="hidden" value={String(!q.hidden)} /><SubmitButton size="sm" variant="ghost">{q.hidden ? "Réafficher" : "Masquer la question"}</SubmitButton></ActionForm>
                 {(ans ?? []).filter((a) => a.question_id === q.id).map((a) => (
-                  <div key={a.id} className="ml-4 rounded-lg border p-2">
+                  <div key={a.id} className="ms-4 rounded-lg border p-2">
                     <p className="text-xs font-semibold">{a.author_name} · {a.pharmacy_name} {a.hidden && <Badge className="bg-amber-50 text-amber-900">masquée</Badge>}</p>
                     <p>{a.body}</p>
                     <ActionForm action={moderateQuestion}><input type="hidden" name="answer_id" value={a.id} /><input type="hidden" name="hidden" value={String(!a.hidden)} /><SubmitButton size="sm" variant="ghost">{a.hidden ? "Réafficher" : "Masquer la réponse"}</SubmitButton></ActionForm>

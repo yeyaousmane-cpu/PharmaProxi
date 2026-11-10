@@ -38,7 +38,7 @@ export default async function Rapport({ searchParams }: { searchParams: Promise<
         <label className="text-sm">Région<Select name="region" defaultValue={region ?? ""} className="mt-1 h-10 w-56"><option value="">Tout le Mali</option>{geo.regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</Select></label>
         <label className="text-sm">Période<Select name="jours" defaultValue={String(days)} className="mt-1 h-10 w-40"><option value="30">30 jours</option><option value="90">3 mois</option><option value="365">12 mois</option></Select></label>
         <Button type="submit" size="sm">Afficher</Button>
-        <span className="ml-auto"><PrintPdfButton label="Imprimer ou enregistrer en PDF" /></span>
+        <span className="ms-auto"><PrintPdfButton label="Imprimer ou enregistrer en PDF" /></span>
       </form>
       <article className="space-y-4 rounded-2xl border bg-white p-6 print:border-0 print:p-0">
         <header className="border-b pb-3">
@@ -49,7 +49,7 @@ export default async function Rapport({ searchParams }: { searchParams: Promise<
         <section className="space-y-1">
           <h3 className="flex flex-wrap items-center gap-2 font-bold">1. Offre de soins référencée <DataBadge kind="administratif" /><DataBadge kind="declare" /></h3>
           {s ? (<>
-            <table className="w-full text-sm"><thead><tr className="text-left text-xs text-muted-foreground"><th>Région</th><th>Pharmacies inscrites</th><th>Autres officines</th><th>Médecins (tableau{s.register_year ? ` ${s.register_year}` : ""})</th><th>Établissements</th><th>Laboratoires</th></tr></thead>
+            <table className="w-full text-sm"><thead><tr className="text-start text-xs text-muted-foreground"><th>Région</th><th>Pharmacies inscrites</th><th>Autres officines</th><th>Médecins (tableau{s.register_year ? ` ${s.register_year}` : ""})</th><th>Établissements</th><th>Laboratoires</th></tr></thead>
               <tbody>{s.by_region.map((r) => <tr key={r.region_id} className="border-t"><td className="py-1">{r.region}</td><td>{r.pharmacies}</td><td>{r.pharmacies_listed}</td><td>{r.doctors_register}</td><td>{r.health_facilities}</td><td>{r.labs}</td></tr>)}</tbody></table>
             <p className="text-sm">Analyses avec un prix déclaré par les laboratoires : {s.exams_with_price}.</p>
           </>) : <p className="text-sm text-muted-foreground">Non disponible.</p>}

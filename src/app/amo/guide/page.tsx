@@ -57,7 +57,7 @@ export default function AmoGuide() {
         <H2 id="bases" icon={ShieldPlus}>L&apos;AMO en bref</H2>
         <p>L&apos;Assurance maladie obligatoire (AMO) a été créée par la <strong>loi n° 09-015 du 26 juin 2009</strong>. Elle paie une grande partie de vos frais de santé (consultations, analyses, médicaments, hospitalisation, maternité) en échange d&apos;une cotisation prélevée sur le salaire ou la pension.</p>
         <p>Elle est pilotée par la <strong>CANAM</strong> (Caisse nationale d&apos;assurance maladie), qui confie une partie du travail (inscription, encaissement des cotisations, paiement des soins) à des organismes gestionnaires délégués :</p>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li><strong>INPS</strong> : salariés du privé, non-salariés en assurance volontaire et retraités du privé ;</li>
           <li><strong>CMSS</strong> (Caisse malienne de sécurité sociale) : agents de l&apos;État et retraités du public ;</li>
           <li><strong>ANAM</strong> : RAMED, la prise en charge gratuite des personnes démunies ;</li>
@@ -68,7 +68,7 @@ export default function AmoGuide() {
 
       <Box>
         <H2 id="qui" icon={Users}>Qui est couvert ?</H2>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li>les <strong>salariés du secteur privé</strong> (via leur employeur, à l&apos;INPS) ;</li>
           <li>les <strong>agents de l&apos;État</strong> et du secteur public (CMSS) ;</li>
           <li>les <strong>retraités</strong> qui touchent une pension publique ou privée ;</li>
@@ -80,7 +80,7 @@ export default function AmoGuide() {
       <Box>
         <H2 id="famille" icon={HeartPulse}>Votre famille (ayants droit)</H2>
         <p>Une seule cotisation couvre aussi, sans payer plus :</p>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li>le <strong>conjoint légalement marié</strong> (acte de mariage demandé) ;</li>
           <li>les <strong>enfants de moins de 14 ans</strong>, et jusqu&apos;à <strong>21 ans</strong> s&apos;ils sont scolarisés ;</li>
           <li>les <strong>enfants handicapés</strong> qui ne peuvent pas travailler, sans limite d&apos;âge ;</li>
@@ -93,11 +93,11 @@ export default function AmoGuide() {
         <H2 id="cout" icon={Briefcase}>Combien ça coûte ?</H2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[480px] text-sm">
-            <thead><tr className="border-b text-left"><th className="py-2 pr-3">Situation</th><th className="py-2 pr-3">Part de l&apos;assuré</th><th className="py-2">Part de l&apos;employeur</th></tr></thead>
+            <thead><tr className="border-b text-start"><th className="py-2 pe-3">Situation</th><th className="py-2 pe-3">Part de l&apos;assuré</th><th className="py-2">Part de l&apos;employeur</th></tr></thead>
             <tbody className="divide-y">
-              <tr><td className="py-2 pr-3">Salarié du privé</td><td className="py-2 pr-3"><strong>3,06 %</strong> du salaire</td><td className="py-2">3,5 % du salaire</td></tr>
-              <tr><td className="py-2 pr-3">Retraité</td><td className="py-2 pr-3"><strong>0,75 %</strong> de la pension</td><td className="py-2">—</td></tr>
-              <tr><td className="py-2 pr-3">Assuré volontaire (non-salarié)</td><td className="py-2 pr-3"><strong>6,56 %</strong> du revenu de sa classe</td><td className="py-2">— (il paie seul)</td></tr>
+              <tr><td className="py-2 pe-3">Salarié du privé</td><td className="py-2 pe-3"><strong>3,06 %</strong> du salaire</td><td className="py-2">3,5 % du salaire</td></tr>
+              <tr><td className="py-2 pe-3">Retraité</td><td className="py-2 pe-3"><strong>0,75 %</strong> de la pension</td><td className="py-2">—</td></tr>
+              <tr><td className="py-2 pe-3">Assuré volontaire (non-salarié)</td><td className="py-2 pe-3"><strong>6,56 %</strong> du revenu de sa classe</td><td className="py-2">— (il paie seul)</td></tr>
             </tbody>
           </table>
         </div>
@@ -106,7 +106,7 @@ export default function AmoGuide() {
 
       <Box>
         <H2 id="droits" icon={CircleAlert}>Quand les droits s&apos;ouvrent</H2>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li>Il faut <strong>6 mois de cotisations consécutifs</strong> avant de bénéficier des remboursements.</li>
           <li>Si vous perdez votre emploi, vos droits sont <strong>maintenus 6 mois</strong> au maximum.</li>
           <li>Au décès de l&apos;assuré, la famille reste couverte <strong>1 an</strong> (si elle ne touche pas de pension de survivant).</li>
@@ -128,7 +128,7 @@ export default function AmoGuide() {
       <Box>
         <H2 id="salarie" icon={UserRound}>Je suis salarié : m&apos;inscrire à l&apos;INPS</H2>
         <p>C&apos;est votre <strong>employeur</strong> qui doit vous déclarer à l&apos;INPS dès l&apos;embauche (bulletin d&apos;embauche). Vous recevez un numéro d&apos;immatriculation définitif à 11 chiffres. Pour obtenir la <strong>carte d&apos;assuré social</strong> :</p>
-        <ol className="list-decimal space-y-1 pl-5">
+        <ol className="list-decimal space-y-1 ps-5">
           <li>L&apos;employeur remplit et cachète la <strong>demande d&apos;immatriculation</strong>.</li>
           <li>Vous la déposez au <strong>centre INPS de votre commune</strong> avec les pièces ci-dessous.</li>
           <li>On vous remet un récépissé avec une date de rendez-vous.</li>
@@ -136,7 +136,7 @@ export default function AmoGuide() {
         </ol>
         <div className="rounded-xl border p-4">
           <p className="font-semibold">Pièces à fournir (originaux)</p>
-          <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+          <ul className="mt-1 list-disc space-y-1 ps-5 text-sm">
             <li>extrait d&apos;acte de naissance du salarié ;</li>
             <li>demande d&apos;immatriculation remplie et cachetée par l&apos;employeur ;</li>
             <li>si vous êtes marié(e) : acte de naissance du conjoint et acte de mariage ;</li>
@@ -149,7 +149,7 @@ export default function AmoGuide() {
 
       <Box>
         <H2 id="employeur" icon={Building2}>Je suis employeur</H2>
-        <ol className="list-decimal space-y-1 pl-5">
+        <ol className="list-decimal space-y-1 ps-5">
           <li>Demandez votre <strong>immatriculation à l&apos;INPS dès l&apos;ouverture de l&apos;activité</strong> (formulaire à retirer dans une représentation de l&apos;INPS : raison sociale, statut, adresse, activité, effectif, premiers salaires, date de début, nom du dirigeant).</li>
           <li>Joignez <strong>un</strong> justificatif : statuts, décision de création, autorisation d&apos;exercer, récépissé, contrats, NIF ou registre du commerce.</li>
           <li>Joignez un <strong>bulletin d&apos;embauche</strong> pour chaque travailleur.</li>
@@ -161,7 +161,7 @@ export default function AmoGuide() {
       <Box>
         <H2 id="volontaire" icon={HandHeart}>Je ne suis pas salarié : l&apos;assurance volontaire de l&apos;INPS</H2>
         <p>Vous êtes <strong>commerçant, artisan, profession libérale (avocat, médecin privé, consultant…), industriel ou travailleur indépendant</strong> ? Vous pouvez vous assurer vous-même à l&apos;INPS (assurance volontaire, loi n° 99-047 du 28 décembre 1999) et bénéficier, pour vous et votre famille :</p>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li>de l&apos;<strong>AMO</strong> (mêmes remboursements que les salariés) ;</li>
           <li>des <strong>prestations familiales</strong> ;</li>
           <li>d&apos;une <strong>retraite</strong> et d&apos;une couverture invalidité/décès.</li>
@@ -183,7 +183,7 @@ export default function AmoGuide() {
         <p className="text-sm text-muted-foreground">Montants par trimestre, calculés à partir des taux en vigueur au 1er janvier 2025 (AMO 6,56 %, prestations familiales 8 %, vieillesse-invalidité-décès 9 %). Exemple : un commerçant de la classe 1 paie environ {formatXof(voluntaryContribution(125_000, VOLUNTARY_RATES.amo))} par trimestre pour l&apos;AMO, soit à peu près {formatXof(Math.round(voluntaryContribution(125_000, VOLUNTARY_RATES.amo) / 3))} par mois. Faites confirmer le montant par l&apos;INPS lors de l&apos;adhésion.</p>
 
         <h3 className="pt-2 font-bold">Les conditions à connaître</h3>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li>L&apos;assurance commence le <strong>1er jour du trimestre</strong> au cours duquel l&apos;INPS reçoit votre demande.</li>
           <li><strong>AMO</strong> : remboursements après <strong>6 mois de cotisations consécutifs</strong>.</li>
           <li><strong>Prestations familiales</strong> : après 2 trimestres consécutifs d&apos;affiliation.</li>
@@ -192,7 +192,7 @@ export default function AmoGuide() {
         </ul>
 
         <h3 className="pt-2 font-bold">Comment adhérer ?</h3>
-        <ol className="list-decimal space-y-1 pl-5">
+        <ol className="list-decimal space-y-1 ps-5">
           <li>Rendez-vous au <strong>centre INPS de votre commune</strong> (ou à la direction régionale) et demandez le formulaire d&apos;<strong>assurance volontaire</strong> ; il est aussi téléchargeable sur <a href="https://inps.site/ova_doc/assurance-volontaire-2/" target="_blank" rel="noopener noreferrer" className="text-primary underline">le site de l&apos;INPS</a>.</li>
           <li>Apportez vos pièces d&apos;état civil (acte de naissance, et ceux du conjoint et des enfants à couvrir, acte de mariage) et un justificatif de votre activité : l&apos;INPS vous indiquera la liste exacte.</li>
           <li>Choisissez votre classe de revenus, puis payez la première cotisation trimestrielle.</li>
@@ -203,7 +203,7 @@ export default function AmoGuide() {
         <H2 id="autres" icon={Users}>Autres solutions : mutuelles de santé et RAMED</H2>
         <p><strong>Mutuelles de santé</strong> : pour le secteur informel et le monde rural (cultivateurs, petits commerces, artisans regroupés…), l&apos;adhésion à une mutuelle de santé de votre commune ou de votre profession permet d&apos;être pris en charge dans le cadre du RAMU, avec l&apos;UTM. Renseignez-vous auprès de la mairie ou du centre de santé communautaire (CSCom).</p>
         <p><strong>RAMED</strong> (Régime d&apos;assistance médicale), pour les personnes <strong>sans ressources</strong> qui n&apos;ont aucune autre assurance :</p>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li>gratuit (aucune cotisation), géré par l&apos;<strong>ANAM</strong> ;</li>
           <li>il faut être reconnu indigent (certificat délivré par la <strong>mairie</strong>), puis s&apos;inscrire auprès de l&apos;ANAM ;</li>
           <li>couvre aussi le conjoint et les enfants (moins de 14 ans, jusqu&apos;à 21 ans s&apos;ils étudient, enfants handicapés) ;</li>
@@ -214,7 +214,7 @@ export default function AmoGuide() {
 
       <Box>
         <H2 id="pharmacie" icon={Pill}>À la pharmacie</H2>
-        <ul className="list-disc space-y-1 pl-5">
+        <ul className="list-disc space-y-1 ps-5">
           <li>Présentez votre <strong>carte AMO</strong> en cours de validité et une <strong>ordonnance</strong>.</li>
           <li>Allez dans une <strong>pharmacie conventionnée</strong> : vous ne payez que votre part, environ 30 % du tarif de référence. <Link prefetch={false} href="/amo#ph-t" className="text-primary underline">Voir les pharmacies conventionnées</Link>.</li>
           <li>Seuls les médicaments de la <Link prefetch={false} href="/amo" className="text-primary underline">liste AMO</Link> sont pris en charge. Si le vôtre n&apos;y est pas, demandez au pharmacien s&apos;il existe un équivalent (générique) qui l&apos;est.</li>
@@ -224,7 +224,7 @@ export default function AmoGuide() {
 
       <Box>
         <H2 id="sources" icon={BookOpen}>Sources</H2>
-        <ul className="list-disc space-y-1 pl-5 text-sm">
+        <ul className="list-disc space-y-1 ps-5 text-sm">
           {SOURCES.map((s) => <li key={s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{s.label}</a></li>)}
           <li>Liste CANAM des médicaments pris en charge (octobre 2014), article 21 de la convention CANAM–officines.</li>
         </ul>

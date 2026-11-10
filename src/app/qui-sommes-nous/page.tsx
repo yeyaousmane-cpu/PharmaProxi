@@ -68,8 +68,8 @@ export default function AboutPage() {
     <div className="overflow-x-clip">
       {/* 1. Raison d'être */}
       <section className="relative bg-[#052D1E] text-white">
-        <div aria-hidden className="absolute -right-24 -top-24 size-96 rounded-full bg-[#068132]/40 blur-3xl" />
-        <div aria-hidden className="absolute -bottom-32 left-1/3 size-80 rounded-full bg-[#1D5FA8]/30 blur-3xl" />
+        <div aria-hidden className="absolute -end-24 -top-24 size-96 rounded-full bg-[#068132]/40 blur-3xl" />
+        <div aria-hidden className="absolute -bottom-32 start-1/3 size-80 rounded-full bg-[#1D5FA8]/30 blur-3xl" />
         <div className="container-page relative grid max-w-6xl items-center gap-10 py-16 md:grid-cols-[1.3fr_1fr] md:py-24">
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-[#9CCBAE]">Notre raison d&apos;être</p>
@@ -80,7 +80,7 @@ export default function AboutPage() {
               <p>Notre ambition : construire, avec les acteurs de santé, un écosystème plus accessible, plus humain et mieux connecté.</p>
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#vision" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-white px-5 font-semibold text-[#052D1E] hover:bg-[#EAF6EE]">Découvrir notre vision <ArrowRight className="size-4" aria-hidden /></a>
+              <a href="#vision" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-white px-5 font-semibold text-[#052D1E] hover:bg-[#EAF6EE]">Découvrir notre vision <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden /></a>
               <a href="#solutions" className="inline-flex min-h-12 items-center gap-2 rounded-xl border-2 border-white/40 px-5 font-semibold hover:border-white">Découvrir nos solutions</a>
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function AboutPage() {
             <p className="mt-3 text-muted-foreground">Visibilité, relation avec les patients, rendez-vous, coordination : des outils construits progressivement avec les soignants. Certains sont déjà disponibles, d&apos;autres en préparation.</p></div>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{pros.map(([t, d]) => (
             <li key={t} className="rounded-3xl bg-white p-6 shadow-sm"><p className="font-bold text-[#052D1E]">{t}</p><p className="mt-1 text-sm text-muted-foreground">{d}</p></li>))}</ul>
-          <Link prefetch={false} href="/professionnels" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#068132] px-5 font-semibold text-white hover:bg-[#052D1E]">Espace professionnels <ArrowRight className="size-4" aria-hidden /></Link>
+          <Link prefetch={false} href="/professionnels" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#068132] px-5 font-semibold text-white hover:bg-[#052D1E]">Espace professionnels <ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden /></Link>
         </div>
       </section>
 
@@ -176,7 +176,7 @@ export default function AboutPage() {
       <section className="container-page max-w-6xl space-y-8 py-16">
         <div className="max-w-3xl"><Kicker>Nos engagements</Kicker><h2 className="mt-2 text-3xl font-extrabold text-[#052D1E] md:text-4xl">Nos engagements pour une santé plus humaine et plus accessible.</h2></div>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{commitments.map(([t, d], i) => (
-          <li key={t} className="rounded-2xl border-l-4 border-[#068132] bg-white p-5 shadow-sm"><p className="text-sm font-bold text-[#068132]">{i + 1}</p><p className="font-bold text-[#052D1E]">{t}</p><p className="mt-1 text-sm text-muted-foreground">{d}</p></li>))}
+          <li key={t} className="rounded-2xl border-s-4 border-[#068132] bg-white p-5 shadow-sm"><p className="text-sm font-bold text-[#068132]">{i + 1}</p><p className="font-bold text-[#052D1E]">{t}</p><p className="mt-1 text-sm text-muted-foreground">{d}</p></li>))}
           <li className="rounded-2xl bg-[#EAF6EE] p-5"><ShieldCheck className="size-6 text-[#068132]" aria-hidden /><p className="mt-2 text-sm"><Link prefetch={false} href="/votre-sante-vos-donnees" className="font-semibold text-[#068132] underline">Votre santé, vos données</Link> : comment nous protégeons vos informations.</p></li>
         </ol>
       </section>
@@ -208,7 +208,7 @@ export default function AboutPage() {
           const I = Icon as typeof Search;
           return (<li key={href as string}><Link prefetch={false} href={href as string} className="group flex h-full flex-col rounded-3xl border-2 border-[#068132]/20 bg-white p-5 transition hover:border-[#068132]">
             <I className="size-8 text-[#068132]" aria-hidden /><span className="mt-3 font-bold text-[#052D1E]">{t as string}</span><span className="text-sm text-muted-foreground">{d as string}</span>
-            <ArrowRight className="mt-auto size-5 pt-1 text-[#068132] motion-safe:transition group-hover:translate-x-1" aria-hidden /></Link></li>);
+            <ArrowRight className="mt-auto size-5 pt-1 text-[#068132] motion-safe:transition group-hover:translate-x-1 rtl:-scale-x-100" aria-hidden /></Link></li>);
         })}</ul>
       </section>
 

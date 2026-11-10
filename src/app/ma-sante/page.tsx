@@ -56,7 +56,7 @@ export default async function MaSante() {
             <Link prefetch={false} href={href} className="flex h-full flex-col rounded-2xl border bg-white p-4 shadow-sm hover:border-primary">
               <span className="flex items-center gap-2 font-semibold text-brand-deep"><span className="flex size-9 items-center justify-center rounded-full bg-brand-mint"><Icon className="size-5 text-primary" aria-hidden /></span>{title}</span>
               <span className="mt-2 text-sm text-muted-foreground">{text}</span>
-              <span className="mt-auto flex items-center gap-1 pt-3 text-sm font-semibold text-primary">Ouvrir <ChevronRight className="size-4" aria-hidden /></span>
+              <span className="mt-auto flex items-center gap-1 pt-3 text-sm font-semibold text-primary">Ouvrir <ChevronRight className="size-4 rtl:-scale-x-100" aria-hidden /></span>
             </Link>
           </li>
         ))}
@@ -67,9 +67,9 @@ export default async function MaSante() {
         <p className="mt-1 text-sm text-muted-foreground">Recevez une notification quand une alerte officielle est publiée ou quand un hôpital a besoin de sang de votre groupe.</p>
         <ActionForm action={saveAlertPrefs} className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="flex items-start gap-2 text-sm sm:col-span-2"><input type="checkbox" name="health_alerts" defaultChecked={prefs?.health_alerts} className="mt-0.5 size-4" />
-            <span><Siren className="mr-1 inline size-4 text-red-600" aria-hidden /><strong>Alertes sanitaires officielles</strong> : faux médicaments, rappels de lots, campagnes, épidémies (<Link prefetch={false} href="/alertes" className="text-primary underline">voir</Link>).</span></label>
+            <span><Siren className="me-1 inline size-4 text-red-600" aria-hidden /><strong>Alertes sanitaires officielles</strong> : faux médicaments, rappels de lots, campagnes, épidémies (<Link prefetch={false} href="/alertes" className="text-primary underline">voir</Link>).</span></label>
           <label className="flex items-start gap-2 text-sm sm:col-span-2"><input type="checkbox" name="blood_alerts" defaultChecked={prefs?.blood_alerts} className="mt-0.5 size-4" />
-            <span><Droplet className="mr-1 inline size-4 text-red-600" aria-hidden /><strong>Besoins en sang</strong> : je suis prêt(e) à donner (<Link prefetch={false} href="/don-de-sang" className="text-primary underline">conditions</Link>).</span></label>
+            <span><Droplet className="me-1 inline size-4 text-red-600" aria-hidden /><strong>Besoins en sang</strong> : je suis prêt(e) à donner (<Link prefetch={false} href="/don-de-sang" className="text-primary underline">conditions</Link>).</span></label>
           <Field label="Mon groupe sanguin (facultatif)" htmlFor="bg"><Select id="bg" name="blood_group" defaultValue={prefs?.blood_group ?? ""}><option value="">Je ne sais pas / tous</option>{["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((g) => <option key={g}>{g}</option>)}</Select></Field>
           <Field label="Ma région" htmlFor="rg"><Select id="rg" name="region_id" defaultValue={prefs?.region_id ?? ""}><option value="">Tout le Mali</option>{geo.regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</Select></Field>
           <p className="text-xs text-muted-foreground sm:col-span-2">Votre groupe sanguin sert uniquement à vous prévenir quand votre groupe est demandé. Vous pouvez le retirer à tout moment.</p>

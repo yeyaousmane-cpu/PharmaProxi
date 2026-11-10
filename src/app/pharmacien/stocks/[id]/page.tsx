@@ -43,7 +43,7 @@ export default async function StockDetail({ params }: { params: Promise<{ id: st
               {batches.map((b) => (
                 <li key={b.id} className="flex items-center justify-between gap-2 py-2">
                   <span>Lot <strong>{b.lot_number}</strong> · {b.quantity} unité(s) · péremption {formatDate(b.expiry_date)}
-                    {b.expiry_date < today ? <Badge className="ml-2 border-red-200 bg-red-50 text-red-800">Périmé</Badge> : b.expiry_date < soon ? <Badge className="ml-2 border-amber-200 bg-amber-50 text-amber-900">&lt; 3 mois</Badge> : null}
+                    {b.expiry_date < today ? <Badge className="ms-2 border-red-200 bg-red-50 text-red-800">Périmé</Badge> : b.expiry_date < soon ? <Badge className="ms-2 border-amber-200 bg-amber-50 text-amber-900">&lt; 3 mois</Badge> : null}
                   </span>
                   {!readOnly && <form action={deleteBatch}><input type="hidden" name="batch_id" value={b.id} /><input type="hidden" name="inventory_id" value={id} />
                     <button className="rounded p-2 text-destructive hover:bg-red-50" aria-label={`Supprimer le lot ${b.lot_number}`}><Trash2 className="size-4" /></button></form>}
@@ -66,16 +66,16 @@ export default async function StockDetail({ params }: { params: Promise<{ id: st
         <CardHeader><CardTitle>Historique des modifications</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
-            <thead><tr className="border-b text-left text-muted-foreground"><th className="py-1">Date</th><th>Type</th><th className="text-right">Δ qté</th><th className="text-right">Δ réservé</th><th className="text-right">Qté après</th><th className="text-right">Prix</th></tr></thead>
+            <thead><tr className="border-b text-start text-muted-foreground"><th className="py-1">Date</th><th>Type</th><th className="text-end">Δ qté</th><th className="text-end">Δ réservé</th><th className="text-end">Qté après</th><th className="text-end">Prix</th></tr></thead>
             <tbody>
               {(moves ?? []).map((m) => (
                 <tr key={m.id} className="border-b">
                   <td className="py-1">{formatDateTime(m.created_at)}</td>
                   <td>{KIND[m.kind] ?? m.kind}{m.note ? <span className="text-muted-foreground"> — {m.note}</span> : null}</td>
-                  <td className="text-right">{m.quantity_delta > 0 ? `+${m.quantity_delta}` : m.quantity_delta}</td>
-                  <td className="text-right">{m.reserved_delta > 0 ? `+${m.reserved_delta}` : m.reserved_delta}</td>
-                  <td className="text-right">{m.quantity_after}</td>
-                  <td className="text-right">{m.price_after ?? "—"}</td>
+                  <td className="text-end">{m.quantity_delta > 0 ? `+${m.quantity_delta}` : m.quantity_delta}</td>
+                  <td className="text-end">{m.reserved_delta > 0 ? `+${m.reserved_delta}` : m.reserved_delta}</td>
+                  <td className="text-end">{m.quantity_after}</td>
+                  <td className="text-end">{m.price_after ?? "—"}</td>
                 </tr>
               ))}
             </tbody>

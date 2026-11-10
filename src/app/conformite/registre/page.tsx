@@ -24,8 +24,8 @@ export default async function Registry() {
         const [l, tone] = STATUS[r.legal_status] ?? STATUS.a_valider;
         return (
           <details key={r.code} className="rounded-2xl border bg-white p-4">
-            <summary className="cursor-pointer font-semibold">{r.purpose} <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${tone}`}>{l}</span>
-              <span className="ml-2 text-xs font-normal text-muted-foreground">{BASIS.find(([v]) => v === r.legal_basis)?.[1]}{r.validated_by_name ? ` · validé par ${r.validated_by_name} le ${r.validated_at}` : ""}</span></summary>
+            <summary className="cursor-pointer font-semibold">{r.purpose} <span className={`ms-2 rounded-full px-2 py-0.5 text-xs ${tone}`}>{l}</span>
+              <span className="ms-2 text-xs font-normal text-muted-foreground">{BASIS.find(([v]) => v === r.legal_basis)?.[1]}{r.validated_by_name ? ` · validé par ${r.validated_by_name} le ${r.validated_at}` : ""}</span></summary>
             {canEdit ? (
               <ActionForm action={saveRegistry} className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
                 <input type="hidden" name="code" value={r.code} />
@@ -42,7 +42,7 @@ export default async function Registry() {
       })}
       <section className="space-y-2">
         <h2 className="text-lg font-bold">Destinataires et sous-traitants</h2>
-        <div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full text-left text-sm">
+        <div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full text-start text-sm">
           <thead><tr className="border-b"><th className="p-2">Prestataire</th><th className="p-2">Rôle</th><th className="p-2">Données</th><th className="p-2">Pays</th><th className="p-2">Garanties</th><th className="p-2">Contrat</th></tr></thead>
           <tbody>{((rec as T[] | null) ?? []).map((t) => <tr key={t.name} className="border-b align-top"><td className="p-2 font-semibold">{t.name}</td><td className="p-2">{t.role}</td><td className="p-2">{t.data_categories}</td><td className="p-2">{t.country}</td><td className="p-2">{t.safeguards}</td><td className="p-2">{t.contract_status === "a_verifier" ? "À vérifier" : t.contract_status}</td></tr>)}</tbody>
         </table></div>

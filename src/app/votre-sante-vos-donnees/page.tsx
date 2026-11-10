@@ -116,7 +116,7 @@ export default async function YourDataPage() {
             <p className="rounded-xl bg-[#EAF6EE] p-3 text-sm"><strong>Obligatoire ou facultatif ?</strong> Seules les informations nécessaires au service demandé sont obligatoires (par exemple votre nom et un moyen de contact pour un rendez-vous) ; sans elles, ce service ne peut pas être rendu. Tout le reste est facultatif : refuser un consentement facultatif ne vous empêche pas d&apos;utiliser SantéProxi.</p>
             <div className="space-y-2">{uses.map(([s, data, why, who, keep]) => (
               <details key={s} className="group rounded-2xl border bg-white p-4 open:shadow-sm">
-                <summary className="cursor-pointer list-none font-bold text-[#052D1E]"><span className="mr-2 text-[#068132] group-open:hidden">+</span><span className="mr-2 hidden text-[#068132] group-open:inline">−</span>{s}</summary>
+                <summary className="cursor-pointer list-none font-bold text-[#052D1E]"><span className="me-2 text-[#068132] group-open:hidden">+</span><span className="me-2 hidden text-[#068132] group-open:inline">−</span>{s}</summary>
                 <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-[11rem_1fr]">
                   <dt className="font-semibold">Informations</dt><dd>{data}</dd>
                   <dt className="font-semibold">Finalité</dt><dd>{why}</dd>
@@ -131,7 +131,7 @@ export default async function YourDataPage() {
             <ul className="grid gap-3 sm:grid-cols-2">{protections.map(([t, d, done]) => (
               <li key={t} className="rounded-2xl border bg-white p-4">
                 <p className="flex items-center gap-2 font-bold text-[#052D1E]">{done ? <CheckCircle2 className="size-5 text-[#068132]" aria-hidden /> : <ServerCog className="size-5 text-amber-600" aria-hidden />}{t}
-                  <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${done ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"}`}>{done ? "En place" : "En cours"}</span></p>
+                  <span className={`ms-auto rounded-full px-2 py-0.5 text-xs font-semibold ${done ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900"}`}>{done ? "En place" : "En cours"}</span></p>
                 <p className="mt-1 text-sm text-muted-foreground">{d}</p>
               </li>))}</ul>
           </Section>
@@ -160,7 +160,7 @@ export default async function YourDataPage() {
           <Section id="ia" letter="F" title="IA et innovation">
             <div className="rounded-2xl border bg-white p-4 text-sm">
               <p className="flex items-center gap-2 font-bold text-[#052D1E]"><Bot className="size-5 text-[#068132]" aria-hidden /> L&apos;assistant santé</p>
-              <ul className="mt-2 list-disc space-y-1 pl-5">
+              <ul className="mt-2 list-disc space-y-1 ps-5">
                 <li>Quand vous posez une question à l&apos;assistant, le texte de la question est envoyé au fournisseur d&apos;IA (Anthropic) pour produire la réponse. Votre nom et votre identifiant de compte ne sont pas transmis.</li>
                 <li>N&apos;y saisissez pas d&apos;informations permettant de vous identifier.</li>
                 <li>L&apos;assistant ne pose aucun diagnostic et oriente vers un professionnel ou les secours quand c&apos;est nécessaire.</li>

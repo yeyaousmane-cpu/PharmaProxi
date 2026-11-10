@@ -37,9 +37,9 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     <div className="space-y-4">
       <section className={`${F.card} space-y-3`}>
         <div className="flex items-center justify-between">
-          <Link prefetch={false} href={`/femme/calendrier?m=${shiftMonth(month, -1)}`} className="rounded-full p-2 hover:bg-[#F8E7EF]" aria-label="Mois précédent"><ChevronLeft aria-hidden /></Link>
+          <Link prefetch={false} href={`/femme/calendrier?m=${shiftMonth(month, -1)}`} className="rounded-full p-2 hover:bg-[#F8E7EF]" aria-label="Mois précédent"><ChevronLeft className="rtl:-scale-x-100" aria-hidden /></Link>
           <h1 className="text-lg font-bold capitalize text-[#843653]">{title}</h1>
-          <Link prefetch={false} href={`/femme/calendrier?m=${shiftMonth(month, 1)}`} className="rounded-full p-2 hover:bg-[#F8E7EF]" aria-label="Mois suivant"><ChevronRight aria-hidden /></Link>
+          <Link prefetch={false} href={`/femme/calendrier?m=${shiftMonth(month, 1)}`} className="rounded-full p-2 hover:bg-[#F8E7EF]" aria-label="Mois suivant"><ChevronRight className="rtl:-scale-x-100" aria-hidden /></Link>
         </div>
         <table className="w-full table-fixed text-center">
           <thead><tr>{["L", "M", "M", "J", "V", "S", "D"].map((d, i) => <th key={i} className="pb-1 text-xs font-semibold text-muted-foreground">{d}</th>)}</tr></thead>

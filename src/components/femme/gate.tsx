@@ -67,7 +67,7 @@ export function Privacy() {
   return (
     <section className="rounded-2xl bg-[#F8E7EF] p-4 text-sm">
       <h2 className="mb-2 flex items-center gap-2 font-bold text-[#843653]"><ShieldCheck className="size-5" aria-hidden /> Vos données restent à vous</h2>
-      <ul className="list-disc space-y-1 pl-5">
+      <ul className="list-disc space-y-1 ps-5">
         <li>Visibles uniquement par vous : ni l&apos;équipe SantéProxi, ni les pharmacies, ni les médecins n&apos;y ont accès depuis le site.</li>
         <li>Code secret possible : tant que l&apos;espace est verrouillé, le serveur refuse de livrer vos données.</li>
         <li>Rappels discrets : la notification ne dit jamais de quoi il s&apos;agit.</li>

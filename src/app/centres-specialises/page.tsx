@@ -42,7 +42,7 @@ export default async function Centres({ searchParams }: { searchParams: Promise<
             <label className="text-sm">Région<Select name="region" defaultValue={region ?? ""} className="mt-1 h-10 w-56"><option value="">Tout le Mali</option>{geo.regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</Select></label>
             <Button type="submit" size="sm">Filtrer</Button>
           </form>
-          <h2 className="text-lg font-bold text-brand-deep">{current.label}{current.hint ? <span className="ml-2 text-sm font-normal text-muted-foreground">{current.hint}</span> : null}</h2>
+          <h2 className="text-lg font-bold text-brand-deep">{current.label}{current.hint ? <span className="ms-2 text-sm font-normal text-muted-foreground">{current.hint}</span> : null}</h2>
           {rows.length === 0 ? (
             <p className="rounded-2xl border bg-white p-4 text-sm text-muted-foreground">Aucune structure n&apos;est encore référencée pour ce besoin{region ? " dans cette région" : ""}. L&apos;équipe ajoute les centres au fur et à mesure de leur vérification. En attendant, demandez conseil à votre médecin ou à votre centre de santé, ou cherchez un <Link prefetch={false} href="/medecins" className="text-primary underline">médecin par spécialité</Link>.</p>
           ) : (

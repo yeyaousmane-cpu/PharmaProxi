@@ -38,7 +38,7 @@ export function AddProductForm({ pharmacyId, categories }: { pharmacyId: string;
             <ul className="max-h-56 divide-y overflow-auto rounded-lg border">
               {items.map((s) => (
                 <li key={s.catalog_id}>
-                  <button type="button" className="w-full px-3 py-2 text-left text-sm hover:bg-muted" onClick={() => setChosen(s)}>
+                  <button type="button" className="w-full px-3 py-2 text-start text-sm hover:bg-muted" onClick={() => setChosen(s)}>
                     {s.label}{s.active_ingredient ? <span className="block text-xs text-muted-foreground">{s.active_ingredient}</span> : null}
                   </button>
                 </li>
@@ -65,7 +65,7 @@ export function AddProductForm({ pharmacyId, categories }: { pharmacyId: string;
             </Select>
           </Field>
           <p className="text-xs text-muted-foreground sm:col-span-2">La fiche sera vérifiée par l&apos;administration. Si elle existe déjà (même nom, dosage, forme), la fiche existante est réutilisée.</p>
-          <button type="button" className="text-left text-sm text-primary underline" onClick={() => setCreating(false)}>Revenir à la recherche</button>
+          <button type="button" className="text-start text-sm text-primary underline" onClick={() => setCreating(false)}>Revenir à la recherche</button>
         </div>
       )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

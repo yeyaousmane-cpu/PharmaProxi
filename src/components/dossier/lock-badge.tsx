@@ -27,7 +27,7 @@ export function LockBadge({ hasPin }: { hasPin: boolean }) {
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <span className="relative grid size-12 shrink-0 place-items-center rounded-full bg-primary text-white shadow-sm">
           <Lock className="size-6" aria-hidden />
-          <ShieldCheck className="absolute -bottom-1 -right-1 size-5 rounded-full bg-white p-0.5 text-primary" aria-hidden />
+          <ShieldCheck className="absolute -bottom-1 -end-1 size-5 rounded-full bg-white p-0.5 text-primary" aria-hidden />
         </span>
         <div className="min-w-0">
           <p className="font-bold text-emerald-950">Dossier protégé par votre code</p>

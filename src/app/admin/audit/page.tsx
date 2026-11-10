@@ -20,7 +20,7 @@ export default async function Audit({ searchParams }: { searchParams: Promise<{ 
         <button className="rounded-lg border bg-white px-3">Filtrer</button></form>
       <div className="overflow-x-auto rounded-xl border bg-white">
         <table className="w-full min-w-[720px] text-sm">
-          <thead><tr className="border-b bg-muted text-left"><th className="p-2">Date</th><th className="p-2">Action</th><th className="p-2">Objet</th><th className="p-2">Auteur</th><th className="p-2">Détails</th></tr></thead>
+          <thead><tr className="border-b bg-muted text-start"><th className="p-2">Date</th><th className="p-2">Action</th><th className="p-2">Objet</th><th className="p-2">Auteur</th><th className="p-2">Détails</th></tr></thead>
           <tbody>{(data ?? []).map((l) => (
             <tr key={l.id} className="border-b align-top">
               <td className="p-2 whitespace-nowrap">{formatDateTime(l.created_at)}</td><td className="p-2 font-mono text-xs">{l.action}</td>

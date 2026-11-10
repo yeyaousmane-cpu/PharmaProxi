@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ListenButton } from "@/components/speech/listen-button";
 import { AudioGuide } from "@/components/audio/audio-guide";
 import { Clock, Phone, Siren, WifiOff } from "lucide-react";
 import { ArticleCard, MedicalDisclaimer, type ArticleRow } from "@/components/health/health-bits";
@@ -24,7 +25,8 @@ export default async function FirstAid() {
   }
   const numbers = settings.emergency_numbers?.trim();
   return (
-    <div className="container-page max-w-4xl space-y-6 py-6">
+    <div id="ps-texte" lang="fr" dir="ltr" className="container-page max-w-4xl space-y-6 py-6">
+      <ListenButton targetId="ps-texte" lang="fr" />
       <header className="space-y-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Siren className="size-7 text-red-600" aria-hidden /> Premiers secours : les gestes qui sauvent</h1>
         <p className="max-w-3xl text-muted-foreground">Avant l&apos;arrivée au centre de santé, quelques gestes simples peuvent sauver une vie. Chaque fiche est relue et validée par un professionnel de santé avant d&apos;être publiée.</p>

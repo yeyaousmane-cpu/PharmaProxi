@@ -26,7 +26,7 @@ export default async function DoctorSignup() {
         <p className="text-muted-foreground">Gratuit. Votre fiche est publiée après vérification de votre inscription à l&apos;Ordre des médecins.</p>
       </header>
       <Alert tone="info" title="Comment ça se passe ?">
-        <ol className="list-decimal space-y-1 pl-4">
+        <ol className="list-decimal space-y-1 ps-4">
           <li>Vous remplissez ce formulaire et donnez votre accord de publication.</li>
           <li>Vous déposez vos justificatifs (attestation d&apos;inscription à l&apos;Ordre, diplôme de spécialité, pièce d&apos;identité).</li>
           <li>Vous indiquez vos lieux et jours de consultation ; chaque établissement confirme.</li>

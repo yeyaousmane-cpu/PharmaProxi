@@ -40,7 +40,7 @@ export function DoctorCard({ d, next }: { d: DoctorRow; next?: { site_id: string
                 <Link prefetch={false} href={`/cliniques/${s.clinic_id}`} className="inline-flex items-center gap-1 font-medium hover:underline">
                   <Building2 className="size-4 shrink-0 text-brand-blue" aria-hidden />{s.clinic_name}
                 </Link>
-                <span className="ml-1 inline-flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="size-3" aria-hidden />{[s.commune, s.region].filter(Boolean).join(", ")}</span>
+                <span className="ms-1 inline-flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="size-3" aria-hidden />{[s.commune, s.region].filter(Boolean).join(", ")}</span>
                 <span className="block text-xs">Consultations : <strong>{daysSummary(s.days) || "jours non renseignés"}</strong></span>
               </span>
               {s.phone ? (

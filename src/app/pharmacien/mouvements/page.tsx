@@ -19,7 +19,7 @@ export default async function Movements({ searchParams }: { searchParams: Promis
       <PharmacyHeader current={ph} title="Mouvements de stock" />
       <div className="overflow-x-auto rounded-xl border bg-white">
         <table className="w-full min-w-[640px] text-sm">
-          <thead><tr className="border-b bg-muted text-left"><th className="p-2">Date</th><th className="p-2">Produit</th><th className="p-2">Type</th><th className="p-2 text-right">Δ qté</th><th className="p-2 text-right">Δ réservé</th><th className="p-2 text-right">Qté après</th></tr></thead>
+          <thead><tr className="border-b bg-muted text-start"><th className="p-2">Date</th><th className="p-2">Produit</th><th className="p-2">Type</th><th className="p-2 text-end">Δ qté</th><th className="p-2 text-end">Δ réservé</th><th className="p-2 text-end">Qté après</th></tr></thead>
           <tbody>
             {(data ?? []).map((m) => {
               const inv = Array.isArray(m.pharmacy_inventory) ? m.pharmacy_inventory[0] : m.pharmacy_inventory;
@@ -29,9 +29,9 @@ export default async function Movements({ searchParams }: { searchParams: Promis
                   <td className="p-2">{formatDateTime(m.created_at)}</td>
                   <td className="p-2">{c?.brand_name} {c?.dosage ?? ""}</td>
                   <td className="p-2">{KIND[m.kind] ?? m.kind}{m.note ? <span className="text-muted-foreground"> — {m.note}</span> : null}</td>
-                  <td className="p-2 text-right">{m.quantity_delta}</td>
-                  <td className="p-2 text-right">{m.reserved_delta}</td>
-                  <td className="p-2 text-right">{m.quantity_after}</td>
+                  <td className="p-2 text-end">{m.quantity_delta}</td>
+                  <td className="p-2 text-end">{m.reserved_delta}</td>
+                  <td className="p-2 text-end">{m.quantity_after}</td>
                 </tr>
               );
             })}

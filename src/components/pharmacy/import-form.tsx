@@ -23,7 +23,7 @@ export function ImportForm({ pharmacyId }: { pharmacyId: string }) {
       {state.ok && <Alert tone={errors.length ? "warning" : "success"} title={state.message ?? "Import terminé"} />}
       {errors.length > 0 && (
         <div className="max-h-60 overflow-auto rounded-lg border text-sm">
-          <table className="w-full"><thead><tr className="bg-muted text-left"><th className="p-2">Ligne</th><th className="p-2">Erreur</th></tr></thead>
+          <table className="w-full"><thead><tr className="bg-muted text-start"><th className="p-2">Ligne</th><th className="p-2">Erreur</th></tr></thead>
             <tbody>{errors.map((e, i) => <tr key={i} className="border-t"><td className="p-2">{e.row}</td><td className="p-2">{e.error}</td></tr>)}</tbody></table>
         </div>
       )}

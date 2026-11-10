@@ -29,7 +29,7 @@ export default async function ComplianceHome({ searchParams }: { searchParams: P
       </section>
       <section className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
         <h2 className="font-bold">À faire valider avant toute affirmation de conformité</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
+        <ul className="mt-2 list-disc space-y-1 ps-5">
           <li>Identité juridique du responsable de traitement et point de contact (onglet « Responsable du traitement »).</li>
           <li>Bases légales, durées de conservation et formalités APDP de chaque traitement (onglet « Registre des traitements »).</li>
           <li>Transferts hors du Mali (hébergement dans l&apos;Union européenne, fournisseurs américains) : autorisation APDP (loi n° 2013-015, art. 11).</li>

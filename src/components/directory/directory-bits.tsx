@@ -30,8 +30,8 @@ export function ScheduleTable({ schedule, compact = false }: { schedule: Schedul
       <tbody>
         {lines.map((l) => (
           <tr key={l.day} className="border-b last:border-0">
-            <th scope="row" className="py-1 pr-4 text-left font-medium">{l.day}</th>
-            <td className="py-1 text-right tabular-nums">{l.slots}</td>
+            <th scope="row" className="py-1 pe-4 text-start font-medium">{l.day}</th>
+            <td className="py-1 text-end tabular-nums">{l.slots}</td>
           </tr>
         ))}
       </tbody>

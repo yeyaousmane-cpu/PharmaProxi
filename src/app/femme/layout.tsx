@@ -19,7 +19,7 @@ export default async function FemmeLayout({ children }: { children: React.ReactN
             {!discreet && <p className="text-xs text-[#843653]/80">Votre corps, votre santé, votre équilibre.</p>}
           </div>
           {open && st.has_pin && (
-            <form action={lockFemme} className="ml-auto">
+            <form action={lockFemme} className="ms-auto">
               <button className="flex items-center gap-1.5 rounded-full border border-[#D96A91]/40 bg-white px-3 py-1.5 text-sm font-semibold text-[#843653] hover:bg-[#F8E7EF]"><Lock className="size-4" aria-hidden /> Verrouiller</button>
             </form>
           )}

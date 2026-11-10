@@ -80,7 +80,7 @@ export function HealthChat({ available }: { available: boolean }) {
               Bonjour ! Posez votre question de santé : mal de tête, fièvre, diarrhée, rhume, piqûres… Je vous explique les bons gestes, les médicaments sans ordonnance adaptés et quand consulter.</p>
             <div className="flex flex-wrap gap-2">
               {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" onClick={() => ask(s)} className="rounded-full border border-primary/30 bg-[#EAF6EE] px-3 py-1.5 text-left text-sm text-[#052D1E] hover:border-primary">{s}</button>
+                <button key={s} type="button" onClick={() => ask(s)} className="rounded-full border border-primary/30 bg-[#EAF6EE] px-3 py-1.5 text-start text-sm text-[#052D1E] hover:border-primary">{s}</button>
               ))}
             </div>
           </div>

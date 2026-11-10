@@ -1,10 +1,11 @@
 import Link from "next/link";
-import {
+import { BadgeCheck,
   Activity, Apple, Brain, Ear, HandHeart, HeartHandshake, Moon, Music, Phone, ShieldAlert, Siren, Smile, Sparkles, Stethoscope, Sun, Users, Wine, Wind,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
 import { formatDate } from "@/lib/format";
+import { ListenButton } from "@/components/speech/listen-button";
 
 export const metadata = {
   title: "Santé mentale : comprendre, prendre soin, trouver de l'aide",
@@ -66,13 +67,19 @@ function H2({ id, kicker, children }: { id: string; kicker: string; children: Re
  */
 export default async function SanteMentale() {
   let lines: Line[] = [];
+  let fiches: { slug: string; title: string; summary: string; validator_name: string | null; validated_at: string | null }[] = [];
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
-    lines = ((await supabase.from("support_lines").select("*").eq("active", true).order("sort")).data ?? []) as Line[];
+    const [l, f] = await Promise.all([
+      supabase.from("support_lines").select("*").eq("active", true).order("sort"),
+      supabase.from("health_articles").select("slug, title, summary, validator_name, validated_at, health_categories!inner(slug)").eq("status", "published").eq("health_categories.slug", "sante-mentale").order("title").limit(30),
+    ]);
+    lines = (l.data ?? []) as Line[];
+    fiches = (f.data ?? []) as unknown as typeof fiches;
   }
   const toc = [["parler", "Besoin de parler maintenant"], ["quotidien", "Prendre soin de soi"], ["sommeil", "Le sommeil"], ["signes", "Les signes qui alertent"], ["professionnels", "Qui consulter ?"], ["proche", "Aider un proche"], ["realites", "Santé mentale et réalités africaines"], ["sources", "Sources"]];
   return (
-    <div>
+    <div lang="fr" dir="ltr">
       <header className="bg-[#052D1E] text-white">
         <div className="container-page max-w-5xl py-12 md:py-16">
           <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-[#9CCBAE]"><Brain className="size-5" aria-hidden /> Santé mentale</p>
@@ -85,8 +92,24 @@ export default async function SanteMentale() {
         </div>
       </header>
 
-      <div className="container-page grid max-w-6xl gap-10 py-8 lg:grid-cols-[14rem_1fr]">
-        <nav aria-label="Sur cette page" className="hidden lg:block">
+      <div className="container-page max-w-6xl space-y-3 pt-6">
+        <ListenButton targetId="sm-texte" lang="fr" />
+        <section aria-labelledby="fiches-validees" className="rounded-2xl border bg-white p-5">
+          <h2 id="fiches-validees" className="flex items-center gap-2 text-lg font-bold text-[#052D1E]"><BadgeCheck className="size-5 text-[#068132]" aria-hidden /> Fiches validées par des professionnels de santé</h2>
+          {fiches.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">Aucune fiche de santé mentale n&apos;a encore terminé le circuit de validation médicale. Les fiches apparaîtront ici après relecture et validation par un professionnel, avec son nom, ses sources et la date de prochaine révision.</p>
+          ) : (
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">{fiches.map((f) => (
+              <li key={f.slug}><Link prefetch={false} href={`/sante/fiche/${f.slug}`} className="block rounded-xl border p-3 hover:border-[#068132]">
+                <span className="font-semibold text-[#052D1E]">{f.title}</span>
+                {f.validator_name && f.validated_at && <span className="mt-1 block text-xs text-emerald-800">Validée par {f.validator_name} le {formatDate(f.validated_at)}</span>}
+              </Link></li>))}</ul>
+          )}
+          <p className="mt-3 text-xs text-muted-foreground">Les repères ci-dessous sont des informations générales d&apos;orientation, en attente de relecture par un professionnel de santé mentale. Ils ne remplacent pas une consultation.</p>
+        </section>
+      </div>
+      <div id="sm-texte" className="container-page grid max-w-6xl gap-10 py-8 lg:grid-cols-[14rem_1fr]">
+        <nav aria-label="Sur cette page" className="hidden lg:block" data-no-listen>
           <ol className="sticky top-24 space-y-1 text-sm">{toc.map(([id, l]) => <li key={id}><a href={`#${id}`} className="block rounded-lg px-2 py-1.5 hover:bg-[#EAF6EE]">{l}</a></li>)}</ol>
         </nav>
         <div className="min-w-0 space-y-14">
@@ -139,7 +162,7 @@ export default async function SanteMentale() {
             <p className="max-w-3xl text-muted-foreground">Chacun peut traverser un moment difficile. Ce qui doit alerter : des changements qui <strong>durent</strong> (plus de deux semaines), qui <strong>s&apos;intensifient</strong> ou qui <strong>empêchent de vivre normalement</strong>. Touchez un signe pour en savoir plus.</p>
             <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{signs.map(([t, d], i) => (
               <li key={t}><details className={`group h-full rounded-2xl border p-4 open:shadow-sm ${i === signs.length - 1 ? "border-red-300 bg-red-50" : "bg-white"}`}>
-                <summary className="cursor-pointer list-none font-bold text-[#052D1E]"><span className="mr-1 text-[#068132] group-open:hidden">+</span><span className="mr-1 hidden text-[#068132] group-open:inline">−</span>{t}</summary>
+                <summary className="cursor-pointer list-none font-bold text-[#052D1E]"><span className="me-1 text-[#068132] group-open:hidden">+</span><span className="me-1 hidden text-[#068132] group-open:inline">−</span>{t}</summary>
                 <p className="mt-2 text-sm text-muted-foreground">{d}</p></details></li>))}</ul>
             <p className="flex items-start gap-2 rounded-xl bg-[#EAF6EE] p-3 text-sm"><ShieldAlert className="mt-0.5 size-4 shrink-0 text-[#068132]" aria-hidden /> Cette liste aide à repérer, elle ne permet pas de poser un diagnostic. Seul un professionnel peut le faire.</p>
           </section>

@@ -60,14 +60,14 @@ export default async function AdminPrivacy({ searchParams }: { searchParams: Pro
           <h2 className="font-bold">Fiche de preuve des consentements — {who.get(preuve!)?.full_name ?? preuve}</h2>
           <p className="text-xs text-muted-foreground">Consultation journalisée. Registre en ajout seul : chaque ligne est un choix horodaté avec la version du texte présenté.</p>
           {proof.length === 0 ? <p className="text-sm text-muted-foreground">Aucun consentement enregistré.</p> : (
-            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b"><th className="p-2">Date</th><th className="p-2">Finalité</th><th className="p-2">Décision</th><th className="p-2">Texte</th><th className="p-2">Méthode</th><th className="p-2">Données / destinataires</th></tr></thead>
+            <div className="overflow-x-auto"><table className="w-full text-start text-sm"><thead><tr className="border-b"><th className="p-2">Date</th><th className="p-2">Finalité</th><th className="p-2">Décision</th><th className="p-2">Texte</th><th className="p-2">Méthode</th><th className="p-2">Données / destinataires</th></tr></thead>
               <tbody>{proof.map((p, i) => <tr key={i} className="border-b align-top"><td className="p-2">{dt(p.created_at)}</td><td className="p-2">{p.purpose_title}</td><td className="p-2">{p.decision}</td><td className="p-2">v{p.purpose_version}</td><td className="p-2">{p.method}</td><td className="p-2">{p.data_categories} — {p.recipients}</td></tr>)}</tbody></table></div>)}
         </section>
       )}
 
       <section className="space-y-2 rounded-2xl border bg-white p-4">
         <h2 className="font-bold">Registre des traitements (projet, à valider par un juriste)</h2>
-        <div className="overflow-x-auto"><table className="w-full text-left text-sm">
+        <div className="overflow-x-auto"><table className="w-full text-start text-sm">
           <thead><tr className="border-b"><th className="p-2">Traitement</th><th className="p-2">Base</th><th className="p-2">Données</th><th className="p-2">Destinataires</th><th className="p-2">Texte</th><th className="p-2">Consentements actifs / retirés</th></tr></thead>
           <tbody>{((purposes as { code: string; title: string; legal_basis: string; data_categories: string; recipients: string; version: number; active: boolean }[] | null) ?? []).map((p) => {
             const s = st.get(p.code);

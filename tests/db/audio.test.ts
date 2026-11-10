@@ -17,7 +17,7 @@ describe.skipIf(!hasDb)("Guides audio", () => {
     q(db, uid, "select public.audio_register_clip('accueil', $1, $2, 'audio/mpeg', 120000, 42, 'Awa', 'Moussa', $3) as old", [lang, path, reviewer]).then((r) => r.rows[0].old);
 
   it("langues et pages publiques ; dépôt refusé hors équipe", async () => {
-    expect((await q(db, null, "select count(*)::int as n from public.audio_languages")).rows[0].n).toBe(14);
+    expect((await q(db, null, "select count(*)::int as n from public.audio_languages")).rows[0].n).toBe(15);
     expect((await q(db, null, "select script_fr from public.audio_targets where key = 'urgences'")).rows[0].script_fr).toMatch(/service d'urgence/);
     await expectError(reg(stranger, "bambara", "accueil/bambara-1.mp3"), /équipe SantéProxi/);
     await expectError(reg(w.admin, "klingon", "accueil/x.mp3"), /langue inconnue/);

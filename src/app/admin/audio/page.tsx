@@ -30,11 +30,11 @@ export default async function AdminAudio() {
         <CardHeader><CardTitle>Avancement</CardTitle><CardDescription>✓ publié · ● déposé, à vérifier · vide : à enregistrer. Cliquez sur une page pour déposer un enregistrement.</CardDescription></CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
-            <thead><tr className="text-left text-xs text-muted-foreground"><th className="py-2 pr-2">Page</th>{(langs ?? []).map((l) => <th key={l.code} className="px-1 text-center font-medium">{l.name}</th>)}</tr></thead>
+            <thead><tr className="text-start text-xs text-muted-foreground"><th className="py-2 pe-2">Page</th>{(langs ?? []).map((l) => <th key={l.code} className="px-1 text-center font-medium">{l.name}</th>)}</tr></thead>
             <tbody>
               {(targets ?? []).map((t) => (
                 <tr key={t.key} className="border-t">
-                  <td className="py-2 pr-2"><Link prefetch={false} href={`/admin/audio/${encodeURIComponent(t.key)}`} className="font-medium text-primary underline">{t.label}</Link></td>
+                  <td className="py-2 pe-2"><Link prefetch={false} href={`/admin/audio/${encodeURIComponent(t.key)}`} className="font-medium text-primary underline">{t.label}</Link></td>
                   {(langs ?? []).map((l) => {
                     const st = cell(t.key, l.code);
                     return <td key={l.code} className="px-1 text-center">{st === "published" ? <Check className="mx-auto size-4 text-emerald-600" aria-label="publié" /> : st === "draft" ? <span className="text-amber-500" aria-label="à vérifier">●</span> : <span className="text-muted-foreground/40">·</span>}</td>;

@@ -49,7 +49,7 @@ export default async function QuestionsPage({ searchParams }: { searchParams: Pr
             <SubmitButton>Envoyer ma question</SubmitButton>
           </ActionForm>
         ) : (
-          <p className="mt-2 text-sm"><Link prefetch={false} href="/connexion?suite=/questions-pharmacien" className={cn(buttonVariants({ size: "sm" }))}>Se connecter pour poser une question</Link> <span className="ml-2 text-muted-foreground">(pour recevoir la réponse)</span></p>
+          <p className="mt-2 text-sm"><Link prefetch={false} href="/connexion?suite=/questions-pharmacien" className={cn(buttonVariants({ size: "sm" }))}>Se connecter pour poser une question</Link> <span className="ms-2 text-muted-foreground">(pour recevoir la réponse)</span></p>
         )}
         {session && <p className="mt-3 text-sm"><Link prefetch={false} href="/questions-pharmacien/mes-questions" className="font-semibold text-primary underline">Mes questions et les réponses</Link></p>}
       </section>

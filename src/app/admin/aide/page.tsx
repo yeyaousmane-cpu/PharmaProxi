@@ -24,7 +24,7 @@ export default async function AdminHelp() {
         </div>
       </div>
       {low.length > 0 && <p className="rounded-xl bg-amber-100 p-3 text-sm text-amber-900">À améliorer : {low.map((l) => l.title).join(" · ")} (majorité d&apos;avis « Non »).</p>}
-      <div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full text-left text-sm">
+      <div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full text-start text-sm">
         <thead><tr className="border-b"><th className="p-2">Article</th><th className="p-2">Rubrique</th><th className="p-2">Statut</th><th className="p-2">Vues</th><th className="p-2">Utile oui / non</th></tr></thead>
         <tbody>{rows.map((r) => (
           <tr key={r.id} className="border-b"><td className="p-2"><Link prefetch={false} href={`/admin/aide/article/${r.id}`} className="font-semibold text-[#068132] hover:underline">{r.title}</Link></td>

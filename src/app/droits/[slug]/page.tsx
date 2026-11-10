@@ -16,8 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 function Render({ b }: { b: Block }) {
   if ("h" in b) return <h2 className="pt-2 text-lg font-bold text-brand-deep">{b.h}</h2>;
   if ("p" in b) return <p><Rich text={b.p} /></p>;
-  if ("ul" in b) return <ul className="list-disc space-y-1.5 pl-5">{b.ul.map((x, i) => <li key={i}><Rich text={x} /></li>)}</ul>;
-  if ("ol" in b) return <ol className="list-decimal space-y-1.5 pl-5">{b.ol.map((x, i) => <li key={i}><Rich text={x} /></li>)}</ol>;
+  if ("ul" in b) return <ul className="list-disc space-y-1.5 ps-5">{b.ul.map((x, i) => <li key={i}><Rich text={x} /></li>)}</ul>;
+  if ("ol" in b) return <ol className="list-decimal space-y-1.5 ps-5">{b.ol.map((x, i) => <li key={i}><Rich text={x} /></li>)}</ol>;
   if ("note" in b) return <p className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-950"><Info className="mt-0.5 size-4 shrink-0" aria-hidden /><span><Rich text={b.note} /></span></p>;
   return (
     <div className="space-y-2">
@@ -54,7 +54,7 @@ export default async function TopicPage({ params }: { params: Promise<{ slug: st
       {t.sources.length > 0 && (
         <section className="rounded-2xl border bg-white p-5 text-sm">
           <h2 className="flex items-center gap-2 font-bold"><BookOpen className="size-4 text-primary" aria-hidden /> Sources</h2>
-          <ul className="mt-2 list-disc space-y-1 pl-5">{t.sources.map((s) => <li key={s.label}>{s.url ? <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{s.label}</a> : s.label}</li>)}</ul>
+          <ul className="mt-2 list-disc space-y-1 ps-5">{t.sources.map((s) => <li key={s.label}>{s.url ? <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-primary underline">{s.label}</a> : s.label}</li>)}</ul>
           <p className="mt-2 text-xs text-muted-foreground">Vérifié en {DROITS_CHECKED}. Résumé de textes publics : ni avis juridique, ni avis médical.</p>
         </section>
       )}

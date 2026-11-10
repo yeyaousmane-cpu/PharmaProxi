@@ -9,8 +9,8 @@ export function OpeningHours({ hours, verified }: { hours: Record<string, [strin
         <tbody>
           {DAYS.map((d) => (
             <tr key={d} className="border-b last:border-0">
-              <th scope="row" className="py-1 pr-4 text-left font-medium">{DAY_LABELS[d]}</th>
-              <td className="py-1 text-right">{hours[d]?.length ? hours[d].map(([o, c]) => `${o} – ${c}`).join(", ") : "Fermé"}</td>
+              <th scope="row" className="py-1 pe-4 text-start font-medium">{DAY_LABELS[d]}</th>
+              <td className="py-1 text-end">{hours[d]?.length ? hours[d].map(([o, c]) => `${o} – ${c}`).join(", ") : "Fermé"}</td>
             </tr>
           ))}
         </tbody>

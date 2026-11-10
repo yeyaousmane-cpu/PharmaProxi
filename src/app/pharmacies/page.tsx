@@ -90,7 +90,7 @@ export default async function PharmacyDirectory({ searchParams }: { searchParams
                   <span className="text-base font-bold">{p.name}</span>
                 )}
                 {p.is_demo && <DemoBadge />}
-                {p.distance_km !== null && <span className="ml-auto text-sm font-medium">{formatDistance(p.distance_km)}</span>}
+                {p.distance_km !== null && <span className="ms-auto text-sm font-medium">{formatDistance(p.distance_km)}</span>}
               </div>
               {p.kind === "verified" ? (
                 <Badge className="w-fit border-primary/30 bg-accent text-brand-deep"><ShieldCheck className="size-3" aria-hidden /> Inscrite et vérifiée : stocks et réservation</Badge>

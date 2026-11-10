@@ -51,7 +51,7 @@ export default async function ProofDossier({ params }: { params: Promise<{ user:
       )}
       {((disputes as { reference: string; status: string; created_at: string; report: string | null }[] | null) ?? []).length > 0 && (
         <section className="text-sm"><h3 className="font-bold">Réclamations</h3>
-          <ul className="list-disc pl-5">{(disputes as { reference: string; status: string; created_at: string; report: string | null }[]).map((d) => <li key={d.reference}>{d.reference} · {bamako(d.created_at)} · {d.status}{d.report ? ` · ${d.report}` : ""}</li>)}</ul></section>
+          <ul className="list-disc ps-5">{(disputes as { reference: string; status: string; created_at: string; report: string | null }[]).map((d) => <li key={d.reference}>{d.reference} · {bamako(d.created_at)} · {d.status}{d.report ? ` · ${d.report}` : ""}</li>)}</ul></section>
       )}
       <p className="text-xs text-muted-foreground">Les empreintes prouvent l&apos;intégrité des textes ; la preuve du consentement résulte de l&apos;ensemble des éléments de traçabilité (action de la personne connectée, horodatage serveur, version du texte, chaîne d&apos;empreintes). La consultation de ce dossier est journalisée.</p>
     </article>

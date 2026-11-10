@@ -40,7 +40,7 @@ export default async function HelpCategoryPage({ params }: { params: Promise<{ c
           <ul className="divide-y rounded-2xl border bg-white">{r.arts.filter((a) => a.section === s).map((a) => (
             <li key={a.slug}><Link prefetch={false} href={`/aide/article/${a.slug}`} className="flex items-center gap-3 p-4 hover:bg-[#EAF6EE]/60">
               <span className="flex-1"><span className="block font-semibold text-[#052D1E]">{a.title}</span><span className="text-sm text-muted-foreground">{a.summary}</span></span>
-              <ChevronRight className="size-5 shrink-0 text-[#068132]" aria-hidden /></Link></li>))}</ul>
+              <ChevronRight className="size-5 shrink-0 text-[#068132] rtl:-scale-x-100" aria-hidden /></Link></li>))}</ul>
         </section>
       ))}
       <ContactCta />

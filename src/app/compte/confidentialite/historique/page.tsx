@@ -33,7 +33,7 @@ export default async function ConsentHistory() {
         <p className="text-sm text-muted-foreground">Titulaire : {user.fullName ?? "—"} · Document généré le {now} (heure de Bamako) · {rows.length} événement(s)</p>
       </header>
       {rows.length === 0 ? <p className="text-muted-foreground">Aucun choix enregistré.</p> : (
-        <div className="overflow-x-auto"><table className="w-full text-left text-sm">
+        <div className="overflow-x-auto"><table className="w-full text-start text-sm">
           <thead><tr className="border-b"><th className="p-2">Date et heure</th><th className="p-2">Finalité</th><th className="p-2">Choix</th><th className="p-2">Texte</th><th className="p-2">Politique</th><th className="p-2">Canal</th><th className="p-2">Empreinte du texte (SHA-256)</th></tr></thead>
           <tbody>{rows.map((r) => (
             <tr key={r.id} className="border-b align-top">

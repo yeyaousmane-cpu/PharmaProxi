@@ -193,13 +193,13 @@ export async function DayTools({ sites, clinicId, date, basePath, doctorId }: { 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Link prefetch={false} href={`${basePath}?vue=jour&date=${addDays(date, -1)}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><ChevronLeft aria-hidden /> Veille</Link>
+        <Link prefetch={false} href={`${basePath}?vue=jour&date=${addDays(date, -1)}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><ChevronLeft className="rtl:-scale-x-100" aria-hidden /> Veille</Link>
         <form method="get" className="order-last flex w-full items-center gap-2 sm:order-none sm:w-auto">
           <input type="hidden" name="vue" value="jour" />
           <Input name="date" type="date" defaultValue={date} aria-label="Jour affiché" className="h-9 min-w-0 flex-1 sm:w-auto sm:flex-none" />
           <button className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Voir</button>
         </form>
-        <Link prefetch={false} href={`${basePath}?vue=jour&date=${addDays(date, 1)}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Lendemain <ChevronRight aria-hidden /></Link>
+        <Link prefetch={false} href={`${basePath}?vue=jour&date=${addDays(date, 1)}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Lendemain <ChevronRight className="rtl:-scale-x-100" aria-hidden /></Link>
       </div>
       <p className="text-lg font-bold">{formatApptDay(date)}</p>
       {(blocks ?? []).length > 0 && (

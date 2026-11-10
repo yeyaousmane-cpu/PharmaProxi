@@ -38,7 +38,7 @@ export default async function ProofsPage({ searchParams }: { searchParams: Promi
             <a href={`/conformite/preuves/export?${qs}`} className="rounded-xl border px-3 py-1.5 text-sm font-semibold">Exporter (CSV)</a>
             {f.p_user && <Link prefetch={false} href={`/conformite/dossier/${f.p_user}`} className="rounded-xl bg-[#068132] px-3 py-1.5 text-sm font-semibold text-white">Dossier de preuve de cette personne</Link>}
           </div>
-          <div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full text-left text-sm">
+          <div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full text-start text-sm">
             <thead><tr className="border-b"><th className="p-2">N°</th><th className="p-2">Date (Bamako)</th><th className="p-2">Personne</th><th className="p-2">Finalité</th><th className="p-2">Choix</th><th className="p-2">Texte / politique</th><th className="p-2">Canal</th><th className="p-2">Intégrité</th></tr></thead>
             <tbody>{rows.map((r) => (
               <tr key={r.id} className="border-b align-top"><td className="p-2">{r.id}</td><td className="p-2 whitespace-nowrap">{bamako(r.created_at)}</td>

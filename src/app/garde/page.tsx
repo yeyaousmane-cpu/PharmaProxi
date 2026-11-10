@@ -111,7 +111,7 @@ export default async function DutyPage({ searchParams }: { searchParams: Promise
                         <Link prefetch={false} href={`/pharmacies/${p.id}`} className="text-base font-bold hover:underline">{p.name}</Link>
                       ) : <span className="text-base font-bold">{p.name}</span>}
                       {p.kind === "verified" && <ShieldCheck className="size-4 text-brand-green" aria-label="Inscrite et vérifiée" />}
-                      {p.distance_km !== null && <span className="ml-auto text-sm font-medium">{formatDistance(p.distance_km)}</span>}
+                      {p.distance_km !== null && <span className="ms-auto text-sm font-medium">{formatDistance(p.distance_km)}</span>}
                     </div>
                     <p className="text-sm font-medium text-indigo-900">Garde {dutyRange(p)}</p>
                     <Badge className={cn("w-fit", p.status === "confirmed" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-900")}>

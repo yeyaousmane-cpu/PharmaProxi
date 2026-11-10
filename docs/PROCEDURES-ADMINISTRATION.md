@@ -177,3 +177,11 @@ Chiffres agrégés et anonymes de la demande exprimée sur SantéProxi. Ils ne m
 - Nouvelle politique de confidentialité : /conformite/politique → nouveau numéro de version ; l'ancienne est archivée, jamais effacée.
 - Registre des traitements : /conformite/registre. Un traitement ne peut être marqué « validé » qu'avec le nom et la qualité du juriste ou DPO qui l'a validé.
 - Identité du responsable du traitement : /conformite/identite. Tant qu'un champ est vide, la page publique affiche « À compléter ».
+
+
+## Prévention, révision des fiches et langues — v0.27
+- Prévention : Administration → Prévention. Saisir uniquement un événement annoncé officiellement ; la source (communiqué, site, courrier) est obligatoire pour publier. « Annulé » reste visible avec la mention « Annulé ».
+- Révision des fiches : chaque validation fixe la prochaine révision à un an. Dans la fiche (Bibliothèque santé), le validateur peut changer la date. La liste « À actualiser » apparaît en tête de la bibliothèque 30 jours avant l'échéance. Après l'échéance, le public voit un avertissement jusqu'à la nouvelle validation.
+- Archiver une fiche : bouton « Archiver » (validateur ou administrateur) ; elle quitte le site et garde son historique. « Sortir des archives » la remet en brouillon : elle devra être validée à nouveau.
+- Langues : Administration → Langues permet de corriger tout texte de l'interface dans n'importe quelle langue ; une traduction « validée » remplace celle livrée avec le site. Faire relire l'anglais et l'arabe par des locuteurs natifs.
+- Voix : rien à configurer. La lecture et la reconnaissance utilisent le navigateur de chaque personne ; aucune clé n'est nécessaire.

@@ -17,11 +17,11 @@ export async function RegistryTrend({ region }: { region: string | null }) {
       <h2 className="flex flex-wrap items-center gap-2 text-lg font-bold text-brand-deep"><TrendingUp className="size-5 text-primary" aria-hidden />Évolution du référentiel (12 mois)<DataBadge kind="administratif" /><DataBadge kind="declare" /></h2>
       <p className="text-xs text-muted-foreground">Nombre de structures référencées à la fin de chaque mois. Une hausse traduit d&apos;abord l&apos;avancée du référencement, pas forcément l&apos;ouverture de nouvelles structures.</p>
       <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
-        <thead><tr className="text-left text-xs text-muted-foreground"><th className="py-1">Mois</th>{SERIES.map(([k, l]) => <th key={k}>{l}</th>)}</tr></thead>
+        <thead><tr className="text-start text-xs text-muted-foreground"><th className="py-1">Mois</th>{SERIES.map(([k, l]) => <th key={k}>{l}</th>)}</tr></thead>
         <tbody>{rows.map((r) => (
           <tr key={r.month} className="border-t"><td className="py-1.5 font-medium">{new Date(r.month).toLocaleDateString("fr-FR", { month: "short", year: "numeric" })}</td>
             {SERIES.map(([k, , tone]) => { const v = Number(r[k]); const max = Math.max(1, ...rows.map((x) => Number(x[k]))); return (
-              <td key={k} className="pr-3"><span className="flex items-center gap-2"><span className="w-8 text-right tabular-nums">{v}</span><span className="h-1.5 flex-1 rounded-full bg-muted"><span className={`block h-1.5 rounded-full ${tone}`} style={{ width: `${Math.round((100 * v) / max)}%` }} /></span></span></td>); })}
+              <td key={k} className="pe-3"><span className="flex items-center gap-2"><span className="w-8 text-end tabular-nums">{v}</span><span className="h-1.5 flex-1 rounded-full bg-muted"><span className={`block h-1.5 rounded-full ${tone}`} style={{ width: `${Math.round((100 * v) / max)}%` }} /></span></span></td>); })}
           </tr>))}</tbody>
       </table></div>
       <p className="text-sm">Aujourd&apos;hui : <strong>{last.pharmacies_verified}</strong> pharmacies inscrites, <strong>{last.pharmacies_listed}</strong> autres officines, <strong>{last.facilities}</strong> établissements, <strong>{last.labs}</strong> laboratoires, <strong>{last.doctors}</strong> médecins vérifiés.</p>

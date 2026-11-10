@@ -44,7 +44,7 @@ export function ResultCard({ r, amo, pharmacyAmo }: { r: SearchRow; amo?: AmoPro
             <span>{r.address} — {place}{dist ? ` · ${dist}` : ""}</span>
           </p>
         </div>
-        <div className="shrink-0 text-left sm:text-right">
+        <div className="shrink-0 text-start sm:text-end">
           <p className="text-lg font-bold">{formatXof(r.price_xof)}</p>
           <p className="text-xs text-muted-foreground">prix déclaré</p>
           {share !== null && (

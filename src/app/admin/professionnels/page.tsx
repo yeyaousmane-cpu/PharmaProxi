@@ -45,7 +45,7 @@ export default async function AdminPros({ searchParams }: { searchParams: Promis
 
       <section className="space-y-3 rounded-2xl border bg-white p-4 sm:p-5">
         <h2 className="text-lg font-bold">Ajouter un professionnel</h2>
-        <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+        <ol className="list-decimal space-y-1 ps-5 text-sm text-muted-foreground">
           <li>La personne crée un compte SantéProxi normal avec son adresse e-mail.</li>
           <li>Vous saisissez cette adresse ci-dessous et le type de professionnel.</li>
           <li>Elle reçoit une notification et peut remplir la fiche de sa pharmacie, de sa pratique ou de son établissement.</li>

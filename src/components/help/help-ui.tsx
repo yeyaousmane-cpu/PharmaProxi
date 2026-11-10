@@ -15,11 +15,11 @@ export function HelpSearch({ q = "", large = false }: { q?: string; large?: bool
   return (
     <form action="/aide/recherche" role="search" className="relative">
       <label htmlFor="help-q" className="sr-only">Rechercher dans l&apos;aide</label>
-      <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#068132]" aria-hidden />
+      <Search className="pointer-events-none absolute start-4 top-1/2 size-5 -translate-y-1/2 text-[#068132]" aria-hidden />
       <input id="help-q" name="q" defaultValue={q} list="help-suggestions" autoComplete="off" maxLength={100}
         placeholder="Votre question (ex. rendez-vous)"
-        className={`w-full rounded-2xl border-2 border-[#068132]/30 bg-white pl-12 pr-28 text-[#052D1E] shadow-sm outline-none focus:border-[#068132] ${large ? "h-14 text-lg" : "h-12"}`} />
-      <button className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-[#068132] px-4 py-2 font-semibold text-white hover:bg-[#052D1E]">Chercher</button>
+        className={`w-full rounded-2xl border-2 border-[#068132]/30 bg-white ps-12 pe-28 text-[#052D1E] shadow-sm outline-none focus:border-[#068132] ${large ? "h-14 text-lg" : "h-12"}`} />
+      <button className="absolute end-2 top-1/2 -translate-y-1/2 rounded-xl bg-[#068132] px-4 py-2 font-semibold text-white hover:bg-[#052D1E]">Chercher</button>
     </form>
   );
 }

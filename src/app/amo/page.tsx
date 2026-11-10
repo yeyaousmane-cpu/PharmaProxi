@@ -97,11 +97,11 @@ export default async function AmoPage({ searchParams }: { searchParams: Promise<
                       <p className="text-xs text-muted-foreground">{r.code ? `Code ${r.code} · ` : ""}{r.list_version}{r.dci ? ` · ${r.dci}` : ""}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-4 text-sm">
-                      <div className="text-right">
+                      <div className="text-end">
                         <p className="text-xs text-muted-foreground">Tarif de référence</p>
                         <p className="font-medium">{formatXof(r.tariff_xof)}</p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-end">
                         <p className="text-xs text-muted-foreground">Vous payez ≈</p>
                         <p className="font-bold text-brand-deep">{r.patient_share !== null ? formatXof(r.patient_share) : "—"}</p>
                       </div>
@@ -119,7 +119,7 @@ export default async function AmoPage({ searchParams }: { searchParams: Promise<
           <AmoCalculator key={sp.calc ?? "libre"} rate={rate} initialTariff={calc?.tariff_xof ?? null} initialName={calc?.name ?? null} />
           <section aria-labelledby="cond-t" className="rounded-2xl border bg-white p-5 text-sm">
             <h2 id="cond-t" className="flex items-center gap-2 text-lg font-bold text-brand-deep"><FileText className="size-5 text-primary" aria-hidden /> Pour en bénéficier</h2>
-            <ul className="mt-3 list-disc space-y-1.5 pl-5">
+            <ul className="mt-3 list-disc space-y-1.5 ps-5">
               <li>Être assuré AMO (ou ayant droit) avec des droits ouverts, et présenter sa carte.</li>
               <li>Une ordonnance d&apos;un prescripteur.</li>
               <li>Une pharmacie <strong>conventionnée</strong> avec la CANAM : vous ne payez alors que votre part (tiers payant).</li>

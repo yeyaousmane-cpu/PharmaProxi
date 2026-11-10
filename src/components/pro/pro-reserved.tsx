@@ -14,7 +14,7 @@ export function ProReserved({ kind }: { kind: keyof typeof LABEL }) {
           Pour protéger les patients, personne ne peut s&apos;inscrire seul comme pharmacien, médecin, clinique ou laboratoire.
           L&apos;équipe SantéProxi vérifie d&apos;abord votre autorisation d&apos;exercer, puis ouvre votre accès pour inscrire {LABEL[kind]}.
         </p>
-        <ol className="list-decimal space-y-1 pl-5 text-sm">
+        <ol className="list-decimal space-y-1 ps-5 text-sm">
           <li>Créez un compte SantéProxi normal (si ce n&apos;est pas déjà fait).</li>
           <li>Envoyez votre demande avec le formulaire professionnel.</li>
           <li>Après vérification, vous recevez une notification et cette page s&apos;ouvre.</li>

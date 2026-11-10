@@ -19,7 +19,7 @@ export function RecentList({ title = "Consultés récemment", emptyHidden = fals
     return emptyHidden ? null : <p className="text-sm text-muted-foreground">Les pharmacies et médecins que vous consultez apparaîtront ici, même sans connexion.</p>;
   }
   return (
-    <section aria-labelledby="recent-seen" className="space-y-2 text-left">
+    <section aria-labelledby="recent-seen" className="space-y-2 text-start">
       <div className="flex items-center justify-between gap-2">
         <h2 id="recent-seen" className="flex items-center gap-2 text-lg font-bold"><History className="size-5 text-muted-foreground" aria-hidden /> {title}</h2>
         <button type="button" className="text-xs text-muted-foreground underline" onClick={() => { clearRecent(); setItems([]); }}>Effacer</button>

@@ -83,7 +83,7 @@ export default async function Treatments() {
               const ok = taken.has(`${t.id}|${s}`);
               return (
                 <li key={`${t.id}${s}`} className="flex items-center justify-between gap-2 py-2 text-sm">
-                  <span><strong className="mr-2 tabular-nums">{s}</strong>{t.name}{t.dose_note ? ` · ${t.dose_note}` : ""}</span>
+                  <span><strong className="me-2 tabular-nums">{s}</strong>{t.name}{t.dose_note ? ` · ${t.dose_note}` : ""}</span>
                   <ActionForm action={treatmentAction}>
                     <input type="hidden" name="id" value={t.id} /><input type="hidden" name="slot" value={s} /><input type="hidden" name="op" value={ok ? "untaken" : "taken"} />
                     <SubmitButton size="sm" variant={ok ? "ghost" : "secondary"} pendingText="…">{ok ? <><Check aria-hidden /> Pris</> : "Je l'ai pris"}</SubmitButton>

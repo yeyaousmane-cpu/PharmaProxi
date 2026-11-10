@@ -26,7 +26,7 @@ export function AudioPlayer({ clips, label }: { clips: Clip[]; label: string }) 
   return (
     <div className="rounded-xl border border-[#068132]/30 bg-white p-3 shadow-sm">
       {!open ? (
-        <button type="button" onClick={() => setOpen(true)} className="flex w-full items-center gap-3 text-left">
+        <button type="button" onClick={() => setOpen(true)} className="flex w-full items-center gap-3 text-start">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#068132] text-white"><Headphones className="size-5" aria-hidden /></span>
           <span>
             <span className="block font-semibold text-[#052D1E]">Écouter cette page</span>

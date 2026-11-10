@@ -69,7 +69,7 @@ export async function PracticeStats({ clinicId, basePath, days }: { clinicId?: s
       <Card>
         <CardHeader><CardTitle>Pistes pour mieux remplir l&apos;agenda</CardTitle></CardHeader>
         <CardContent>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+          <ul className="list-disc space-y-1 ps-5 text-sm text-muted-foreground">
             {s.libres_7j > 0 && fill > 0 && s.a_venir_7j / fill < 0.5 && <li>Moins de la moitié des créneaux de la semaine sont réservés : vérifiez que vos horaires et vos motifs correspondent à la demande.</li>}
             {tenus > 0 && p.absents / tenus > 0.1 && <li>Plus de 10 % d&apos;absences : rappelez les consignes et le délai d&apos;annulation dans vos motifs de consultation.</li>}
             {s.libres_7j === 0 && <li>Aucun créneau libre en ligne sur 7 jours : ouvrez la réservation immédiate ou élargissez vos plages.</li>}

@@ -112,7 +112,7 @@ export default async function PrivacyCenter() {
           <ul className="divide-y rounded-xl border text-sm">{(reqs as Req[]).map((r) => {
             const [l, tone] = STATUS[r.status] ?? STATUS.nouvelle;
             return (<li key={r.id} className="space-y-1 p-3">
-              <p><strong>{KIND[r.kind] ?? r.kind}</strong> · {dt(r.created_at)} <span className={`ml-1 rounded-full px-2 py-0.5 text-xs ${tone}`}>{l}</span></p>
+              <p><strong>{KIND[r.kind] ?? r.kind}</strong> · {dt(r.created_at)} <span className={`ms-1 rounded-full px-2 py-0.5 text-xs ${tone}`}>{l}</span></p>
               {r.admin_note && <p className="rounded-lg bg-muted/60 p-2">Réponse : {r.admin_note}</p>}
             </li>);
           })}</ul>
@@ -127,7 +127,7 @@ export default async function PrivacyCenter() {
         <details className="text-sm">
           <summary className="cursor-pointer font-semibold">Mes dernières connexions</summary>
           {((logins as Login[] | null) ?? []).length === 0 ? <p className="mt-2 text-muted-foreground">Aucune connexion enregistrée depuis l&apos;activation de ce journal.</p> : (
-            <ul className="mt-2 divide-y">{(logins as Login[]).map((l, i) => <li key={i} className="py-1.5">{dt(l.created_at)} · {l.device_label}{l.new_device && <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">nouvel appareil</span>}</li>)}</ul>)}
+            <ul className="mt-2 divide-y">{(logins as Login[]).map((l, i) => <li key={i} className="py-1.5">{dt(l.created_at)} · {l.device_label}{l.new_device && <span className="ms-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">nouvel appareil</span>}</li>)}</ul>)}
           <p className="mt-1 text-xs text-muted-foreground">Seuls le navigateur et le système sont enregistrés, sans adresse IP, pendant 180 jours. Une connexion depuis un nouveau type d&apos;appareil vous est signalée.</p>
         </details>
         <details className="text-sm">

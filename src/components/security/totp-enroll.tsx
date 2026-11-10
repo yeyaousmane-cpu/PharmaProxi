@@ -23,7 +23,7 @@ export function TotpEnroll() {
   return (
     <form action={confAction} className="space-y-3">
       <input type="hidden" name="factor_id" value={d.factorId} /><input type="hidden" name="qr" value={d.qr} /><input type="hidden" name="secret" value={d.secret} />
-      <ol className="list-decimal space-y-1 pl-5 text-sm">
+      <ol className="list-decimal space-y-1 ps-5 text-sm">
         <li>Installez une application d&apos;authentification gratuite sur votre téléphone (Google Authenticator, Microsoft Authenticator…).</li>
         <li>Dans l&apos;application, ajoutez un compte en scannant ce code :</li>
       </ol>

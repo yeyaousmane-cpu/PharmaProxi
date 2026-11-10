@@ -46,7 +46,7 @@ export default async function Integrity() {
           {issues.length === 0 ? <Alert tone="success" title="Stocks, réservations et commandes sont cohérents." /> : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
-                <thead><tr className="border-b text-left text-muted-foreground"><th className="py-1">Gravité</th><th>Contrôle</th><th>Détail</th><th>Objet</th></tr></thead>
+                <thead><tr className="border-b text-start text-muted-foreground"><th className="py-1">Gravité</th><th>Contrôle</th><th>Détail</th><th>Objet</th></tr></thead>
                 <tbody>{issues.map((i, k) => (
                   <tr key={k} className="border-b align-top">
                     <td className="py-2"><Badge className={i.severity === "critique" ? "border-red-200 bg-red-50 text-red-800" : "border-amber-200 bg-amber-50 text-amber-900"}>{i.severity}</Badge></td>

@@ -125,8 +125,8 @@ export default async function NursesPage({ searchParams }: { searchParams: Promi
                     <li key={n.id} className="flex flex-col gap-1 p-3 sm:flex-row sm:items-center sm:gap-3">
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold">{n.last_name} {n.first_name}
-                          {n.verification === "verifie" && <Badge className="ml-2 border-emerald-200 bg-emerald-50 text-emerald-800"><ShieldCheck className="size-3" aria-hidden /> Coordonnées vérifiées</Badge>}
-                          {n.home_care && <Badge className="ml-2 bg-brand-sky text-brand-blue">À domicile</Badge>}</p>
+                          {n.verification === "verifie" && <Badge className="ms-2 border-emerald-200 bg-emerald-50 text-emerald-800"><ShieldCheck className="size-3" aria-hidden /> Coordonnées vérifiées</Badge>}
+                          {n.home_care && <Badge className="ms-2 bg-brand-sky text-brand-blue">À domicile</Badge>}</p>
                         <p className="text-sm text-muted-foreground">{[n.specialty, n.structure, n.commune_label, n.region_name ?? n.section].filter(Boolean).join(" · ")}</p>
                         {n.registration_number && <p className="text-xs text-muted-foreground">Inscription n° {n.registration_number}</p>}
                       </div>

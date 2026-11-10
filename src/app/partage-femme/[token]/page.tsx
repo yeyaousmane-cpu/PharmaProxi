@@ -24,7 +24,7 @@ export default async function PartnerPage({ params }: { params: Promise<{ token:
         {Object.keys(PARTNER_TOPICS).filter((t) => topics.includes(t)).map((t) => (
           <section key={t} className="rounded-2xl border border-[#D96A91]/20 bg-white p-4">
             <h2 className="mb-2 text-lg font-bold text-[#843653]">{PARTNER_TOPICS[t]}</h2>
-            <ul className="list-disc space-y-1 pl-5 text-sm">{(PARTNER_CONTENT[t] ?? []).map((x) => <li key={x}>{x}</li>)}</ul>
+            <ul className="list-disc space-y-1 ps-5 text-sm">{(PARTNER_CONTENT[t] ?? []).map((x) => <li key={x}>{x}</li>)}</ul>
           </section>
         ))}
         <p className="text-sm">Pour aller plus loin : <Link prefetch={false} href="/sante" className="font-semibold text-[#843653] underline">Santé essentielle</Link> · <Link prefetch={false} href="/urgences" className="font-semibold text-red-700 underline">Urgences</Link></p>

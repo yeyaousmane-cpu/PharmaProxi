@@ -40,7 +40,7 @@ export default async function Famille() {
             <li key={p.id}><Link prefetch={false} href={`/ma-sante/dossier?p=${p.id}`} className="flex items-center justify-between gap-2 rounded-2xl border bg-white p-4 hover:border-primary">
               <span><span className="block font-semibold text-brand-deep">{p.display_name}</span>
                 <span className="text-sm text-muted-foreground">{[p.relation ? RELATIONS[p.relation] : null, p.birth_year ? `${year - p.birth_year} ans` : null].filter(Boolean).join(" · ")}</span></span>
-              <ChevronRight className="size-5 text-primary" aria-hidden /></Link></li>))}</ul>
+              <ChevronRight className="size-5 text-primary rtl:-scale-x-100" aria-hidden /></Link></li>))}</ul>
         )}
       </section>
 
@@ -56,7 +56,7 @@ export default async function Famille() {
               <li key={k.id}><Link prefetch={false} href={`/ma-sante/enfants/${k.id}`} className="flex items-center justify-between gap-2 rounded-2xl border bg-white p-4 hover:border-primary">
                 <span><span className="block font-semibold text-brand-deep">{k.first_name}</span>
                   <span className={`text-sm ${next?.status === "en_retard" ? "font-semibold text-red-700" : "text-muted-foreground"}`}>{next ? `${next.label}${next.status === "en_retard" ? " : en retard" : ` · ${formatDate(next.due)}`}` : "Calendrier à jour"}</span></span>
-                <ChevronRight className="size-5 text-primary" aria-hidden /></Link></li>);
+                <ChevronRight className="size-5 text-primary rtl:-scale-x-100" aria-hidden /></Link></li>);
           })}</ul>
         )}
       </section>

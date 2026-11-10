@@ -13,6 +13,8 @@ import { Textarea } from "@/components/ui/input";
 import { HEALTH_STATUS, type HealthArticle, type HealthSource } from "@/lib/health/labels";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { archiveArticle, setReviewDate } from "@/app/actions/v027";
+import { Input } from "@/components/ui/input";
 
 export const metadata = { title: "Fiche santé — rédaction" };
 
@@ -54,7 +56,8 @@ export default async function EditHealthArticle({ params }: { params: Promise<{ 
           <CardDescription>Brouillon → soumission → validation médicale (par un validateur qui n&apos;est pas l&apos;auteur) → publication. Toute modification d&apos;une fiche validée ou publiée la renvoie en brouillon.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {a.validator_name && a.validated_at && <p className="text-sm text-emerald-800">Validée par {a.validator_name}{a.validator_credentials ? ` (${a.validator_credentials})` : ""} le {formatDate(a.validated_at)}.</p>}
+          {a.validator_name && a.validated_at && <p className="text-sm text-emerald-800">Validée par {a.validator_name}{a.validator_credentials ? ` (${a.validator_credentials})` : ""} le {formatDate(a.validated_at)}.{a.next_review_on ? ` Prochaine révision : ${formatDate(a.next_review_on)}.` : ""}</p>}
+          {a.status === "published" && a.next_review_on && a.next_review_on <= new Date().toISOString().slice(0, 10) && <Alert tone="warning" title="À actualiser : la date de révision est dépassée. Mettez la fiche à jour puis soumettez-la à nouveau à la validation médicale." />}
           {["draft", "changes_requested"].includes(a.status) && (
             <ActionForm action={submitHealthArticle}>
               <input type="hidden" name="id" value={a.id} />
@@ -87,6 +90,23 @@ export default async function EditHealthArticle({ params }: { params: Promise<{ 
             <ActionForm action={publishHealthArticle}><input type="hidden" name="id" value={a.id} /><input type="hidden" name="publish" value="false" />
               <SubmitButton variant="outline" confirm="Retirer cette fiche du public ?">Dépublier</SubmitButton></ActionForm>
           )}
+          {["validated", "published", "unpublished"].includes(a.status) && (st.validator || st.isAdmin) && (
+            <ActionForm action={setReviewDate} className="flex flex-wrap items-end gap-2 rounded-xl border p-3">
+              <input type="hidden" name="id" value={a.id} />
+              <label className="text-sm"><span className="block font-semibold">Prochaine révision médicale</span>
+                <Input type="date" name="date" defaultValue={a.next_review_on ?? ""} required className="mt-1 w-44" /></label>
+              <SubmitButton size="sm" variant="outline">Enregistrer la date</SubmitButton>
+              <p className="w-full text-xs text-muted-foreground">Fixée automatiquement à un an après chaque validation. Une fiche publiée dont la date est dépassée passe « À actualiser » : un avertissement s&apos;affiche au public jusqu&apos;à sa nouvelle validation.</p>
+            </ActionForm>
+          )}
+          {["validated", "published", "unpublished", "rejected"].includes(a.status) && (st.validator || st.isAdmin) && (
+            <ActionForm action={archiveArticle}><input type="hidden" name="id" value={a.id} /><input type="hidden" name="archive" value="1" />
+              <SubmitButton size="sm" variant="outline" confirm="Archiver cette fiche ? Elle sera retirée du site et conservée avec tout son historique.">Archiver</SubmitButton></ActionForm>
+          )}
+          {a.status === "archived" && (st.validator || st.isAdmin) && (
+            <ActionForm action={archiveArticle}><input type="hidden" name="id" value={a.id} /><input type="hidden" name="archive" value="0" />
+              <SubmitButton size="sm" variant="outline" confirm="Sortir cette fiche des archives ? Elle repassera en brouillon et devra être validée à nouveau.">Sortir des archives</SubmitButton></ActionForm>
+          )}
           {st.isAdmin && !a.published_at && (
             <ActionForm action={deleteHealthArticle}><input type="hidden" name="id" value={a.id} />
               <SubmitButton size="sm" variant="ghost" className="text-destructive" confirm="Supprimer définitivement ce brouillon ?">Supprimer le brouillon</SubmitButton></ActionForm>
@@ -104,7 +124,7 @@ export default async function EditHealthArticle({ params }: { params: Promise<{ 
         <CardContent>
           <ol className="space-y-2 text-sm">
             {(hist ?? []).map((h) => (
-              <li key={h.id} className="border-l-2 border-[#068132]/40 pl-3">
+              <li key={h.id} className="border-s-2 border-[#068132]/40 ps-3">
                 <span className="font-medium">{h.action}</span>{h.to_status && <span className="text-muted-foreground"> → {HEALTH_STATUS[h.to_status]?.label ?? h.to_status}</span>}
                 <span className="block text-xs text-muted-foreground">{h.actor_name ?? "—"} · {formatDateTime(h.at)}</span>
                 {h.note && <span className="block text-xs">{h.note}</span>}

@@ -48,7 +48,7 @@ export function ConsentChoices({ purposes }: { purposes: PurposeView[] }) {
         const [label, tone] = p.state ? STATE[p.state] : ["Pas encore choisi", "bg-muted text-muted-foreground"];
         return (
           <li key={p.code} className="rounded-2xl border p-4">
-            <p className="font-semibold text-[#052D1E]">{p.title} <span className={`ml-1 rounded-full px-2 py-0.5 text-xs ${tone}`}>{label}</span></p>
+            <p className="font-semibold text-[#052D1E]">{p.title} <span className={`ms-1 rounded-full px-2 py-0.5 text-xs ${tone}`}>{label}</span></p>
             <p className="mt-1 text-sm">{p.description}</p>
             <details className="mt-2 text-sm">
               <summary className="cursor-pointer font-semibold text-[#068132]">Ce que cela implique</summary>

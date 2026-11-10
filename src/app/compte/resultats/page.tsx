@@ -22,7 +22,7 @@ export default async function MyResults() {
       {(data ?? []).length === 0 ? <p className="rounded-xl border bg-white p-4 text-sm text-muted-foreground">Aucun résultat pour le moment. Lors d&apos;une demande de <Link prefetch={false} href="/laboratoires/domicile" className="text-primary underline">prise de sang</Link> ou d&apos;un rendez-vous au laboratoire, cochez « J&apos;accepte de recevoir les résultats sur SantéProxi » si le laboratoire le propose.</p> : (
         <ul className="space-y-3">{(data ?? []).map((r) => (
           <li key={r.id} className="space-y-1 rounded-2xl border bg-white p-4 text-sm">
-            <p className="font-bold text-brand-deep">{one(r.facility_listings as One<{ name: string }>)?.name}{!r.first_opened_at && <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">Nouveau</span>}</p>
+            <p className="font-bold text-brand-deep">{one(r.facility_listings as One<{ name: string }>)?.name}{!r.first_opened_at && <span className="ms-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">Nouveau</span>}</p>
             <p className="text-muted-foreground">Pour {one(r.home_sampling_requests as One<{ patient_name: string }>)?.patient_name} · reçu le {formatDateTime(r.created_at)}</p>
             {r.note && <p>Message du laboratoire : {r.note}</p>}
             <div className="flex flex-wrap gap-2 pt-1">

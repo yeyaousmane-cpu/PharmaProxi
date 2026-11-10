@@ -12,6 +12,7 @@ import { clientIp } from "@/lib/request";
 import { safeNext } from "@/lib/redirect";
 import { SITE_URL } from "@/lib/env";
 import { applyPendingConsents, recordLogin } from "@/lib/consents";
+import { applyProfileLanguage } from "@/app/actions/v027";
 
 export async function signIn(_: ActionState, fd: FormData): Promise<ActionState> {
   const parsed = signInSchema.safeParse(formObject(fd));
@@ -31,6 +32,7 @@ export async function signIn(_: ActionState, fd: FormData): Promise<ActionState>
   }
   await applyPendingConsents(supabase);
   await recordLogin(supabase);
+  await applyProfileLanguage().catch(() => {});
   // Double authentification activée : demander le code avant d'ouvrir la session
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   const suite = safeNext(fd.get("suite"), "/");

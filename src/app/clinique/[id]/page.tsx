@@ -127,7 +127,7 @@ export default async function ManageClinic({ params, searchParams }: { params: P
                 return (
                   <div key={x.id} className="rounded-lg border p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
-                      <p className="font-semibold">{d?.title} {d?.display_name}{d?.status !== "verified" ? <span className="ml-1 text-xs font-normal text-muted-foreground">(médecin pas encore vérifié)</span> : null}</p>
+                      <p className="font-semibold">{d?.title} {d?.display_name}{d?.status !== "verified" ? <span className="ms-1 text-xs font-normal text-muted-foreground">(médecin pas encore vérifié)</span> : null}</p>
                       <Badge className={state.c}>{state.l}</Badge>
                     </div>
                     <div className="mt-2"><ScheduleTable schedule={x.schedule as Schedule} compact /></div>

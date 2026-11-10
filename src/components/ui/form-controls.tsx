@@ -69,7 +69,7 @@ export function ActionForm({
       {state.error ? (
         <Alert tone="error" title={state.error} className="mb-3">
           {fe.length ? (
-            <ul className="list-disc pl-4">
+            <ul className="list-disc ps-4">
               {fe.map(([k, v]) => (
                 <li key={k}>{labels[k] ? `${labels[k]} : ` : ""}{v}</li>
               ))}

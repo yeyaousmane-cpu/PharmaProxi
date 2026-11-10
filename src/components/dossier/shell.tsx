@@ -22,7 +22,7 @@ export function DossierGate({ status, path }: { status: DossierStatus; path: str
       <section className="space-y-4 rounded-2xl border bg-white p-6 text-center">
         <span className="relative mx-auto grid size-20 place-items-center rounded-full bg-primary text-white shadow-md">
           <Lock className="size-10" aria-hidden />
-          <ShieldCheck className="absolute -bottom-1 -right-1 size-8 rounded-full bg-white p-1 text-primary" aria-hidden />
+          <ShieldCheck className="absolute -bottom-1 -end-1 size-8 rounded-full bg-white p-1 text-primary" aria-hidden />
         </span>
         <h1 className="text-xl font-bold text-brand-deep">Dossier santé verrouillé</h1>
         <p className="text-sm text-muted-foreground">Protégé par votre code : vous seul pouvez l&apos;ouvrir. Saisissez-le pour continuer.</p>

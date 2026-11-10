@@ -20,8 +20,8 @@ export function ChatMarkdown({ text }: { text: string }) {
     <div className="space-y-2 leading-relaxed [overflow-wrap:anywhere]">
       {parseBlocks(text).map((b, i) =>
         b.t === "p" ? <p key={i}>{b.lines.map((l, j) => <span key={j}><InlineText s={l} />{j < b.lines.length - 1 && <br />}</span>)}</p>
-        : b.t === "ul" ? <ul key={i} className="list-disc space-y-1 pl-5">{b.items.map((it, j) => <li key={j}><InlineText s={it} /></li>)}</ul>
-        : <ol key={i} className="list-decimal space-y-1 pl-5">{b.items.map((it, j) => <li key={j}><InlineText s={it} /></li>)}</ol>,
+        : b.t === "ul" ? <ul key={i} className="list-disc space-y-1 ps-5">{b.items.map((it, j) => <li key={j}><InlineText s={it} /></li>)}</ul>
+        : <ol key={i} className="list-decimal space-y-1 ps-5">{b.items.map((it, j) => <li key={j}><InlineText s={it} /></li>)}</ol>,
       )}
     </div>
   );
