@@ -35,7 +35,7 @@ if (!url || !key) {
   process.exit(1);
 }
 const sb = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-const ROLES = ["admin", "pharmacist1", "pharmacist2", "customer", "courier", "doctor1", "doctor2", "clinic"];
+const ROLES = ["admin", "pharmacist1", "pharmacist2", "customer", "courier", "doctor1", "doctor2", "clinic", "lab", "institution", "validator", "auditor"];
 const email = (r) => `demo.${r}@pharmaproxi.invalid`;
 
 async function findUser(mail) {
@@ -66,6 +66,13 @@ if (cmd === "install") {
     ids[r] = data.user.id;
   }
   const { data, error } = await sb.rpc("demo_install", { p_users: ids });
+  if (error && /déjà installées/.test(error.message)) {
+    console.log("Données de base déjà installées : seuls les acteurs supplémentaires sont mis à jour.");
+    const extra = await sb.rpc("demo_extra_install", { p_users: ids });
+    console.log(extra.error ? `Acteurs supplémentaires : ${extra.error.message}` : `Acteurs supplémentaires : ${JSON.stringify(extra.data)}`);
+    console.log(`\nMot de passe commun : ${password}`);
+    process.exit(0);
+  }
   if (error) {
     console.error("Échec :", error.message);
     process.exit(1);
@@ -77,11 +84,16 @@ if (cmd === "install") {
     process.exit(1);
   }
   console.log("Annuaire de démonstration installé :", JSON.stringify(dir.data));
+  // Acteurs supplémentaires : uniquement si la base est marquée comme environnement de démonstration
+  const extra = await sb.rpc("demo_extra_install", { p_users: ids });
+  if (extra.error) console.warn("Acteurs supplémentaires non installés :", extra.error.message);
+  else console.log("Laboratoire, institution, validateur, auditeur installés :", JSON.stringify(extra.data));
   console.log("\nComptes (domaine .invalid, aucun e-mail réel) :");
   for (const r of ROLES) console.log(`  ${r.padEnd(12)} ${email(r)}`);
   console.log(`\nMot de passe commun : ${password}`);
   console.log("⚠ La livraison a été activée pour la démonstration ; elle sera désactivée à la désinstallation.");
 } else {
+  await sb.rpc("demo_extra_uninstall");
   const dir = await sb.rpc("demo_directory_uninstall");
   if (dir.error) {
     console.error("Échec (annuaire) :", dir.error.message);

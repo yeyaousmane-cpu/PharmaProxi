@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { humanizeError, type ActionState } from "@/lib/errors";
 import { allow } from "@/lib/limiter";
+import { isDemoEnv } from "@/lib/demo";
 
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const CONFIRM_MESSAGE = "Vos préférences de confidentialité ont bien été enregistrées. Vous pouvez les consulter ou les modifier à tout moment depuis votre espace personnel.";
@@ -37,6 +38,7 @@ export async function createConsentDispute(_: ActionState, fd: FormData): Promis
 
 // ---------------- Changement d'adresse e-mail (mot de passe redemandé) ----------------
 export async function changeEmail(_: ActionState, fd: FormData): Promise<ActionState> {
+  if (isDemoEnv()) return { error: "Changement d'adresse désactivé en démonstration (aucun e-mail n'est envoyé)." };
   const email = z.email().safeParse(str(fd, "email").toLowerCase());
   if (!email.success) return { error: "Adresse e-mail invalide.", fieldErrors: { email: "Adresse invalide" } };
   const supabase = await createClient();

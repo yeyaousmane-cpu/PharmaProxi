@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { NetworkStatus } from "@/components/network-status";
+import { isDemoEnv } from "@/lib/demo";
 import { getSession } from "@/lib/auth";
 import { isSupabaseConfigured, SITE_URL } from "@/lib/env";
 import { Alert } from "@/components/ui/alert";
@@ -39,6 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:p-2">
           {t("nav.skip")}
         </a>
+        {isDemoEnv() && <div role="note" className="bg-amber-400 px-4 py-1.5 text-center text-sm font-semibold text-amber-950">Environnement de démonstration — données fictives, aucun e-mail ni message envoyé · <a href="/demo" className="underline">Changer de profil</a></div>}
         <SiteHeader session={session} />
         <NetworkStatus />
         {!isSupabaseConfigured() && (

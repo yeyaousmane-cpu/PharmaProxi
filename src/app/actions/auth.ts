@@ -13,6 +13,7 @@ import { safeNext } from "@/lib/redirect";
 import { SITE_URL } from "@/lib/env";
 import { applyPendingConsents, recordLogin } from "@/lib/consents";
 import { applyProfileLanguage } from "@/app/actions/v027";
+import { isDemoEnv } from "@/lib/demo";
 
 export async function signIn(_: ActionState, fd: FormData): Promise<ActionState> {
   const parsed = signInSchema.safeParse(formObject(fd));
@@ -42,6 +43,7 @@ export async function signIn(_: ActionState, fd: FormData): Promise<ActionState>
 }
 
 export async function signUp(_: ActionState, fd: FormData): Promise<ActionState> {
+  if (isDemoEnv()) return { error: "Inscription désactivée dans l'environnement de démonstration : utilisez un compte de démonstration (page /demo)." };
   const parsed = signUpSchema.safeParse(formObject(fd));
   if (!parsed.success) return { error: "Vérifiez le formulaire", fieldErrors: fieldErrors(parsed.error) };
   if (!(await allow(`signup:${await clientIp()}`, 5, 60 * 60_000))) return { error: "Trop d'inscriptions depuis ce réseau. Réessayez plus tard." };
@@ -67,6 +69,7 @@ export async function signUp(_: ActionState, fd: FormData): Promise<ActionState>
 }
 
 export async function requestPasswordReset(_: ActionState, fd: FormData): Promise<ActionState> {
+  if (isDemoEnv()) return { error: "Aucun e-mail n'est envoyé en démonstration. Les mots de passe sont indiqués sur la page /demo." };
   const email = String(fd.get("email") ?? "").trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Adresse e-mail invalide" };
   if (!(await allow(`reset:${await clientIp()}`, 5, 60 * 60_000))) return { error: "Trop de demandes. Réessayez plus tard." };

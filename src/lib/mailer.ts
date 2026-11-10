@@ -1,5 +1,6 @@
 import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
+import { isDemoEnv } from "@/lib/demo";
 import { log } from "@/lib/log";
 
 /**
@@ -58,6 +59,7 @@ SantéProxi ne pose aucun diagnostic. En cas d'urgence, rendez-vous au service d
 }
 
 export async function sendMail({ to, subject, html, text }: { to: string; subject: string; html: string; text: string }) {
+  if (isDemoEnv()) { log.info("mail.demo_blocked", { subject: subject.slice(0, 80) }); return false; } // démonstration : aucun e-mail réel
   if (!isMailConfigured()) return false;
   try {
     await getTransport().sendMail({
