@@ -44,6 +44,10 @@ export default async function BloodPage() {
           <p className="text-sm text-white/90">Suivez vos dons, votre prochaine date indicative, votre carte de donneur et vos distinctions. Gratuit, privé : votre groupe sanguin n&apos;est jamais rendu public.</p>
         </div>
         <Link prefetch={false} href="/don-de-sang/mon-espace" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 font-bold text-red-800 hover:bg-red-50"><Droplet className="size-4 fill-red-600 text-red-600" aria-hidden /> Ouvrir mon espace donneur</Link>
+        <nav aria-label="SantéProxi Solidaire" className="flex w-full flex-wrap gap-2 text-sm">
+          {[["/don-de-sang/suis-je-apte", "Suis-je apte à donner ?"], ["/don-de-sang/apres-le-don", "Mon suivi après le don"], ["/don-de-sang/passeport", "Mon passeport solidaire"], ["/don-de-sang/groupes-rares", "Groupes sanguins rares"]].map(([h, l]) =>
+            <Link key={h} prefetch={false} href={h} className="rounded-full bg-white/15 px-3 py-1.5 font-semibold text-white hover:bg-white/25">{l}</Link>)}
+        </nav>
       </section>
 
       <section aria-labelledby="besoins" className="space-y-3">

@@ -13,7 +13,7 @@ export const CARD_NOTICE = "Carte de reconnaissance SantéProxi. Ce n'est pas un
 export type Badge = { code: string; label: string; threshold: number } | null;
 export type DonorSummary =
   | { exists: false }
-  | { exists: true; donor_code: string; validated_count: number; pending_count: number; last_validated: string | null; last_declared: string | null;
+  | { exists: true; donor_code: string; validated_count: number; pending_count: number; last_validated: string | null; last_declared: string | null; last_type?: string | null;
       next_indicative: string | null; interval_months: number; interval_sex_known: boolean; intervals_confirmed: boolean; badge: { current: Badge; next: Badge } };
 export type Donation = { id: string; reference: string; donated_on: string; center: string; donation_type: string; status: string; decision_note: string | null; decided_at: string | null; blood_campaigns: { title: string } | null };
 export type DonorProfile = { donor_code: string; card_token: string; blood_group: string | null; blood_group_verified: boolean; sex: string | null; usual_center: string | null;

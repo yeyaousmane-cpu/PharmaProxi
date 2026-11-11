@@ -96,3 +96,80 @@ export async function setBadgeThreshold(_: ActionState, fd: FormData): Promise<A
   revalidatePath("/don-de-sang/validation");
   return { ok: true, message: "Palier enregistré." };
 }
+
+// ---------------- 0.34 : suivi après le don, registre des groupes rares, passeport, questionnaire ----------------
+export async function reportDonationEvent(_: ActionState, fd: FormData): Promise<ActionState> {
+  const kind = z.enum(["malaise", "vertiges", "fatigue", "point_prelevement", "autre"]).safeParse(str(fd, "kind"));
+  const date = str(fd, "occurred_on");
+  if (!kind.success) return { error: "Choisissez ce qui s'est passé." };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: "Indiquez la date.", fieldErrors: { occurred_on: "Obligatoire" } };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("donor_report_event", { p: { kind: kind.data, occurred_on: date, donation_id: str(fd, "donation_id"), description: str(fd, "description").slice(0, 1000), contact_ok: on(fd, "contact_ok") } });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/apres-le-don");
+  return { ok: true, message: `Déclaration ${data as string} transmise au CNTS. Si vous allez mal maintenant, n'attendez pas de réponse : consultez.` };
+}
+
+export async function setEventStatus(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = z.uuid().safeParse(fd.get("id"));
+  const st = z.enum(["pris_en_compte", "clos"]).safeParse(str(fd, "status"));
+  if (!id.success || !st.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("blood_event_set_status", { p_id: id.data, p_status: st.data, p_note: str(fd, "note").slice(0, 500) });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/validation");
+  return { ok: true, message: "Déclaration mise à jour ; le donneur est prévenu." };
+}
+
+export async function joinRareRegistry(_: ActionState, fd: FormData): Promise<ActionState> {
+  if (!on(fd, "consent")) return { error: "Cochez la case pour donner votre accord." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rare_register", { p_note: str(fd, "phenotype_note").slice(0, 300), p_consent: true });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/groupes-rares");
+  return { ok: true, message: "Inscription enregistrée. Un centre habilité doit la vérifier avant qu'elle soit prise en compte." };
+}
+
+export async function setRareAvailability(_: ActionState, fd: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rare_set_availability", { p_available: str(fd, "available") === "1" });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/groupes-rares");
+  return { ok: true, message: "Disponibilité mise à jour." };
+}
+
+export async function withdrawRareRegistry(_: ActionState): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rare_withdraw");
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/groupes-rares");
+  return { ok: true, message: "Vous avez quitté le registre : vos informations de registre sont supprimées." };
+}
+
+export async function reviewRare(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = z.uuid().safeParse(fd.get("user_id"));
+  const d = z.enum(["verifie", "refuse"]).safeParse(str(fd, "decision"));
+  if (!id.success || !d.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rare_review", { p_user: id.data, p_decision: d.data, p_center: str(fd, "center").slice(0, 160), p_criteria: str(fd, "criteria").slice(0, 300), p_note: str(fd, "note").slice(0, 300) });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/validation");
+  return { ok: true, message: "Décision enregistrée ; le donneur est prévenu." };
+}
+
+export async function setPassportPublic(_: ActionState, fd: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("donor_set_passport_public", { p_public: str(fd, "public") === "1", p_renew: str(fd, "renew") === "1" });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/passeport");
+  return { ok: true, message: str(fd, "public") === "1" ? "Version publique activée." : "Version publique désactivée : le lien ne fonctionne plus." };
+}
+
+export async function validateQuestionnaire(_: ActionState, fd: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = fd.get("revoke") === "1" ? await supabase.rpc("admin_revoke_blood_questionnaire")
+    : await supabase.rpc("admin_validate_blood_questionnaire", { p_version: str(fd, "version"), p_validator: str(fd, "validator").slice(0, 120), p_org: str(fd, "org").slice(0, 120) });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/suis-je-apte"); revalidatePath("/don-de-sang/validation");
+  return { ok: true, message: fd.get("revoke") === "1" ? "Validation retirée : le questionnaire n'est plus publié." : "Validation enregistrée : le questionnaire est publié." };
+}

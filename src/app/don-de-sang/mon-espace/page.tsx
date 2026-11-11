@@ -11,6 +11,7 @@ import { Field, Input, Select } from "@/components/ui/input";
 import { DonorCard } from "@/components/blood/donor-card";
 import { CardActions } from "@/components/blood/card-actions";
 import { DonorCalendar } from "@/components/blood/donor-calendar";
+import { BloodNav } from "@/components/blood/blood-nav";
 import { cancelDonation, declareDonation, deleteDonorSpace, issueCertificate, renewCardToken, saveDonorProfile } from "@/app/actions/donor";
 import { BADGE_STYLE, BLOOD_GROUPS, DONATION_STATUS, DONATION_TYPES, NEXT_DATE_NOTICE, type Donation, type DonorProfile, type DonorSummary } from "@/lib/donor";
 
@@ -106,6 +107,7 @@ export default async function DonorSpace() {
 
   return (
     <div className="container-page max-w-5xl space-y-6 py-6">
+      <BloodNav current="/don-de-sang/mon-espace" />
       <header className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-wide text-red-700">SantéProxi Solidaire · Donner. Mobiliser. Sauver.</p>
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Droplet className="size-7 fill-red-100 text-red-600" aria-hidden /> Mon espace donneur</h1>
@@ -173,6 +175,7 @@ export default async function DonorSpace() {
             <p className="text-base"><strong>{sum.next_indicative <= today ? "Vous pouvez envisager un nouveau don" : `Prochain don indicatif : ${formatDate(sum.next_indicative)}`}</strong></p>
           ) : <p className="text-base"><strong>Enregistrez votre dernier don pour connaître votre date indicative.</strong></p>}
           <p className="mt-1">{NEXT_DATE_NOTICE}</p>
+          {sum.last_type && sum.last_type !== "sang_total" && <p className="mt-1 text-xs">Dernier don : {DONATION_TYPES[sum.last_type].toLowerCase()} — délai indicatif selon l&apos;OMS (2 semaines après un don de plasma, 4 semaines après un don de plaquettes), à confirmer par le CNTS.</p>}
           <p className="mt-1 text-xs text-muted-foreground">Délai utilisé : {sum.interval_months} mois{sum.interval_sex_known ? "" : " (délai le plus long, faute de précision dans votre profil)"} pour un don de sang total. {sum.intervals_confirmed ? "Délais confirmés par le CNTS." : "Délais de référence au Mali (3 mois pour les hommes, 4 mois pour les femmes), en attente de confirmation officielle par le CNTS."}</p>
           {sum.next_indicative && sum.next_indicative > today && <a href="/don-de-sang/mon-espace/rappel" className="mt-2 inline-flex items-center gap-1.5 font-semibold text-primary underline"><CalendarPlus className="size-4" aria-hidden /> Ajouter cette date au calendrier de mon téléphone</a>}
           <p className="mt-1 text-xs">{pr.reminders ? "Rappel activé : vous recevrez une notification SantéProxi à cette date." : "Rappel désactivé (Paramètres)."}</p>

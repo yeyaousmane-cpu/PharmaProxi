@@ -4,6 +4,16 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.34 — SantéProxi Solidaire : parcours du donneur**
+- « Suis-je apte à donner ? » (/don-de-sang/suis-je-apte) : questions progressives, barre de progression, retour en arrière, trois résultats pédagogiques sans diagnostic ; réponses jamais envoyées. Version de travail établie à partir des lignes directrices de l'OMS (2012) — âge, poids, délais selon le type de don, grossesse et allaitement, effort dans les 24 h — et deux questions proposées à valider. Publiée seulement quand l'administration enregistre la validation du CNTS (nom, organisme, date) ; d'ici là, visible pour relecture par les personnes habilitées et en démonstration, avec un avertissement.
+- Délais indicatifs par type de don : sang total 3 mois (hommes) / 4 mois (femmes), plasma 2 semaines, plaquettes 4 semaines (OMS 2012), en paramètres, toujours « à confirmer par le CNTS ».
+- Mon suivi après le don (/don-de-sang/apres-le-don) : consignes d'urgence, conseils sourcés (OMS, EFS), déclaration privée d'un malaise ou d'une gêne (lisible seulement par le donneur et le CNTS), réponse du CNTS notifiée. Rappel de suivi après le don prévu mais désactivé tant que le délai n'est pas validé médicalement.
+- Registre des groupes sanguins rares (/don-de-sang/groupes-rares) : inscription volontaire avec accord, disponibilité modifiable, retrait à tout moment ; validation par un centre habilité avec le critère retenu par les spécialistes (jamais automatique) ; recherche réservée au CNTS et à l'administration, chaque recherche journalisée.
+- Mon passeport solidaire (/don-de-sang/passeport) : identité solidaire, parcours (dons validés, évolution par année), distinctions et certificats, campagnes (dons validés distincts des simples intentions), engagement citoyen (extensible), impression en PDF, version publique limitée désactivée par défaut avec QR code et lien renouvelable, sans aucune donnée médicale.
+- Espace CNTS (/don-de-sang/validation) : dons, déclarations, registre, validation du questionnaire ; entrée de menu visible seulement des personnes habilitées.
+- Hors connexion : pages Suis-je apte, Après le don et Groupes rares gardées sur le téléphone dans leur version anonyme ; aucune donnée personnelle mise en cache.
+- Tests : 6 tests base de données (tests/db/v034.test.ts), 20 vérifications de bout en bout (tests/e2e/v034.mjs) ; ensemble de la base : 243 tests.
+
 **v0.33 — SantéProxi Orientation, phase 1 : annuaire national des centres spécialisés** (/centres-specialises)
 - Audit : réutilisation de facility_listings (établissements), care_focus (16 besoins), facility_focus (lien établissement ↔ besoin) et de l'administration existante (/admin/centres, import CSV de l'annuaire). Aucune table doublon.
 - Recherche : par besoin, par mot courant (« insuffisance rénale » → Reins et dialyse, « sucre » → Diabète…), par nom ou quartier, par région, commune/arrondissement, type d'établissement et niveau de fiabilité ; « Autour de moi » (position non enregistrée, distance calculée seulement pour les fiches dont la position GPS est connue). Classement : service confirmé, distance, fiche vérifiée.
