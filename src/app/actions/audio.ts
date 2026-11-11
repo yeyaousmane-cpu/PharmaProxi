@@ -38,6 +38,11 @@ export async function uploadAudio(_: ActionState, fd: FormData): Promise<ActionS
     return { error: humanizeError(error) };
   }
   if (old) await supabase.storage.from("audio-guides").remove([old as string]);
+  if (s(fd, "origin") === "synthese_ia") {
+    const { data: clip } = await supabase.from("audio_clips").select("id").eq("target_key", target).eq("lang", lang).maybeSingle();
+    const { error: oe } = clip ? await supabase.rpc("audio_set_origin", { p_id: clip.id, p_origin: "synthese_ia", p_model: s(fd, "ai_model") }) : { error: null };
+    if (oe) { refresh(target); return { error: `Fichier déposé, mais ${humanizeError(oe)}` }; }
+  }
   refresh(target);
   await setFlash("Enregistrement déposé (brouillon) : écoutez-le, puis publiez-le.");
   return { ok: true, message: "Enregistrement déposé." };

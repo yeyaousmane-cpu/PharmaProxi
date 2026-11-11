@@ -5,7 +5,7 @@ const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 let fails = 0;
 const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fails++; };
 const b = await chromium.launch();
-const ACTORS = { customer: "/compte", doctor1: "/medecin", pharmacist1: "/pharmacien", lab: "/laboratoire", clinic: "/clinique", courier: "/livraison", institution: "/autorites", validator: "/redaction-sante", auditor: "/conformite", admin: "/admin" };
+const ACTORS = { customer: "/compte", doctor1: "/medecin", pharmacist1: "/pharmacien", lab: "/laboratoire", clinic: "/clinique", courier: "/livraison", nurse: "/infirmier", institution: "/autorites", validator: "/redaction-sante", auditor: "/conformite", admin: "/admin" };
 const SPACES = ["/medecin", "/pharmacien", "/laboratoire", "/clinique", "/livraison", "/autorites", "/redaction-sante", "/conformite", "/admin"];
 
 async function enter(ctx, key) {
@@ -30,11 +30,11 @@ const refused = async (p, path) => {
 // Page publique de démonstration
 {
   const p = await b.newPage();
-  await p.goto(`${BASE}/demo`);
-  ok(await p.getByRole("heading", { name: "Espace de démonstration – Découvrir SantéProxi" }).isVisible(), "page « Espace de démonstration » affichée");
+  await p.goto(`${BASE}/demo`, { waitUntil: "networkidle" });
+  ok(await p.getByRole("heading", { name: "Espace de démonstration – Découvrir SantéProxi" }).waitFor({ timeout: 10000 }).then(() => true, () => false), "page « Espace de démonstration » affichée");
   ok((await p.getByRole("button", { name: "Accéder à la démonstration" }).count()) === Object.keys(ACTORS).length, `${Object.keys(ACTORS).length} cartes d'acteurs avec bouton d'accès`);
   ok(await p.getByText("Environnement de démonstration — données fictives").first().isVisible(), "bandeau « démonstration » permanent");
-  ok(await p.getByText(/Pas encore d'espace professionnel infirmier/).isVisible(), "infirmier : absence d'espace annoncée honnêtement");
+  ok(await p.locator("input[name=actor][value=nurse]").count() === 1, "infirmier : espace de démonstration disponible");
   await p.close();
 }
 

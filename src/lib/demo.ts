@@ -27,6 +27,8 @@ export const DEMO_ACTORS: DemoActor[] = [
     tests: ["Analyses proposées et tarifs", "Prélèvements à domicile", "Dépôt de résultats au patient (si une demande existe)"] },
   { key: "clinic", email: mail("clinic"), label: "Clinique / établissement", description: "Gère l'établissement, ses médecins rattachés et les rendez-vous.", start: "/clinique",
     tests: ["Fiche de l'établissement", "Médecins rattachés", "Agenda des rendez-vous du secrétariat"] },
+  { key: "nurse", email: mail("nurse"), label: "Infirmier", description: "Reçoit les demandes de soins à domicile, accepte ou refuse, gère sa fiche et ses justificatifs.", start: "/infirmier",
+    tests: ["Fiche vérifiée et zones d'intervention", "Demandes de soins à domicile : accepter, refuser, terminer", "Justificatifs déposés", "Téléphone privé ou public"] },
   { key: "courier", email: mail("courier"), label: "Livreur", description: "Suit et gère les livraisons qui lui sont confiées.", start: "/livraison", tests: ["Livraisons à prendre et en cours", "Remise au patient"] },
   { key: "institution", email: mail("institution"), label: "Institution sanitaire", description: "Suit les indicateurs, signalements et campagnes (données agrégées).", start: "/autorites",
     tests: ["Tableau de bord des indicateurs", "Signalements", "Campagnes et communiqués", "Carte et rapports"] },

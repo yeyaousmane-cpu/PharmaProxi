@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Headphones, X } from "lucide-react";
 
-export type Clip = { lang: string; name: string; native: string | null; url: string; duration: string | null; speaker: string | null };
+export type Clip = { lang: string; name: string; native: string | null; url: string; duration: string | null; speaker: string | null; synthetic?: boolean; reviewer?: string | null };
 const KEY = "pp_audio_lang";
 
 /** Lecteur des guides audio : choix de la langue, lecture à la demande (rien n'est téléchargé avant le clic). */
@@ -49,8 +49,8 @@ export function AudioPlayer({ clips, label }: { clips: Clip[]; label: string }) 
           </div>
           <audio ref={audio} key={clip.url} controls preload="none" src={clip.url} className="w-full" />
           <p className="text-xs text-muted-foreground">
-            {[clip.duration, clip.speaker ? `Voix : ${clip.speaker}` : null].filter(Boolean).join(" · ")}
-            {clip.duration || clip.speaker ? " · " : ""}Le son se télécharge seulement quand vous appuyez sur lecture.
+            {[clip.duration, clip.synthetic ? `Voix de synthèse (IA), vérifiée par ${clip.reviewer ?? "un locuteur natif"}` : clip.speaker ? `Voix : ${clip.speaker}` : null].filter(Boolean).join(" · ")}
+            {clip.duration || clip.speaker || clip.synthetic ? " · " : ""}Le son se télécharge seulement quand vous appuyez sur lecture.
           </p>
         </div>
       )}

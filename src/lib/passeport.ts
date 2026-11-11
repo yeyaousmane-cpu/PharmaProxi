@@ -1,7 +1,7 @@
 /** Passeport santé : rubriques partageables et libellés de l'historique des accès. */
 export const SHARE_SECTIONS: Record<string, string> = {
   identite: "Identité (nom, année de naissance, sexe)", groupe_sanguin: "Groupe sanguin", allergies: "Allergies", maladies: "Maladies déclarées",
-  traitements: "Traitements en cours", vaccins: "Vaccins", contact_urgence: "Personne à prévenir", mesures: "Dernières mesures (tension, glycémie)",
+  traitements: "Traitements en cours", vaccins: "Vaccins", contact_urgence: "Personne à prévenir", medecin_traitant: "Médecin traitant", mesures: "Dernières mesures (tension, glycémie)",
 };
 export const SHARE_DURATIONS: [number, string][] = [[1, "1 heure"], [24, "24 heures"], [72, "3 jours"], [168, "7 jours"], [720, "30 jours"]];
 
@@ -19,6 +19,7 @@ export type ShareView =
       identite?: { nom: string; annee_naissance: number | null; sexe: string | null }; groupe_sanguin?: string | null;
       contact_urgence?: { nom: string | null; lien: string | null; telephone: string | null };
       allergies?: { titre: string; gravite: string | null; detail: string | null }[]; maladies?: { titre: string; annee: number | null }[];
+      medecin_traitant?: { nom: string | null; structure: string | null; telephone: string | null; sur_santeproxi: boolean } | null;
       vaccins?: { titre: string; date: string | null }[]; traitements?: { nom: string; indication: string | null }[]; mesures?: Measure[] };
 
 /** Valeur brute d'une mesure, sans aucune interprétation. */

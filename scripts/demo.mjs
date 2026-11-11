@@ -35,7 +35,7 @@ if (!url || !key) {
   process.exit(1);
 }
 const sb = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-const ROLES = ["admin", "pharmacist1", "pharmacist2", "customer", "courier", "doctor1", "doctor2", "clinic", "lab", "institution", "validator", "auditor"];
+const ROLES = ["admin", "pharmacist1", "pharmacist2", "customer", "courier", "doctor1", "doctor2", "clinic", "lab", "institution", "validator", "auditor", "nurse"];
 const email = (r) => `demo.${r}@pharmaproxi.invalid`;
 
 async function findUser(mail) {
@@ -69,6 +69,8 @@ if (cmd === "install") {
   if (error && /déjà installées/.test(error.message)) {
     console.log("Données de base déjà installées : seuls les acteurs supplémentaires sont mis à jour.");
     const extra = await sb.rpc("demo_extra_install", { p_users: ids });
+    const nurse = await sb.rpc("demo_nurse_install", { p_user: ids.nurse });
+    if (nurse.error) console.warn("Infirmier de démonstration non installé :", nurse.error.message);
     console.log(extra.error ? `Acteurs supplémentaires : ${extra.error.message}` : `Acteurs supplémentaires : ${JSON.stringify(extra.data)}`);
     console.log(`\nMot de passe commun : ${password}`);
     process.exit(0);
@@ -88,6 +90,8 @@ if (cmd === "install") {
   const extra = await sb.rpc("demo_extra_install", { p_users: ids });
   if (extra.error) console.warn("Acteurs supplémentaires non installés :", extra.error.message);
   else console.log("Laboratoire, institution, validateur, auditeur installés :", JSON.stringify(extra.data));
+  const nurse = await sb.rpc("demo_nurse_install", { p_user: ids.nurse });
+  if (nurse.error) console.warn("Infirmier de démonstration non installé :", nurse.error.message);
   console.log("\nComptes (domaine .invalid, aucun e-mail réel) :");
   for (const r of ROLES) console.log(`  ${r.padEnd(12)} ${email(r)}`);
   console.log(`\nMot de passe commun : ${password}`);

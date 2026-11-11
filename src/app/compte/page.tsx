@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PatientDashboard } from "@/components/patient-dashboard";
-import { BellRing, CalendarCheck, Droplet, LifeBuoy, LockKeyhole, MapPin, Package, ShieldCheck, Trash2 } from "lucide-react";
+import { BellRing, CalendarCheck, Droplet, LifeBuoy, LockKeyhole, MapPin, Package, ShieldCheck, Trash2, HeartPulse } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getGeo } from "@/lib/geo";
@@ -33,6 +33,7 @@ export default async function AccountPage() {
           <Link prefetch={false} href="/compte/rendez-vous" className={cn(buttonVariants({ variant: "secondary" }))}><CalendarCheck aria-hidden /> Mes rendez-vous</Link>
           <Link prefetch={false} href="/compte/alertes" className={cn(buttonVariants({ variant: "secondary" }))}><BellRing aria-hidden /> Mes alertes</Link>
           <Link prefetch={false} href="/compte/prelevements" className={cn(buttonVariants({ variant: "secondary" }))}><Droplet aria-hidden /> Prises de sang à domicile</Link>
+          <Link prefetch={false} href="/compte/soins-domicile" className={cn(buttonVariants({ variant: "secondary" }))}><HeartPulse aria-hidden /> Soins infirmiers à domicile</Link>
           <Link prefetch={false} href="/compte/securite" className={cn(buttonVariants({ variant: "secondary" }))}><ShieldCheck aria-hidden /> Sécurité</Link>
           <Link prefetch={false} href="/compte/confidentialite" className={cn(buttonVariants({ variant: "secondary" }))}><LockKeyhole aria-hidden /> Mes données et confidentialité</Link>
           <Link prefetch={false} href="/compte/aide" className={cn(buttonVariants({ variant: "secondary" }))}><LifeBuoy aria-hidden /> Mes demandes d&apos;aide</Link>

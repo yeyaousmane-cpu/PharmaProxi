@@ -73,7 +73,7 @@ ok(/Votre passeport santé a été consulté/.test(await pat.locator("body").inn
 await pat.goto(`${BASE}/ma-sante/suivi`, NI);
 const tens = pat.locator("div.rounded-xl", { has: pat.locator("input[name=kind][value=tension]") }).first();
 await tens.locator("input[name=days][value='1']").check(); await tens.locator("input[name=days][value='4']").check();
-await tens.getByRole("button", { name: "Activer le rappel" }).click();
+await tens.getByRole("button", { name: /^(Activer le rappel|Modifier)$/ }).click(); // « Modifier » si le rappel existe déjà (base réutilisée)
 ok(await wait(pat.getByText("Rappel enregistré.")), "rappel de mesure enregistré");
 ok(await wait(pat.getByText(/n'est pas encore ouvert : il sera activé avec un partenaire clinique/)), "suivi par un médecin fermé par défaut, annoncé honnêtement");
 

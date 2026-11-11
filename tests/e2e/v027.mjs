@@ -159,7 +159,11 @@ for (const [name, opts] of [["mobile", devices["Pixel 7"]], ["tablette", devices
   const ctx = await b.newContext({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" });
   const p = await ctx.newPage();
   await p.goto(`${BASE}/prevention`);
-  ok(await wait(p.getByText(/Aucun événement de prévention n'est annoncé/)), "prévention : état vide honnête, aucune campagne inventée");
+  // Soit l'état vide honnête, soit uniquement des événements dont la source est citée (la base de démonstration en contient)
+  const empty = await wait(p.getByText(/Aucun événement de prévention n'est annoncé/), 4000);
+  const txt = await p.locator("main").innerText();
+  const sourced = /À venir/.test(txt) && (txt.match(/Organisé par :/g) ?? []).length > 0 && (txt.match(/Organisé par :/g) ?? []).length === (txt.match(/Source :/g) ?? []).length;
+  ok(empty || sourced, "prévention : état vide honnête ou événements sourcés, aucune campagne inventée");
   await p.goto(`${BASE}/connexion`); await p.fill("#email", "demo.admin@pharmaproxi.invalid"); await p.fill("#password", PW);
   await p.click("button[type=submit]"); await p.waitForURL((u) => !u.pathname.startsWith("/connexion"), { timeout: 20000 });
   await p.goto(`${BASE}/admin/prevention`);
@@ -172,8 +176,8 @@ for (const [name, opts] of [["mobile", devices["Pixel 7"]], ["tablette", devices
   await f.getByRole("button", { name: "Ajouter l'événement" }).click();
   ok(await wait(p.getByText("Événement publié.").first()), "administration : événement publié avec sa source");
   await ctx.clearCookies();
-  await p.goto(`${BASE}/prevention`);
-  ok(await wait(p.getByRole("heading", { name: "Journée de test (démonstration)" })) && await wait(p.getByText("Communiqué de démonstration")), "événement visible publiquement avec sa source");
+  await p.goto(`${BASE}/prevention`, { waitUntil: "networkidle" });
+  ok(await wait(p.getByRole("heading", { name: "Journée de test (démonstration)" }).first()) && await wait(p.getByText("Communiqué de démonstration").first()), "événement visible publiquement avec sa source");
   await ctx.close();
 }
 

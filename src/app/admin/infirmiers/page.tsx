@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,6 +58,7 @@ export default async function AdminNursesPage({ searchParams }: { searchParams: 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Infirmiers et soins à domicile</h1>
+      <p className="text-sm"><Link prefetch={false} href="/admin/infirmiers/comptes" className="font-semibold text-primary underline">Inscriptions d&apos;infirmiers à vérifier →</Link></p>
       <Card>
         <CardHeader><CardTitle>Structures de soins à domicile</CardTitle>
           <CardDescription>Ne marquez « autorisation vérifiée » qu&apos;après avoir vu l&apos;autorisation d&apos;exercer. Les tarifs et horaires affichés sont ceux communiqués par la structure.</CardDescription></CardHeader>

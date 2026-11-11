@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { FlaskConical, LogIn, ShieldCheck } from "lucide-react";
 import { DEMO_ACTORS, isDemoEnv } from "@/lib/demo";
 import { demoSignIn } from "@/app/actions/demo";
@@ -51,11 +50,6 @@ export default async function DemoPage({ searchParams }: { searchParams: Promise
                 </form>
               </li>
             ))}
-            <li className="flex flex-col rounded-2xl border border-dashed bg-muted/30 p-5">
-              <h2 className="text-lg font-bold text-[#052D1E]">Infirmier</h2>
-              <p className="mt-1 text-sm">Pas encore d&apos;espace professionnel infirmier : les infirmiers apparaissent dans l&apos;annuaire public des soins à domicile.</p>
-              <Link prefetch={false} href="/infirmiers" className="mt-auto inline-flex min-h-11 items-center justify-center rounded-xl border-2 px-4 pt-0 font-semibold text-[#052D1E]">Voir l&apos;annuaire des infirmiers</Link>
-            </li>
           </ul>
         </>
       )}

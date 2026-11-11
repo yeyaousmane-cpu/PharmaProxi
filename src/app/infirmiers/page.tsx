@@ -31,6 +31,7 @@ export default async function NursesPage({ searchParams }: { searchParams: Promi
   let providers: Provider[] = [];
   let nurses: Nurse[] = [];
   let summary: { year?: number; total?: number } = {};
+  let members: { id: string; display_name: string; specialty: string | null; areas: string | null; care_types: string[]; hours: string | null; prices: string | null; accepts_requests: boolean; phone: string | null }[] = [];
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
     const [p, n, s] = await Promise.all([
@@ -44,6 +45,10 @@ export default async function NursesPage({ searchParams }: { searchParams: Promi
     providers = (p.data as unknown as Provider[] | null) ?? [];
     nurses = (n.data as Nurse[] | null) ?? [];
     summary = (s.data as typeof summary) ?? {};
+    if (tab === "domicile") {
+      const { data: m } = await supabase.from("nurse_accounts").select("id, display_name, specialty, areas, care_types, hours, prices, accepts_requests").eq("is_published", true).order("display_name").limit(100);
+      members = await Promise.all(((m ?? []) as Omit<(typeof members)[number], "phone">[]).map(async (x) => ({ ...x, phone: (await supabase.rpc("nurse_public_phone", { p_id: x.id })).data as string | null })));
+    }
   }
   const total = nurses[0]?.total_count ?? 0;
 
@@ -53,6 +58,31 @@ export default async function NursesPage({ searchParams }: { searchParams: Promi
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><Syringe className="size-7 text-primary" aria-hidden /> Infirmiers et soins à domicile</h1>
         <p className="max-w-3xl text-muted-foreground">Pansements, injections, perfusions, suivi après une opération, soins aux personnes âgées : trouvez une structure qui se déplace à domicile ou un infirmier inscrit à l&apos;Ordre.</p>
       </header>
+
+      {tab === "domicile" && (
+        <section aria-labelledby="inf-inscrits" className="space-y-3">
+          <h2 id="inf-inscrits" className="text-lg font-bold text-brand-deep">Infirmiers inscrits sur SantéProxi (inscription à l&apos;Ordre vérifiée)</h2>
+          {members.length === 0 ? (
+            <p className="rounded-xl border bg-white p-4 text-sm text-muted-foreground">Aucun infirmier n&apos;a encore terminé son inscription vérifiée. Vous êtes infirmier ? <Link prefetch={false} href="/infirmier" className="text-primary underline">Créez votre espace</Link>.</p>
+          ) : (
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{members.map((m) => (
+              <li key={m.id} className="flex flex-col rounded-2xl border bg-white p-4 text-sm">
+                <p className="font-bold text-brand-deep">{m.display_name}</p>
+                {m.specialty && <p className="text-muted-foreground">{m.specialty}</p>}
+                <p className="mt-1 text-xs font-semibold text-emerald-800">✓ Inscription à l&apos;Ordre vérifiée par SantéProxi</p>
+                {m.areas && <p className="mt-1">Se déplace : {m.areas}</p>}
+                {m.hours && <p>Horaires : {m.hours}</p>}
+                {m.prices && <p>Tarifs communiqués : {m.prices}</p>}
+                {m.care_types.length > 0 && <ul className="mt-2 flex flex-wrap gap-1">{m.care_types.map((c) => <li key={c} className="rounded-full bg-brand-sky px-2 py-0.5 text-xs text-brand-blue">{CARE_TYPES[c] ?? c}</li>)}</ul>}
+                <div className="mt-auto flex flex-wrap gap-2 pt-3">
+                  {m.accepts_requests && <Link prefetch={false} href={`/infirmiers/demande/${m.id}`} className="inline-flex min-h-10 items-center rounded-lg bg-[#052D1E] px-3 font-semibold text-white">Demander des soins à domicile</Link>}
+                  {m.phone && <a href={`tel:${m.phone}`} className="inline-flex min-h-10 items-center rounded-lg border px-3 font-semibold">Appeler</a>}
+                </div>
+              </li>))}</ul>
+          )}
+          <p className="text-xs text-muted-foreground">Vous êtes infirmier ou infirmière ? <Link prefetch={false} href="/infirmier" className="underline">Inscrivez-vous gratuitement</Link> pour recevoir des demandes.</p>
+        </section>
+      )}
 
       <nav aria-label="Rubriques" className="flex gap-2">
         {[["domicile", "Soins à domicile", House], ["ordre", "Tableau de l'Ordre des infirmiers", ShieldCheck]].map(([k, l, I]) => {
@@ -140,7 +170,7 @@ export default async function NursesPage({ searchParams }: { searchParams: Promi
               <Pagination basePath="/infirmiers" params={{ onglet: "ordre", q: sp.q, region: sp.region, domicile: sp.domicile }} page={range.page} total={total} />
             </>
           )}
-          <p className="text-sm">Vous êtes infirmier ou infirmière ? <Link prefetch={false} href="/infos/contact" className="font-semibold text-primary underline">Écrivez-nous</Link> pour publier votre numéro professionnel, signaler que vous vous déplacez à domicile, corriger une information ou demander le retrait de votre nom.</p>
+          <p className="text-sm">Vous êtes infirmier ou infirmière ? <Link prefetch={false} href="/infirmier" className="font-semibold text-primary underline">Créez votre espace infirmier</Link> pour publier votre fiche vérifiée et recevoir des demandes de soins à domicile. Pour corriger une information de la liste officielle ou demander le retrait de votre nom, <Link prefetch={false} href="/infos/contact" className="font-semibold text-primary underline">écrivez-nous</Link>.</p>
         </section>
       )}
     </div>

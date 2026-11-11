@@ -7,7 +7,7 @@ declare
   actors text[][] := array[
     ['admin', 'Awa Démo (administratrice)'], ['customer', 'Moussa Démo (patient)'], ['doctor1', 'Dr Aminata Démo'], ['doctor2', 'Dr Ibrahim Démo'],
     ['pharmacist1', 'Fatoumata Démo (pharmacienne)'], ['pharmacist2', 'Seydou Démo (pharmacien)'], ['clinic', 'Mariam Démo (clinique)'], ['courier', 'Bakary Démo (livreur)'],
-    ['lab', 'Kadiatou Démo (laboratoire)'], ['institution', 'Oumar Démo (institution)'], ['validator', 'Dr Rokia Démo (validatrice)'], ['auditor', 'Salif Démo (auditeur)']];
+    ['lab', 'Kadiatou Démo (laboratoire)'], ['institution', 'Oumar Démo (institution)'], ['validator', 'Dr Rokia Démo (validatrice)'], ['auditor', 'Salif Démo (auditeur)'], ['nurse', 'Adama Démo (infirmier)']];
   i int; uid uuid; mail text; ids jsonb := '{}'::jsonb; r jsonb := '{}'::jsonb;
 begin
   if pw like '\_\_%' then raise exception 'Remplacez __MOT_DE_PASSE__ avant exécution.'; end if;
@@ -40,6 +40,7 @@ begin
     r := r || jsonb_build_object('annuaire', public.demo_directory_install(ids));
   end if;
   r := r || jsonb_build_object('acteurs', public.demo_extra_install(ids));
+  r := r || jsonb_build_object('infirmier', public.demo_nurse_install((ids->>'nurse')::uuid));
   raise notice 'Démonstration installée : %', r;
 end $$;
 

@@ -11,7 +11,7 @@ import { formatDateTime } from "@/lib/format";
 
 export const metadata = { title: "Guide audio — administration" };
 
-type Clip = { id: string; lang: string; storage_path: string; size_bytes: number; duration_s: number | null; speaker: string | null; translator: string | null; reviewer: string | null; status: string; created_at: string };
+type Clip = { id: string; lang: string; storage_path: string; size_bytes: number; duration_s: number | null; speaker: string | null; translator: string | null; reviewer: string | null; status: string; created_at: string; origin: string; ai_model: string | null };
 
 export default async function AdminAudioTarget({ params }: { params: Promise<{ key: string }> }) {
   const key = decodeURIComponent((await params).key);
@@ -20,7 +20,7 @@ export default async function AdminAudioTarget({ params }: { params: Promise<{ k
   const [{ data: t }, { data: langs }, { data: clips }] = await Promise.all([
     supabase.from("audio_targets").select("key, label, page_path, script_fr").eq("key", key).maybeSingle(),
     supabase.from("audio_languages").select("code, name, native_name").eq("is_active", true).order("sort_order"),
-    supabase.from("audio_clips").select("id, lang, storage_path, size_bytes, duration_s, speaker, translator, reviewer, status, created_at").eq("target_key", key),
+    supabase.from("audio_clips").select("id, lang, storage_path, size_bytes, duration_s, speaker, translator, reviewer, status, created_at, origin, ai_model").eq("target_key", key),
   ]);
   if (!t) notFound();
   const byLang = new Map(((clips as Clip[]) ?? []).map((c) => [c.lang, c]));
@@ -52,7 +52,7 @@ export default async function AdminAudioTarget({ params }: { params: Promise<{ k
                   <div className="space-y-2 rounded-lg bg-muted/50 p-3">
                     <audio controls preload="none" src={audioPublicUrl(c.storage_path)} className="w-full" />
                     <p className="text-xs text-muted-foreground">
-                      {[formatDuration(c.duration_s), `${Math.round(c.size_bytes / 1024)} Ko`, c.speaker && `voix : ${c.speaker}`, c.translator && `traduction : ${c.translator}`, c.reviewer ? `vérifié par : ${c.reviewer}` : "relecture non indiquée", formatDateTime(c.created_at)].filter(Boolean).join(" · ")}
+                      {[c.origin === "synthese_ia" ? `voix de synthèse IA (${c.ai_model})` : "enregistrement humain", formatDuration(c.duration_s), `${Math.round(c.size_bytes / 1024)} Ko`, c.speaker && `voix : ${c.speaker}`, c.translator && `traduction : ${c.translator}`, c.reviewer ? `vérifié par : ${c.reviewer}` : "relecture non indiquée", formatDateTime(c.created_at)].filter(Boolean).join(" · ")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <ActionForm action={publishAudio}><input type="hidden" name="id" value={c.id} /><input type="hidden" name="target" value={key} /><input type="hidden" name="publish" value={c.status === "published" ? "false" : "true"} />
@@ -69,6 +69,8 @@ export default async function AdminAudioTarget({ params }: { params: Promise<{ k
                     <Field label="Fichier audio (4 Mo max.)" htmlFor={`f-${l.code}`} className="sm:col-span-2" hint="MP3, M4A, OPUS/OGG (message vocal WhatsApp), WEBM ou WAV.">
                       <Input id={`f-${l.code}`} type="file" name="file" accept="audio/*,.opus,.m4a" required />
                     </Field>
+                    <Field label="Origine de la voix" htmlFor={`o-${l.code}`} hint="Une voix de synthèse est toujours annoncée aux visiteurs et ne peut être publiée qu'après vérification par un locuteur natif."><select id={`o-${l.code}`} name="origin" defaultValue="enregistrement" className="h-11 w-full rounded-lg border bg-white px-2"><option value="enregistrement">Enregistrée par une personne</option><option value="synthese_ia">Voix de synthèse (IA)</option></select></Field>
+                    <Field label="Modèle de synthèse (si IA)" htmlFor={`m-${l.code}`} hint="ex. facebook/mms-tts-bam"><Input id={`m-${l.code}`} name="ai_model" maxLength={120} /></Field>
                     <Field label="Voix (affichée)" htmlFor={`s-${l.code}`}><Input id={`s-${l.code}`} name="speaker" maxLength={120} /></Field>
                     <Field label="Durée (secondes)" htmlFor={`d-${l.code}`}><Input id={`d-${l.code}`} name="duration" type="number" min={1} max={900} /></Field>
                     <Field label="Traduction orale par" htmlFor={`t-${l.code}`}><Input id={`t-${l.code}`} name="translator" maxLength={120} /></Field>

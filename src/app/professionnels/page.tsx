@@ -44,6 +44,11 @@ export default async function Professionals({ searchParams }: { searchParams: Pr
         })}
       </section>
 
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+        <div><p className="font-semibold text-brand-deep">Vous êtes infirmier ou infirmière ?</p><p className="text-sm text-muted-foreground">Inscrivez-vous directement avec votre numéro d&apos;inscription à l&apos;Ordre, déposez vos justificatifs et recevez les demandes de soins à domicile après vérification.</p></div>
+        <Link prefetch={false} href="/infirmier" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">Espace infirmier</Link>
+      </section>
+
       <section className="space-y-2 rounded-2xl bg-muted/50 p-4 text-sm">
         <p className="font-semibold">Comment ça se passe ?</p>
         <ol className="list-decimal space-y-1 ps-5">
