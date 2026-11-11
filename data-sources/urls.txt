@@ -1,12 +1,2 @@
-canam-cscom-regions.pdf|https://www.canam.ml/media/attachments/2022/03/18/cscom-regions.pdf
-canam-cscom-bamako.pdf|https://www.canam.ml/media/attachments/2022/03/18/cscom-bamako.pdf
-canam-hopitaux-bamako.pdf|https://www.canam.ml/media/attachments/2022/03/18/hopitaux-bko.pdf
-canam-hopitaux-regions.pdf|https://www.canam.ml/media/attachments/2022/03/18/hopitaux-regions.pdf
-canam-cliniques-bamako.pdf|https://www.canam.ml/media/CLINIQUES-BKO.pdf
-canam-cliniques-regions.pdf|https://www.canam.ml/media/CLINIQUES-EN-DEHORS-DE-BKO.pdf
-canam-cabinets-bamako.pdf|https://www.canam.ml/media/CABINETS-BKO1.pdf
-canam-cabinets-regions.pdf|https://www.canam.ml/media/CABINETS-EN-DEHORS-DE-BKO1.pdf
-canam-pharmacies-bamako.pdf|https://www.canam.ml/media/PHARMACIES-DE-BAMAKO.pdf
-canam-laboratoires.pdf|https://www.canam.ml/media/LABORATOIRES-DANALYSES.pdf
-canam-imagerie.pdf|https://www.canam.ml/media/CENTRES-DIMAGERIES.pdf
-canam-cscom-regions-http.pdf|http://www.canam.ml/media/attachments/2022/03/18/cscom-regions.pdf
+msds-carte-sanitaire.html|https://www.sante.gov.ml/index.php?Itemid=126%3Ffacility%3D55&id=33&option=com_content&view=category
+msds-carte-sanitaire-all.html|https://www.sante.gov.ml/index.php?option=com_content&view=category&id=33&Itemid=126&limit=0
