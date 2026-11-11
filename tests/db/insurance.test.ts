@@ -29,9 +29,9 @@ describe.skipIf(!hasDb)("Assurances et réseaux de soins", () => {
     expect(r).toMatchObject({ imported: 3, duplicates: 1, failed: 1 });
     const list = (await q(db, null, "select name, category, area, region_name, phones, pharmacy_id from public.search_insurer_network($1) order by name", [ins])).rows;
     expect(list).toEqual([
-      { name: "Clinique Essai", category: "clinique", area: "Commune V", region_name: "District de Bamako", phones: ["+22366721597"], pharmacy_id: null },
+      { name: "Clinique Essai", category: "clinique", area: "Cinquième Arrondissement", region_name: "District de Bamako", phones: ["+22366721597"], pharmacy_id: null },
       { name: "Laboratoire Biologie Essai", category: "laboratoire", area: "Sikasso", region_name: "Sikasso", phones: [], pharmacy_id: null },
-      { name: "PHARMACIE TEST UN", category: "pharmacie", area: "Commune III", region_name: "District de Bamako", phones: ["+22320248974"], pharmacy_id: w.ph1 },
+      { name: "PHARMACIE TEST UN", category: "pharmacie", area: "Troisième Arrondissement", region_name: "District de Bamako", phones: ["+22320248974"], pharmacy_id: w.ph1 },
     ]);
     expect((await q(db, null, "select name from public.pharmacy_insurers($1)", [w.ph1])).rows).toEqual([{ name: "Assurance Essai" }]);
     expect((await q(db, null, "select count(*)::int n from public.search_insurer_network($1, 'clinique', null, null)", [ins])).rows[0].n).toBe(1);

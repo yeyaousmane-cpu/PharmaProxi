@@ -20,7 +20,7 @@ export function ShareViewer({ token }: { token: string }) {
       <form onSubmit={(e) => { e.preventDefault(); start(async () => setView(await openShare(token, viewer))); }} className="space-y-3 rounded-2xl border bg-white p-5">
         <p className="flex items-start gap-2 text-sm"><ShieldCheck className="mt-0.5 size-5 shrink-0 text-[#068132]" aria-hidden />Une personne vous a confié un accès temporaire à des informations de santé. En les affichant, votre consultation est enregistrée et la personne en est informée.</p>
         <label className="block text-sm"><span className="font-semibold">Qui consulte ? (facultatif)</span>
-          <input value={viewer} onChange={(e) => setViewer(e.target.value)} maxLength={80} placeholder="ex. Dr Traoré, CSRéf Commune IV" className="mt-1 h-11 w-full rounded-lg border px-3" /></label>
+          <input value={viewer} onChange={(e) => setViewer(e.target.value)} maxLength={80} placeholder="ex. Dr Traoré, centre de santé" className="mt-1 h-11 w-full rounded-lg border px-3" /></label>
         <button disabled={pending} className="min-h-11 rounded-xl bg-[#052D1E] px-5 font-semibold text-white disabled:opacity-60">{pending ? "Ouverture…" : "Afficher les informations"}</button>
       </form>
     );

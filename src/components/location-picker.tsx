@@ -53,11 +53,11 @@ export function LocationPicker({
         </div>
       )}
       <div className="space-y-1">
-        <Label htmlFor={`${names.commune}-sel`} className={compact ? "sr-only" : undefined}>Commune</Label>
+        <Label htmlFor={`${names.commune}-sel`} className={compact ? "sr-only" : undefined}>Commune ou arrondissement</Label>
         <Select id={`${names.commune}-sel`} name={names.commune} value={commune} disabled={!region}
           onChange={(e) => { setCommune(e.target.value); setLocality(""); }}>
-          <option value="">{!region ? "Commune" : communes.length ? "Toutes les communes" : "Aucune commune référencée"}</option>
-          {communes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          <option value="">{!region ? "Commune ou arrondissement" : communes.length ? "Toutes les communes / tous les arrondissements" : "Aucune commune référencée"}</option>
+          {communes.map((c) => <option key={c.id} value={c.id}>{c.name}{c.former_name ? ` (ex-${c.former_name})` : ""}</option>)}
         </Select>
       </div>
       {names.locality && (

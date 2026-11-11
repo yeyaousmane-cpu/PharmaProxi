@@ -6,7 +6,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 export type GeoData = {
   regions: { id: string; name: string }[];
   circles: { id: string; name: string; region_id: string }[];
-  communes: { id: string; name: string; region_id: string; circle_id: string | null }[];
+  communes: { id: string; name: string; region_id: string; circle_id: string | null; former_name?: string | null; official_code?: string | null }[];
   localities: { id: string; name: string; commune_id: string }[];
 };
 
@@ -17,7 +17,7 @@ export const getGeo = cache(async (): Promise<GeoData> => {
   const [r, c, cm, l] = await Promise.all([
     supabase.from("regions").select("id, name, is_district").order("is_district", { ascending: false }).order("name"),
     supabase.from("circles").select("id, name, region_id").order("name"),
-    supabase.from("communes").select("id, name, region_id, circle_id").order("name").limit(5000),
+    supabase.from("communes").select("id, name, region_id, circle_id, former_name, official_code").order("official_code", { nullsFirst: false }).order("name").limit(5000),
     supabase.from("localities").select("id, name, commune_id").order("name").limit(20000),
   ]);
   return {

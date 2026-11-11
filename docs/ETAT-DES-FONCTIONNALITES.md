@@ -4,6 +4,11 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.30 — District de Bamako : sept arrondissements**
+- Les six communes de Bamako sont remplacées par les sept Arrondissements de la loi n°2023-005 du 13 mars 2023 (JO du 14 avril 2023), avec leurs codes officiels (01 à 07) et les 102 quartiers codés de l'annexe. L'ancien nom reste affiché entre parenthèses (« ex-Commune IV ») et reconnu à l'import (« Commune IV », « C4 », « 4e arrondissement »).
+- Pharmacies, adresses, alertes et zones de livraison déjà rattachées à une commune de Bamako restent rattachées à l'arrondissement correspondant. Le Septième Arrondissement est nouveau : aucun établissement n'y est rattaché automatiquement.
+- À vérifier par l'équipe : les établissements situés dans les quartiers nouvellement rattachés au District (ex. Kalabancoro, Sangarébougou, Moribabougou), encore enregistrés sous leur ancienne commune du cercle de Kati.
+
 **v0.28 / 0.29 — Passeport santé, historique des accès, suivi des maladies chroniques**
 - Passeport santé (Mon dossier → Partages et accès) : partage par lien et QR code des rubriques choisies (identité, groupe sanguin, allergies, maladies, traitements, vaccins, personne à prévenir, dernières mesures), durée de 1 heure à 30 jours, rien de coché d'avance, accord explicite. Seule l'empreinte du lien est conservée ; le lien n'est affiché qu'une fois. Documents, analyses et consultations ne sont jamais partagés.
 - Consultation (/passeport/…) : rien n'est révélé avant l'appui sur « Afficher » ; chaque consultation est enregistrée (qui, quand), le titulaire est notifié ; retrait immédiat à tout moment ; page non indexée ; limite de tentatives.

@@ -107,7 +107,7 @@ export async function regionId(db: Db, name = "District de Bamako") {
   return (await sys(db, "select id from public.regions where name = $1", [name])).rows[0].id as string;
 }
 export async function communeId(db: Db, name: string) {
-  return (await sys(db, "select id from public.communes where name = $1", [name])).rows[0].id as string;
+  return (await sys(db, "select id from public.communes where name = $1 or former_name = $1", [name])).rows[0].id as string;
 }
 
 /** Monde de test : un admin, deux pharmacies vérifiées, deux clients, un livreur. */

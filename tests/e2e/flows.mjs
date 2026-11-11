@@ -305,7 +305,7 @@ await step("le client ajoute une adresse puis demande une livraison", async () =
   await c.goto(`${BASE}/compte`, NI);
   await c.getByText("Ajouter une adresse").click();
   await c.selectOption("#region_id-sel", { label: "District de Bamako" });
-  await c.selectOption("#commune_id-sel", { label: "Commune III" });
+  await c.selectOption("#commune_id-sel", { label: "Troisième Arrondissement (ex-Commune III)" });
   await c.fill("#address_line", "Rue 123, porte 45");
   await c.fill("#contact_phone", "70112233");
   await act(c, () => c.getByRole("button", { name: "Ajouter", exact: true }).click(), () => c.getByText("Rue 123, porte 45"));
