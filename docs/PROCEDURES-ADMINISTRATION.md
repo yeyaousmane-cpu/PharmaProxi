@@ -185,3 +185,10 @@ Chiffres agrégés et anonymes de la demande exprimée sur SantéProxi. Ils ne m
 - Archiver une fiche : bouton « Archiver » (validateur ou administrateur) ; elle quitte le site et garde son historique. « Sortir des archives » la remet en brouillon : elle devra être validée à nouveau.
 - Langues : Administration → Langues permet de corriger tout texte de l'interface dans n'importe quelle langue ; une traduction « validée » remplace celle livrée avec le site. Faire relire l'anglais et l'arabe par des locuteurs natifs.
 - Voix : rien à configurer. La lecture et la reconnaissance utilisent le navigateur de chaque personne ; aucune clé n'est nécessaire.
+
+
+## Passeport santé et suivi chronique — v0.28 / 0.29
+- L'équipe SantéProxi ne voit ni les partages, ni les mesures, ni l'historique des accès d'un patient : ces données ne sont lisibles que par lui (et par le médecin qu'il a choisi, pour les mesures).
+- Ouvrir le suivi par un médecin : Administration → Suivi chronique, après accord écrit d'un partenaire clinique. Fermer n'interrompt pas les suivis en cours, seulement les nouvelles demandes.
+- Un patient signale un accès qu'il ne reconnaît pas : lui indiquer « Mon dossier → Partages et accès → Retirer ce partage » et « Suivi et rappels → Arrêter le suivi ».
+- Nutrition et rééducation : rédiger les fiches dans la Bibliothèque santé (catégories « Nutrition » et « Rééducation ») ; elles n'apparaissent qu'après validation par un professionnel.

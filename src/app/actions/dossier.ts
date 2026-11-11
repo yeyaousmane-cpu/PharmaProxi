@@ -28,6 +28,7 @@ export async function unlockDossier(_: ActionState, fd: FormData): Promise<Actio
   const { data, error } = await supabase.rpc("record_unlock", { p_pin: str(fd, "pin") });
   if (error) return { error: humanizeError(error) };
   if (!data) return { error: "Code incorrect. Après 5 erreurs, le dossier est bloqué 15 minutes." };
+  await supabase.rpc("record_log_access", { p_person: null, p_action: "ouverture_dossier" }); // visible dans « Partages et accès »
   revalidatePath("/ma-sante/dossier", "layout");
   redirect(back(fd));
 }

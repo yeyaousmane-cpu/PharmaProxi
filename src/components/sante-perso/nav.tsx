@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, Baby, BellRing, FolderHeart, HeartPulse, Lock, Pill, Users } from "lucide-react";
+import { Activity, Stethoscope, Baby, BellRing, FolderHeart, HeartPulse, Lock, Pill, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
@@ -9,6 +9,7 @@ const ITEMS = [
   { href: "/ma-sante/enfants", label: "Vaccins des enfants", icon: Baby },
   { href: "/ma-sante/traitements", label: "Traitements", icon: Pill },
   { href: "/ma-sante/mesures", label: "Tension, glycémie", icon: Activity },
+  { href: "/ma-sante/suivi", label: "Suivi et rappels", icon: Stethoscope },
   { href: "/ma-sante#alertes", label: "Alertes", icon: BellRing },
 ] as const;
 

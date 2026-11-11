@@ -16,6 +16,7 @@ begin
   end if;
   insert into public.platform_settings (key, value, description) values ('demo_environment', 'true', 'Environnement de démonstration (données fictives)')
   on conflict (key) do update set value = 'true';
+  update public.platform_settings set value = 'true' where key = 'care_follow_enabled'; -- démonstration : suivi par un médecin ouvert
 
   for i in 1 .. array_length(actors, 1) loop
     mail := 'demo.' || actors[i][1] || '@pharmaproxi.invalid';

@@ -1,6 +1,6 @@
 {
   "name": "pharmaproxi",
-  "version": "0.27.0",
+  "version": "0.29.0",
   "private": true,
   "description": "SantéProxi — toute la santé, près de chez vous (Mali)",
   "scripts": {
@@ -20,6 +20,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
+    "@types/qrcode": "^1.5.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
@@ -27,6 +28,7 @@
     "next": "^16.3.8",
     "nodemailer": "^10.2.1",
     "papaparse": "^5.7.0",
+    "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-leaflet": "^5.0.0",

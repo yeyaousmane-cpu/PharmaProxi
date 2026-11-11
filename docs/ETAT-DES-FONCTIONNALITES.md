@@ -4,6 +4,15 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.28 / 0.29 — Passeport santé, historique des accès, suivi des maladies chroniques**
+- Passeport santé (Mon dossier → Partages et accès) : partage par lien et QR code des rubriques choisies (identité, groupe sanguin, allergies, maladies, traitements, vaccins, personne à prévenir, dernières mesures), durée de 1 heure à 30 jours, rien de coché d'avance, accord explicite. Seule l'empreinte du lien est conservée ; le lien n'est affiché qu'une fois. Documents, analyses et consultations ne sont jamais partagés.
+- Consultation (/passeport/…) : rien n'est révélé avant l'appui sur « Afficher » ; chaque consultation est enregistrée (qui, quand), le titulaire est notifié ; retrait immédiat à tout moment ; page non indexée ; limite de tentatives.
+- Historique des accès : déverrouillages, résumés affichés, partages créés, consultés et retirés, actions du médecin de suivi. Référence PAS-… par partage (dossier de preuve). Conservation deux ans.
+- Suivi chronique : rappels de mesure (tension, glycémie) par jours et heure ; suivi par un médecin choisi par le patient (accord explicite, mesures seules ou avec traitements, notes du médecin, arrêt par l'un ou l'autre, chaque consultation visible par le patient). Valeurs affichées sans aucune interprétation.
+- Le suivi par un médecin est FERMÉ par défaut : il s'ouvre dans Administration → Suivi chronique après accord d'un partenaire clinique. Les rappels et le passeport sont ouverts.
+- Modules Nutrition (/nutrition) et Rééducation (/reeducation) : pages ouvertes, n'affichant que des fiches validées (aucune pour l'instant).
+- Tests : 4 tests base de données, 34 vérifications de bout en bout (tests/e2e/v028.mjs).
+
 **v0.27 — Fiabilité médicale, prévention, multilingue FR/EN/AR, écoute et voix**
 - Circuit de validation médicale complet : Brouillon → En attente de validation → Validée → Publiée → À actualiser (date de révision dépassée, avertissement public) → Archivée ; date de révision fixée à un an à chaque validation, modifiable par le validateur ; archivage avec historique conservé ; liste « À actualiser » dans l'espace de rédaction. Sources, nom et qualité du valideur, dates déjà affichés (0.19).
 - Santé mentale : catégorie dédiée ; la page affiche les fiches validées (aucune pour l'instant) et signale que ses repères généraux attendent une relecture professionnelle.

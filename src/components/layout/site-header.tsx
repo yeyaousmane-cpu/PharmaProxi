@@ -41,6 +41,9 @@ export async function SiteHeader({ session }: { session: SessionInfo | null }) {
       { href: "/don-de-sang", label: t("link.sang"), hint: t("link.sang.hint"), tone: "red" },
       { href: "/alertes", label: t("link.alertes"), hint: t("link.alertes.hint") },
       { href: "/prevention", label: t("link.prevention"), hint: t("link.prevention.hint") },
+      { href: "/nutrition", label: t("link.nutrition"), hint: t("link.nutrition.hint") },
+      { href: "/reeducation", label: t("link.reeducation"), hint: t("link.reeducation.hint") },
+      { href: "/ma-sante/dossier/autorisations", label: t("link.passeport"), hint: t("link.passeport.hint") },
       { href: "/parler", label: t("link.parler"), hint: t("link.parler.hint") },
     ] },
     { label: t("nav.services"), links: [

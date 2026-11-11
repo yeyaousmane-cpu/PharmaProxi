@@ -46,6 +46,7 @@ export default async function Resume({ searchParams }: { searchParams: Promise<{
   const ctx = await dossierContext(sp.p, "/ma-sante/dossier/resume");
   if (ctx.locked) return <DossierGate status={ctx.status} path={`/ma-sante/dossier/resume${sp.p ? `?p=${sp.p}` : ""}`} />;
   const { supabase, person } = ctx;
+  await supabase.rpc("record_log_access", { p_person: person.id, p_action: "resume_imprime" }); // visible dans « Partages et accès »
   const [items, ess, { data: treatments }, { data: measures }, { data: femme }] = await Promise.all([
     loadItems(supabase, person.id),
     loadEssentials(supabase, person.id),

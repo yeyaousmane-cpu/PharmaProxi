@@ -1,6 +1,7 @@
 /** Navigation : en-tête, menus, barre mobile, pied de page. */
 export const nav = {
   fr: {
+    "link.nutrition": "Nutrition", "link.nutrition.hint": "Bien manger, fiches validées", "link.reeducation": "Rééducation", "link.reeducation.hint": "Kinésithérapie, réadaptation, handicap", "link.passeport": "Passeport santé", "link.passeport.hint": "Partager l'essentiel par lien ou QR code",
     "nav.medicaments": "Médicaments", "nav.medicaments.hint": "Quelle pharmacie a mon médicament ?",
     "nav.pharmacies": "Pharmacies", "nav.pharmacies.hint": "Annuaire, horaires, itinéraire",
     "nav.medecins": "Médecins", "nav.medecins.hint": "Par spécialité et par quartier",
@@ -53,6 +54,7 @@ export const nav = {
     "footer.conditions": "Conditions d'utilisation", "footer.contact": "Contact", "footer.edited": "Projet porté et édité par",
   },
   en: {
+    "link.nutrition": "Nutrition", "link.nutrition.hint": "Eating well, validated fact sheets", "link.reeducation": "Rehabilitation", "link.reeducation.hint": "Physiotherapy, rehabilitation, disability", "link.passeport": "Health passport", "link.passeport.hint": "Share the essentials by link or QR code",
     "nav.medicaments": "Medicines", "nav.medicaments.hint": "Which pharmacy has my medicine?",
     "nav.pharmacies": "Pharmacies", "nav.pharmacies.hint": "Directory, opening hours, directions",
     "nav.medecins": "Doctors", "nav.medecins.hint": "By specialty and neighbourhood",
@@ -105,6 +107,7 @@ export const nav = {
     "footer.conditions": "Terms of use", "footer.contact": "Contact", "footer.edited": "Project led and published by",
   },
   ar: {
+    "link.nutrition": "التغذية", "link.nutrition.hint": "الأكل الصحي، بطاقات معتمدة", "link.reeducation": "إعادة التأهيل", "link.reeducation.hint": "العلاج الطبيعي، التأهيل، الإعاقة", "link.passeport": "جواز السفر الصحي", "link.passeport.hint": "شارك الأساسيات عبر رابط أو رمز QR",
     "nav.medicaments": "الأدوية", "nav.medicaments.hint": "أي صيدلية يتوفر فيها دوائي؟",
     "nav.pharmacies": "الصيدليات", "nav.pharmacies.hint": "الدليل، أوقات العمل، الطريق",
     "nav.medecins": "الأطباء", "nav.medecins.hint": "حسب التخصص والحي",
