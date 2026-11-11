@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const ITEMS = [["/don-de-sang", "Don de sang"], ["/don-de-sang/mon-espace", "Mon espace donneur"], ["/don-de-sang/suis-je-apte", "Suis-je apte ?"],
+const ITEMS = [["/don-de-sang", "Don de sang"], ["/don-de-sang/sos", "SOS Besoin de sang"], ["/don-de-sang/mon-espace", "Mon espace donneur"], ["/don-de-sang/rendez-vous", "Rendez-vous"],
+  ["/don-de-sang/disponibilites", "Besoins des centres"], ["/don-de-sang/suis-je-apte", "Suis-je apte ?"],
   ["/don-de-sang/apres-le-don", "Après le don"], ["/don-de-sang/passeport", "Mon passeport solidaire"], ["/don-de-sang/groupes-rares", "Groupes rares"]] as const;
 
 /** Navigation de SantéProxi Solidaire (les espaces institutionnels n'apparaissent qu'aux personnes habilitées). */

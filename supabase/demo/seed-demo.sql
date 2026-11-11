@@ -42,6 +42,7 @@ begin
   r := r || jsonb_build_object('acteurs', public.demo_extra_install(ids));
   r := r || jsonb_build_object('infirmier', public.demo_nurse_install((ids->>'nurse')::uuid));
   r := r || jsonb_build_object('donneur', public.demo_donor_install((ids->>'customer')::uuid, (ids->>'admin')::uuid));
+  r := r || jsonb_build_object('sos_sang', public.demo_blood_sos_install((ids->>'admin')::uuid));
   raise notice 'Démonstration installée : %', r;
 end $$;
 

@@ -73,6 +73,8 @@ if (cmd === "install") {
     if (nurse.error) console.warn("Infirmier de démonstration non installé :", nurse.error.message);
     const donorDemo = await sb.rpc("demo_donor_install", { p_user: ids.customer, p_validator: ids.admin });
     if (donorDemo.error) console.warn("Espace donneur de démonstration non installé :", donorDemo.error.message);
+  { const sos = await sb.rpc("demo_blood_sos_install", { p_admin: ids.admin }); if (sos.error) console.warn("Créneaux de don de démonstration non installés :", sos.error.message); }
+    { const sos = await sb.rpc("demo_blood_sos_install", { p_admin: ids.admin }); if (sos.error) console.warn("Créneaux de don de démonstration non installés :", sos.error.message); }
     console.log(extra.error ? `Acteurs supplémentaires : ${extra.error.message}` : `Acteurs supplémentaires : ${JSON.stringify(extra.data)}`);
     console.log(`\nMot de passe commun : ${password}`);
     process.exit(0);
@@ -96,6 +98,7 @@ if (cmd === "install") {
   if (nurse.error) console.warn("Infirmier de démonstration non installé :", nurse.error.message);
   const donorDemo = await sb.rpc("demo_donor_install", { p_user: ids.customer, p_validator: ids.admin });
   if (donorDemo.error) console.warn("Espace donneur de démonstration non installé :", donorDemo.error.message);
+  { const sos = await sb.rpc("demo_blood_sos_install", { p_admin: ids.admin }); if (sos.error) console.warn("Créneaux de don de démonstration non installés :", sos.error.message); }
   console.log("\nComptes (domaine .invalid, aucun e-mail réel) :");
   for (const r of ROLES) console.log(`  ${r.padEnd(12)} ${email(r)}`);
   console.log(`\nMot de passe commun : ${password}`);

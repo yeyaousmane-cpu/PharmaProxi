@@ -25,3 +25,19 @@ export const BADGE_STYLE: Record<string, string> = {
   donneur_solidaire: "from-red-200 to-red-300 text-red-950", donneur_engage: "from-red-500 to-red-600 text-white",
   ambassadeur: "from-red-700 to-red-800 text-white", heros_solidarite: "from-amber-400 to-red-700 text-white",
 };
+
+// ---------------- 0.35 : SOS Besoin de sang, disponibilités, rendez-vous ----------------
+export const URGENCY: Record<string, [string, string]> = {
+  critique: ["Urgence vitale", "bg-red-600 text-white"], elevee: ["Urgent (dans la journée)", "bg-orange-100 text-orange-900"], programme: ["Programmé", "bg-sky-100 text-sky-900"],
+};
+export const REQUEST_STATUS: Record<string, [string, string]> = {
+  en_attente: ["En attente de vérification", "bg-amber-100 text-amber-900"], verifiee: ["Vérifiée par le CNTS", "bg-emerald-100 text-emerald-900"],
+  mobilisation: ["Mobilisation des donneurs en cours", "bg-red-100 text-red-900"], prise_en_charge: ["Prise en charge par le centre", "bg-sky-100 text-sky-900"],
+  satisfaite: ["Besoin satisfait", "bg-emerald-600 text-white"], cloturee: ["Clôturée", "bg-slate-200 text-slate-800"], rejetee: ["Rejetée", "bg-slate-200 text-slate-800"],
+};
+export const PRODUCTS: Record<string, string> = { non_precise: "Non précisé", sang_total: "Sang total", globules_rouges: "Globules rouges", plaquettes: "Plaquettes", plasma: "Plasma" };
+export const REQUESTER_KINDS: Record<string, string> = { famille: "Famille ou proche du patient", etablissement: "Établissement de santé", professionnel: "Professionnel de santé" };
+export const STOCK_LEVEL: Record<string, [string, string]> = { normal: ["Niveau normal", "bg-emerald-100 text-emerald-900"], tension: ["Tension", "bg-amber-100 text-amber-900"], urgent: ["Besoin urgent", "bg-red-600 text-white"] };
+export const BOOKING_STATUS: Record<string, string> = { en_attente: "En attente", confirme: "Réservé", annule: "Annulé", reporte: "À reporter", present: "Présence enregistrée", absent: "Absent" };
+/** Phrase obligatoire à côté de toute mise en relation. */
+export const COMPAT_NOTICE = "Compatibilité théorique ABO/Rh seulement : seul le centre de transfusion confirme la compatibilité, après les analyses obligatoires.";

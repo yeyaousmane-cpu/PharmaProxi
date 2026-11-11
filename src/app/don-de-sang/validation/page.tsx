@@ -6,10 +6,10 @@ import { enforceMfa } from "@/lib/mfa";
 import { formatDate } from "@/lib/format";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Input, Select } from "@/components/ui/input";
-import { decideDonation, reviewRare, setBadgeThreshold, setEventStatus, validateQuestionnaire } from "@/app/actions/donor";
+import { decideDonation, reviewRare, unhideBloodRequest, setBadgeThreshold, setEventStatus, validateQuestionnaire } from "@/app/actions/donor";
 import { EVENT_KINDS, QUESTIONNAIRE_VERSION } from "@/lib/eligibility";
 import { BloodNav } from "@/components/blood/blood-nav";
-import { BLOOD_GROUPS, DONATION_TYPES } from "@/lib/donor";
+import { BLOOD_GROUPS, DONATION_TYPES, URGENCY } from "@/lib/donor";
 
 export const metadata = { title: "Valider les dons de sang", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -33,16 +33,20 @@ export default async function Validation({ searchParams }: { searchParams: Promi
   }
   await enforceMfa("/don-de-sang/validation", true);
   const group = BLOOD_GROUPS.includes(sp.groupe as (typeof BLOOD_GROUPS)[number]) ? sp.groupe! : null;
-  const [{ data }, { data: isAdmin }, { data: levels }, { data: events }, { data: pendingRare }, { data: q }, rareRes] = await Promise.all([
+  const [{ data }, { data: isAdmin }, { data: levels }, { data: events }, { data: pendingRare }, { data: q }, { data: sosPending }, { data: sosHidden }, rareRes] = await Promise.all([
     supabase.rpc("blood_pending_donations"), supabase.rpc("is_admin"), supabase.from("blood_badge_levels").select("code, label, threshold").order("threshold"),
     supabase.from("blood_donation_events").select("id, reference, kind, occurred_on, description, contact_ok, status, created_at, donor_id").neq("status", "clos").order("created_at").limit(100),
     supabase.from("blood_rare_registry").select("user_id, phenotype_note, consent_at, blood_donor_profiles(donor_code, blood_group, blood_group_verified)").eq("status", "en_attente").order("consent_at").limit(100),
     supabase.from("platform_settings").select("value").eq("key", "blood_questionnaire_validation").maybeSingle(),
+    supabase.from("blood_requests").select("id, reference, blood_group, facility_name, urgency, needed_at, status, created_at").eq("status", "en_attente").order("created_at").limit(100),
+    supabase.rpc("blood_hidden_requests"),
     sp.groupe !== undefined ? supabase.rpc("rare_search", { p_group: group, p_region: null, p_include_pending: sp.attente === "1" }) : Promise.resolve({ data: null }),
   ]);
   type Ev = { id: string; reference: string; kind: string; occurred_on: string; description: string | null; contact_ok: boolean; status: string; created_at: string };
   type PR = { user_id: string; phenotype_note: string | null; consent_at: string; blood_donor_profiles: { donor_code: string; blood_group: string | null; blood_group_verified: boolean } | null };
   type RS = { user_id: string; donor_code: string; name: string | null; phone: string | null; blood_group: string | null; group_verified: boolean; phenotype_note: string | null; rare_criteria: string | null; status: string; availability: string; region: string | null; verified_center: string | null };
+  type SR = { id: string; reference: string; blood_group: string; facility_name: string; urgency: string; needed_at: string; status: string; created_at: string };
+  type HR = { id: string; reference: string; reports: number; reasons: string[] };
   const qv = (q?.value ?? null) as { version: string; validateur: string; organisme: string; date: string } | null;
   const rows = (data ?? []) as P[];
   return (
@@ -76,6 +80,25 @@ export default async function Validation({ searchParams }: { searchParams: Promi
             </div>
           </li>))}</ul>
       )}
+      <section id="sos" className="scroll-mt-24 space-y-2">
+        <h2 className="text-lg font-bold text-brand-deep">SOS Besoin de sang — demandes à vérifier</h2>
+        {((sosPending ?? []) as SR[]).length === 0 ? <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">Aucune demande en attente de vérification.</p> : (
+          <ul className="space-y-2">{((sosPending ?? []) as SR[]).map((r) => (
+            <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border bg-white p-3 text-sm">
+              <span><strong className="font-mono">{r.blood_group}</strong> · {r.facility_name} · {URGENCY[r.urgency][0]} · transmise le {formatDate(r.created_at)} <span className="text-xs text-muted-foreground">{r.reference}</span></span>
+              <Link prefetch={false} href={`/don-de-sang/sos/${r.id}`} className="font-semibold text-primary underline">Vérifier</Link>
+            </li>))}</ul>)}
+        {((sosHidden ?? []) as HR[]).length > 0 && <>
+          <h3 className="font-semibold">Demandes masquées après signalements</h3>
+          <ul className="space-y-2">{((sosHidden ?? []) as HR[]).map((r) => (
+            <li key={r.id} className="space-y-1 rounded-2xl border border-red-200 bg-white p-3 text-sm">
+              <p><Link prefetch={false} href={`/don-de-sang/sos/${r.id}`} className="font-semibold underline">{r.reference}</Link> · {r.reports} signalement(s)</p>
+              <ul className="list-disc ps-5 text-xs">{r.reasons.map((x, i) => <li key={i}>{x}</li>)}</ul>
+              <div className="flex flex-wrap gap-2"><ActionForm action={unhideBloodRequest}><input type="hidden" name="id" value={r.id} /><SubmitButton size="sm" variant="outline">Remettre en ligne</SubmitButton></ActionForm>
+                <Link prefetch={false} href={`/don-de-sang/sos/${r.id}`} className="text-xs font-semibold text-primary underline">Rejeter depuis la fiche</Link></div>
+            </li>))}</ul></>}
+      </section>
+
       <section id="declarations" className="scroll-mt-24 space-y-2">
         <h2 className="text-lg font-bold text-brand-deep">Déclarations après un don</h2>
         {((events ?? []) as Ev[]).length === 0 ? <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">Aucune déclaration en cours.</p> : (

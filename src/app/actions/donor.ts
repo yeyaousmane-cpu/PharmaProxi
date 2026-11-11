@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { humanizeError, type ActionState } from "@/lib/errors";
+import { normalizePhone } from "@/lib/format";
 import { BLOOD_GROUPS, DONATION_TYPES } from "@/lib/donor";
 
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -172,4 +173,128 @@ export async function validateQuestionnaire(_: ActionState, fd: FormData): Promi
   if (error) return { error: humanizeError(error) };
   revalidatePath("/don-de-sang/suis-je-apte"); revalidatePath("/don-de-sang/validation");
   return { ok: true, message: fd.get("revoke") === "1" ? "Validation retirée : le questionnaire n'est plus publié." : "Validation enregistrée : le questionnaire est publié." };
+}
+
+// ---------------- 0.35 : SOS Besoin de sang, disponibilités, rendez-vous de don ----------------
+const uuid = (fd: FormData, k = "id") => z.uuid().safeParse(fd.get(k));
+
+export async function createBloodRequest(_: ActionState, fd: FormData): Promise<ActionState> {
+  const group = str(fd, "blood_group");
+  if (!BLOOD_GROUPS.includes(group as (typeof BLOOD_GROUPS)[number])) return { error: "Choisissez le groupe sanguin du patient.", fieldErrors: { blood_group: "Obligatoire" } };
+  const needed = str(fd, "needed_at");
+  if (!needed) return { error: "Indiquez pour quand le sang est nécessaire.", fieldErrors: { needed_at: "Obligatoire" } };
+  if (!on(fd, "accord")) return { error: "Cochez la case de confirmation." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("blood_request_create", { p: {
+    requester_kind: str(fd, "requester_kind"), blood_group: group, product: str(fd, "product"), units: str(fd, "units"), facility_name: str(fd, "facility_name").slice(0, 160),
+    region_id: str(fd, "region_id"), commune_id: str(fd, "commune_id"), place_detail: str(fd, "place_detail").slice(0, 200),
+    needed_at: new Date(`${needed}:00+00:00`).toISOString(), urgency: str(fd, "urgency"), contact_name: str(fd, "contact_name").slice(0, 120),
+    contact_phone: normalizePhone(str(fd, "contact_phone")) ?? str(fd, "contact_phone"), description: str(fd, "description").slice(0, 500), accord: "true",
+  } });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/sos");
+  return { ok: true, message: `Demande ${data as string} transmise. Elle sera publiée seulement après vérification par le CNTS ; vous serez prévenu.` };
+}
+
+export async function setBloodRequestStatus(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid(fd);
+  const st = z.enum(["verifiee", "mobilisation", "prise_en_charge", "satisfaite", "cloturee", "rejetee"]).safeParse(str(fd, "status"));
+  if (!id.success || !st.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("blood_request_set_status", { p_id: id.data, p_status: st.data, p_note: str(fd, "note").slice(0, 300) });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/sos"); revalidatePath(`/don-de-sang/sos/${id.data}`); revalidatePath("/don-de-sang/validation");
+  return { ok: true, message: "Statut mis à jour." };
+}
+
+export async function mobilizeDonors(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid(fd);
+  if (!id.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("blood_request_mobilize", { p_id: id.data });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath(`/don-de-sang/sos/${id.data}`); revalidatePath("/don-de-sang/validation");
+  const n = data as number;
+  return { ok: true, message: n === 0 ? "Aucun nouveau donneur volontaire à prévenir pour le moment (accord, groupe, région, délai entre deux dons)." : `${n} donneur(s) volontaire(s) prévenu(s) dans SantéProxi.` };
+}
+
+export async function respondBloodRequest(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid(fd);
+  if (!id.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { error } = fd.get("withdraw") === "1" ? await supabase.rpc("blood_request_withdraw_response", { p_id: id.data })
+    : await supabase.rpc("blood_request_respond", { p_id: id.data, p_share_phone: on(fd, "share_phone") });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath(`/don-de-sang/sos/${id.data}`);
+  return { ok: true, message: fd.get("withdraw") === "1" ? "Disponibilité retirée." : "Merci ! Le demandeur et le CNTS sont prévenus. Présentez-vous au centre seulement après leur confirmation." };
+}
+
+export async function reportBloodRequest(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid(fd);
+  if (!id.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("blood_request_report", { p_id: id.data, p_reason: str(fd, "reason").slice(0, 300) });
+  if (error) return { error: humanizeError(error) };
+  return { ok: true, message: "Signalement transmis au CNTS. Merci." };
+}
+
+export async function unhideBloodRequest(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid(fd);
+  if (!id.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("blood_request_unhide", { p_id: id.data });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/validation");
+  return { ok: true, message: "Demande de nouveau visible ; signalements classés." };
+}
+
+export async function updateBloodStock(_: ActionState, fd: FormData): Promise<ActionState> {
+  const levels: Record<string, string> = {};
+  for (const g of BLOOD_GROUPS) { const v = str(fd, `lvl_${g}`); if (v) levels[g] = v; }
+  if (Object.keys(levels).length === 0) return { error: "Indiquez au moins un niveau." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("blood_stock_update", { p_center: str(fd, "center").slice(0, 160), p_region: str(fd, "region_id") || null, p_product: str(fd, "product"), p_levels: levels, p_note: str(fd, "note").slice(0, 200) });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/disponibilites");
+  return { ok: true, message: `${data as number} niveau(x) publié(s), datés d'aujourd'hui.` };
+}
+
+export async function createDonationSlot(_: ActionState, fd: FormData): Promise<ActionState> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("blood_slot_create", { p: { center: str(fd, "center").slice(0, 160), region_id: str(fd, "region_id"), address: str(fd, "address").slice(0, 200),
+    slot_date: str(fd, "slot_date"), start_time: str(fd, "start_time"), end_time: str(fd, "end_time"), capacity: str(fd, "capacity") } });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/rendez-vous");
+  return { ok: true, message: "Créneau publié." };
+}
+
+export async function closeDonationSlot(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid(fd);
+  if (!id.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("blood_slot_close", { p_slot: id.data });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/rendez-vous");
+  return { ok: true, message: "Créneau fermé ; les donneurs inscrits sont prévenus." };
+}
+
+export async function bookDonationSlot(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid(fd);
+  if (!id.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("blood_slot_book", { p_slot: id.data });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/rendez-vous");
+  return { ok: true, message: `Rendez-vous ${data as string} réservé. L'aptitude au don sera évaluée sur place par un professionnel.` };
+}
+
+export async function setBookingStatus(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid(fd);
+  const st = z.enum(["annule", "reporte", "present", "absent", "confirme"]).safeParse(str(fd, "status"));
+  if (!id.success || !st.success) return { error: "Requête invalide." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("blood_booking_set_status", { p_id: id.data, p_status: st.data, p_note: str(fd, "note").slice(0, 200) });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/don-de-sang/rendez-vous");
+  return { ok: true, message: "Rendez-vous mis à jour." };
 }
