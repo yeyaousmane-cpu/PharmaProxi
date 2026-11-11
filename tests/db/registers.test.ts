@@ -100,7 +100,8 @@ describe.skipIf(!hasDb)("Registres publics", () => {
       { nom: "Centre X", region: "Atlantide" },
     ])])).rows[0].r;
     expect(r).toMatchObject({ imported: 2, duplicates: 1, failed: 2 });
-    const pub = (await q(db, null, "select name, phone, phone2, region_name from public.search_facility_listings()")).rows;
+    // (l'annuaire contient aussi les structures initiales de la 0.33, sources « [0.33] ») : on ne compte que celles importées ici
+    const pub = (await q(db, null, "select name, phone, phone2, region_name from public.search_facility_listings() s where not exists (select 1 from public.facility_listings f where f.id = s.id and f.source like '[0.33]%')")).rows;
     expect(pub).toHaveLength(2);
     expect(pub.find((x) => x.name === "Clinique Aldi")).toMatchObject({ phone: "+22320211434", phone2: "+22320219721", region_name: "District de Bamako" });
     expect((await q(db, null, "select name from public.search_facility_listings('aldi')")).rowCount).toBe(1);
@@ -109,6 +110,7 @@ describe.skipIf(!hasDb)("Registres publics", () => {
     expect((await q(db, null, "select name from public.search_facility_listings('aldi')")).rowCount).toBe(0);
     await q(db, w.admin, "select public.admin_delete_facility($1)", [id]);
     const st = (await q(db, w.admin, "select public.admin_register_stats() as s")).rows[0].s;
-    expect(st).toMatchObject({ register_total: 7, facilities_total: 1, facilities_published: 1 });
+    const seeded = (await sys(db, "select count(*)::int n, count(*) filter (where is_published)::int p from public.facility_listings where source like '[0.33]%'")).rows[0];
+    expect(st).toMatchObject({ register_total: 7, facilities_total: 1 + seeded.n, facilities_published: 1 + seeded.p });
   });
 });

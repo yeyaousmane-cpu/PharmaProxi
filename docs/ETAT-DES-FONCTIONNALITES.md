@@ -4,6 +4,16 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.33 — SantéProxi Orientation, phase 1 : annuaire national des centres spécialisés** (/centres-specialises)
+- Audit : réutilisation de facility_listings (établissements), care_focus (16 besoins), facility_focus (lien établissement ↔ besoin) et de l'administration existante (/admin/centres, import CSV de l'annuaire). Aucune table doublon.
+- Recherche : par besoin, par mot courant (« insuffisance rénale » → Reins et dialyse, « sucre » → Diabète…), par nom ou quartier, par région, commune/arrondissement, type d'établissement et niveau de fiabilité ; « Autour de moi » (position non enregistrée, distance calculée seulement pour les fiches dont la position GPS est connue). Classement : service confirmé, distance, fiche vérifiée.
+- Fiabilité de chaque fiche : Vérifié (uniquement par un administrateur, avec la description de la vérification, à son nom et datée ; toute modification annule la vérification), À confirmer, Information incomplète. Chaque spécialité : « Confirmé par une source » (lien) ou « À confirmer ». Centre de référence seulement avec une source institutionnelle.
+- Fiche détaillée : coordonnées, « Information non renseignée » pour les champs inconnus, bouton Appeler, Itinéraire seulement si la position GPS est connue, spécialités avec source et date, horaires et conditions d'accès, « reste à vérifier ».
+- Données intégrées : 13 structures de Bamako transmises par l'éditeur ou trouvées dans des sources publiques, 7 hôpitaux régionaux (sans spécialité tant qu'aucune n'est confirmée), 2 structures signalées non publiées faute d'identité établie. Aucune n'est « vérifiée », aucune position GPS n'a été saisie.
+- Sources consultées le 11 novembre 2026 : ministère de la Santé (centres de dialyse des Communes IV et V et du Génie militaire, gratuité pour les patients chroniques programmés, horaires de la Commune IV), ORTM (inauguration du centre de la Commune V, 31 oct. 2023), site officiel du Golden Life American Hospital (adresse, téléphones, services dont dialyse), CICR (CNAOM).
+- VIH, tuberculose, vaccination : explication et intégration des listes officielles prévue ; aucune structure attribuée sans confirmation. Urgences : jamais « 24 h/24 » sans confirmation.
+- Tests : 5 tests base de données (tests/db/v033.test.ts), 21 vérifications de bout en bout (tests/e2e/v033.mjs).
+
 **v0.32 — SantéProxi Solidaire, phase 2-3 : Mon espace donneur** (/don-de-sang/mon-espace)
 - Audit préalable : réutilisation des collectes du CNTS (blood_campaigns, « j'y serai »), des besoins publiés (blood_needs), des alertes par groupe (user_alert_prefs), des notifications, du rôle d'autorité « CNTS » et du journal d'audit. Le dossier santé (groupe, dernier don, protégé par code) reste séparé.
 - Profil donneur : groupe sanguin (déclaré, puis « confirmé par un centre »), sexe (uniquement pour le délai), centre habituel, région, statut actif/en pause, accord explicite à la création, suppression complète à tout moment.

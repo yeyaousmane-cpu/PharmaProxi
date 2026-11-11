@@ -5,7 +5,7 @@ import { LocateFixed, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /** Ajoute la position de l'utilisateur à l'URL courante ; repli manuel si refus. */
-export function LocateButton({ basePath }: { basePath: string }) {
+export function LocateButton({ basePath, keep }: { basePath: string; keep?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function LocateButton({ basePath }: { basePath: string }) {
           if (!("geolocation" in navigator)) return setErr("Géolocalisation indisponible : utilisez les filtres région / commune.");
           setBusy(true);
           navigator.geolocation.getCurrentPosition(
-            (p) => { setBusy(false); router.push(`${basePath}?lat=${p.coords.latitude.toFixed(5)}&lng=${p.coords.longitude.toFixed(5)}`); },
+            (p) => { setBusy(false); router.push(`${basePath}?${keep ? `${keep}&` : ""}lat=${p.coords.latitude.toFixed(5)}&lng=${p.coords.longitude.toFixed(5)}`); },
             () => { setBusy(false); setErr("Position refusée ou indisponible : utilisez les filtres région / commune."); },
             { timeout: 10000, maximumAge: 300000 },
           );

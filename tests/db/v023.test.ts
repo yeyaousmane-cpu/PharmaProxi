@@ -20,9 +20,9 @@ describe.skipIf(!hasDb)("Version 0.23", () => {
   it("centres spécialisés : saisis par l'administrateur, lisibles par tous", async () => {
     await expectError(q(db, w.customerA, "insert into public.facility_focus (focus_code, facility_id, source) values ('diabete', $1, 'test')", [lab]), /row-level security/);
     await q(db, w.admin, "insert into public.facility_focus (focus_code, facility_id, source) values ('diabete', $1, 'Appel du 5 nov.')", [lab]);
-    const r = (await q(db, null, "select name, source from public.specialized_centres('diabete')")).rows;
+    const r = (await q(db, null, "select name, source from public.specialized_centres('diabete') where name = 'Labo 023'")).rows;
     expect(r).toEqual([{ name: "Labo 023", source: "Appel du 5 nov." }]);
-    expect((await q(db, null, "select count(*)::int n from public.specialized_centres('cancer')")).rows[0].n).toBe(0);
+    expect((await q(db, null, "select count(*)::int n from public.specialized_centres('cancer') where name = 'Labo 023'")).rows[0].n).toBe(0);
   });
 
   it("statistiques des fiches : comptées anonymement, visibles par l'établissement seulement", async () => {

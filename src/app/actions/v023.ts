@@ -21,8 +21,12 @@ export async function addFocus(_: ActionState, fd: FormData): Promise<ActionStat
   if (!uuid.safeParse(id).success || !["clinic", "facility"].includes(kind)) return { error: "Choisissez l'établissement." };
   const source = str(fd, "source");
   if (source.length < 3) return { error: "Indiquez la source de l'information (ex. confirmé par téléphone le …).", fieldErrors: { source: "Source obligatoire" } };
+  const status = str(fd, "status") === "confirme" ? "confirme" : "a_confirmer";
+  const url = str(fd, "source_url");
+  if (url && !/^https?:\/\//.test(url)) return { error: "Le lien de la source doit commencer par http.", fieldErrors: { source_url: "Lien invalide" } };
   const supabase = await createClient();
-  const { error } = await supabase.from("facility_focus").insert({ focus_code: code, clinic_id: kind === "clinic" ? id : null, facility_id: kind === "facility" ? id : null, source, verified_at: new Date().toISOString().slice(0, 10) });
+  const { error } = await supabase.from("facility_focus").insert({ focus_code: code, clinic_id: kind === "clinic" ? id : null, facility_id: kind === "facility" ? id : null, source,
+    status, detail: str(fd, "detail").slice(0, 200) || null, source_url: url || null, verified_at: status === "confirme" ? new Date().toISOString().slice(0, 10) : null });
   if (error) return { error: error.code === "23505" ? "Ce centre a déjà cette spécialité." : humanizeError(error) };
   revalidatePath("/admin/centres"); revalidatePath("/centres-specialises");
   return { ok: true, message: "Spécialité ajoutée." };
