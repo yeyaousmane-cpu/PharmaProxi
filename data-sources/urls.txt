@@ -9,5 +9,4 @@ canam-cabinets-regions.pdf|https://www.canam.ml/media/CABINETS-EN-DEHORS-DE-BKO1
 canam-pharmacies-bamako.pdf|https://www.canam.ml/media/PHARMACIES-DE-BAMAKO.pdf
 canam-laboratoires.pdf|https://www.canam.ml/media/LABORATOIRES-DANALYSES.pdf
 canam-imagerie.pdf|https://www.canam.ml/media/CENTRES-DIMAGERIES.pdf
-hdx-mli-admin.xlsx|https://data.humdata.org/dataset/d2ec62bb-5a93-436d-8297-88b3ee9b6818/resource/3374291a-7d3b-4fdc-99bb-f3932b45aa41/download/mli_admin_boundaries.xlsx
-jo-2023-06.pdf|https://sgg-mali.ml/JO/2023/mali-jo-2023-06.pdf
+canam-cscom-regions-http.pdf|http://www.canam.ml/media/attachments/2022/03/18/cscom-regions.pdf

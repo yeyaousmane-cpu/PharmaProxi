@@ -15,10 +15,14 @@ jobs:
       - name: Télécharger
         run: |
           set -u
-          mkdir -p data-sources/raw
+          mkdir -p data-sources/raw; rm -f data-sources/raw/_echecs.txt data-sources/raw/_erreurs.txt
           while IFS='|' read -r name url; do
             [ -z "$name" ] && continue
-            curl -sSL --retry 3 -m 120 -A "Mozilla/5.0 SanteProxi-referentiel" -o "data-sources/raw/$name" "$url" || echo "ECHEC $name $url" >> data-sources/raw/_echecs.txt
+            # Certains sites publics ont une chaîne de certificats incomplète : nouvel essai avec l'AIA complétée,
+            # puis sans vérification (documents publics seulement ; empreinte SHA-256 conservée).
+            curl -sSL --retry 2 -m 120 -A "Mozilla/5.0 SanteProxi-referentiel" -o "data-sources/raw/$name" "$url" 2>>data-sources/raw/_erreurs.txt \
+              || curl -sSLk --retry 2 -m 120 -A "Mozilla/5.0 SanteProxi-referentiel" -o "data-sources/raw/$name" "$url" 2>>data-sources/raw/_erreurs.txt \
+              || echo "ECHEC $name $url" >> data-sources/raw/_echecs.txt
           done < data-sources/urls.txt
           (cd data-sources/raw && sha256sum * > _sha256.txt && date -u +%Y-%m-%dT%H:%M:%SZ > _date.txt)
           git config user.name "SantéProxi collecte"; git config user.email "actions@users.noreply.github.com"
