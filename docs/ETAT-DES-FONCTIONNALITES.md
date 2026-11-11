@@ -4,6 +4,18 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.32 — SantéProxi Solidaire, phase 2-3 : Mon espace donneur** (/don-de-sang/mon-espace)
+- Audit préalable : réutilisation des collectes du CNTS (blood_campaigns, « j'y serai »), des besoins publiés (blood_needs), des alertes par groupe (user_alert_prefs), des notifications, du rôle d'autorité « CNTS » et du journal d'audit. Le dossier santé (groupe, dernier don, protégé par code) reste séparé.
+- Profil donneur : groupe sanguin (déclaré, puis « confirmé par un centre »), sexe (uniquement pour le délai), centre habituel, région, statut actif/en pause, accord explicite à la création, suppression complète à tout moment.
+- Historique : chaque don déclaré est « en attente » et ne compte nulle part avant validation par un membre désigné du CNTS ou l'administration (/don-de-sang/validation, motif obligatoire en cas de refus, confirmation facultative du groupe, journal d'audit, donneur notifié). Le donneur ne peut ni modifier un statut ni valider son propre don.
+- Calendrier : 12 mois (dons validés, en attente, date indicative, collectes annoncées), mention obligatoire « Date indicative de prochain don. Votre aptitude au don doit être confirmée par un professionnel de santé. », fichier .ics pour le téléphone, rappel par notification (tâche de maintenance). Délais en paramètres (3 mois hommes, 4 mois femmes ; 4 mois si non précisé) affichés comme « en attente de confirmation officielle par le CNTS ».
+- Carte numérique : écran + image PNG téléchargeable (groupe seulement sur demande et s'il est confirmé ; partage toujours sans groupe), QR code contenant un simple jeton aléatoire renouvelable ; la page ouverte par le QR exige une connexion, montre l'authenticité et le nombre de dons validés, le groupe seulement au titulaire et au CNTS ; consultations journalisées. Mention « ce n'est pas une carte officielle du CNTS ».
+- Distinctions : Premier geste (1), Donneur fidèle (3), Donneur solidaire (5), Donneur engagé (7), Ambassadeur (10), Héros de la solidarité (15) ; seuils modifiables par l'administration ; attribution automatique et notification à partir des seuls dons validés ; sans valeur marchande.
+- Certificat de reconnaissance imprimable, nom seulement avec accord, période, identifiant CDS-… vérifiable publiquement.
+- Démonstration : le patient de démonstration a 3 dons validés, 1 en attente, groupe O+ confirmé.
+- Tests : 7 tests base de données (tests/db/v032.test.ts), 19 vérifications de bout en bout (tests/e2e/v032.mjs).
+- À valider avec le CNTS : délais entre dons (dont plasma et plaquettes), procédure de validation des dons (qui, à partir de quel registre), désignation des comptes CNTS validateurs.
+
 **v0.31 — Espace infirmier, médecin traitant, voix de synthèse signalées, nutrition et rééducation sourcées**
 - Espace infirmier (/infirmier) : tout titulaire d'un compte peut s'inscrire comme infirmier avec son numéro d'inscription à l'Ordre (rapproché automatiquement de la liste officielle si présent), accord de publication obligatoire, dépôt des justificatifs (inscription à l'Ordre, diplôme, pièce d'identité). La fiche n'est publiée qu'après vérification par l'administration (Administration → Infirmiers → Inscriptions), motif obligatoire en cas de refus ou de suspension, infirmier notifié.
 - Fiche : zones d'intervention, soins proposés, horaires, tarifs indicatifs ; téléphone privé par défaut (affiché seulement si l'infirmier l'autorise) ; numéro d'Ordre jamais exposé.

@@ -37,6 +37,15 @@ export default async function BloodPage() {
         <AudioGuide target="don-de-sang" />
       </header>
 
+      <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-[#7f1d1d] via-[#b91c1c] to-[#052D1E] p-5 text-white">
+        <div className="max-w-xl space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/80">SantéProxi Solidaire · Donner. Mobiliser. Sauver.</p>
+          <h2 className="text-xl font-extrabold">Mon espace donneur</h2>
+          <p className="text-sm text-white/90">Suivez vos dons, votre prochaine date indicative, votre carte de donneur et vos distinctions. Gratuit, privé : votre groupe sanguin n&apos;est jamais rendu public.</p>
+        </div>
+        <Link prefetch={false} href="/don-de-sang/mon-espace" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 font-bold text-red-800 hover:bg-red-50"><Droplet className="size-4 fill-red-600 text-red-600" aria-hidden /> Ouvrir mon espace donneur</Link>
+      </section>
+
       <section aria-labelledby="besoins" className="space-y-3">
         <h2 id="besoins" className="flex items-center gap-2 text-lg font-bold"><Siren className="size-5 text-red-600" aria-hidden /> Besoins signalés</h2>
         {needs.length === 0 ? (
@@ -83,7 +92,7 @@ export default async function BloodPage() {
         </section>
       </div>
 
-      <section className="space-y-3 rounded-2xl border bg-white p-5 text-sm">
+      <section id="ou-donner" className="scroll-mt-24 space-y-3 rounded-2xl border bg-white p-5 text-sm">
         <h2 className="text-lg font-bold text-brand-deep">Où donner ?</h2>
         <div className="rounded-xl bg-brand-mint p-4">
           <p className="font-bold text-brand-deep">Centre national de transfusion sanguine (CNTS)</p>

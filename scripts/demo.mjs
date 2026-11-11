@@ -71,6 +71,8 @@ if (cmd === "install") {
     const extra = await sb.rpc("demo_extra_install", { p_users: ids });
     const nurse = await sb.rpc("demo_nurse_install", { p_user: ids.nurse });
     if (nurse.error) console.warn("Infirmier de démonstration non installé :", nurse.error.message);
+    const donorDemo = await sb.rpc("demo_donor_install", { p_user: ids.customer, p_validator: ids.admin });
+    if (donorDemo.error) console.warn("Espace donneur de démonstration non installé :", donorDemo.error.message);
     console.log(extra.error ? `Acteurs supplémentaires : ${extra.error.message}` : `Acteurs supplémentaires : ${JSON.stringify(extra.data)}`);
     console.log(`\nMot de passe commun : ${password}`);
     process.exit(0);
@@ -92,6 +94,8 @@ if (cmd === "install") {
   else console.log("Laboratoire, institution, validateur, auditeur installés :", JSON.stringify(extra.data));
   const nurse = await sb.rpc("demo_nurse_install", { p_user: ids.nurse });
   if (nurse.error) console.warn("Infirmier de démonstration non installé :", nurse.error.message);
+  const donorDemo = await sb.rpc("demo_donor_install", { p_user: ids.customer, p_validator: ids.admin });
+  if (donorDemo.error) console.warn("Espace donneur de démonstration non installé :", donorDemo.error.message);
   console.log("\nComptes (domaine .invalid, aucun e-mail réel) :");
   for (const r of ROLES) console.log(`  ${r.padEnd(12)} ${email(r)}`);
   console.log(`\nMot de passe commun : ${password}`);
