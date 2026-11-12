@@ -23,7 +23,7 @@ export default async function AuthoritiesLayout({ children }: { children: React.
   }
   await enforceMfa("/autorites", true);
   const can = (k: keyof typeof CAN) => ctx.admin || CAN[k].includes(ctx.scope);
-  const nav = [["/autorites", "Tableau de bord", true], ["/autorites/carte", "Carte des structures", true], ["/autorites/rapport", "Rapport institutionnel", true], ["/autorites/signalements", "Signalements de médicaments", can("reports")], ["/autorites/campagnes", "Campagnes de don de sang", can("campaigns")], ["/don-de-sang/validation", "Valider les dons de sang", ctx.admin || ctx.scope === "cnts"], ["/autorites/communiques", "Communiqués officiels", true], ["/autorites/validation", "Valider les données", true], ["/autorites/methode", "Méthode et confidentialité", true]] as const;
+  const nav = [["/autorites", "Tableau de bord", true], ["/autorites/carte", "Carte des structures", true], ["/autorites/territoire", "Couverture territoriale", true], ["/autorites/rapport", "Rapport institutionnel", true], ["/autorites/signalements", "Signalements de médicaments", can("reports")], ["/autorites/campagnes", "Campagnes de don de sang", can("campaigns")], ["/don-de-sang/validation", "Valider les dons de sang", ctx.admin || ctx.scope === "cnts"], ["/autorites/communiques", "Communiqués officiels", true], ["/autorites/validation", "Valider les données", true], ["/autorites/methode", "Méthode et confidentialité", true]] as const;
   return (
     <div className="container-page space-y-4 py-6">
       <IdleLogout />

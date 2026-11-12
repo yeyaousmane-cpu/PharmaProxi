@@ -4,6 +4,8 @@ import { ArrowLeft, BadgeCheck, ExternalLink, Flag, Globe, Mail, MapPin, Message
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth";
+import { ACCESS_FIELDS, SERVICE_STATUS } from "@/lib/orientation-partners";
+import { designatePartner, requestFacilityAppointment } from "@/app/actions/v041";
 import { formatDate, formatPhone } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
@@ -56,6 +58,14 @@ export default async function Facility({ params }: { params: Promise<{ id: strin
     supabase.from("facility_links").select("related_id, relation, source, source_url, facility_listings!facility_links_related_id_fkey(name, kind)").eq("facility_id", f.id),
     session ? supabase.rpc("is_admin").then((r) => !!r.data) : Promise.resolve(false),
   ]);
+  const [accessR, statusR, partnerR] = await Promise.all([
+    supabase.from("facility_access_info").select("field, value, source_kind, source_url, confirmed_at").eq("facility_id", f.id),
+    supabase.from("facility_service_status").select("id, service, status, message, valid_until, created_at").eq("facility_id", f.id).gt("valid_until", new Date().toISOString()).order("created_at", { ascending: false }),
+    supabase.rpc("facility_is_partner", { p_facility: f.id }),
+  ]);
+  const access = (accessR.data ?? []) as { field: string; value: string; source_kind: string; source_url: string | null; confirmed_at: string }[];
+  const serviceStatus = (statusR.data ?? []) as { id: string; service: string; status: string; message: string | null; valid_until: string; created_at: string }[];
+  const isPartner = !!partnerR.data;
   if (!f.is_published && !isAdmin) notFound();
   const offers = (offersR.data ?? []) as Offer[]; const sources = (srcR.data ?? []) as Src[]; const links = (linksR.data ?? []) as unknown as Lk[];
   const trust = trustLabel(f.reliability, f.source_level);
@@ -163,6 +173,38 @@ export default async function Facility({ params }: { params: Promise<{ id: strin
         <p className="mt-2 text-xs text-muted-foreground">Figurer dans une liste officielle ne vaut pas agrément, et une source ancienne ne prouve pas que l&apos;établissement fonctionne encore aujourd&apos;hui.</p>
       </Section>
 
+      {serviceStatus.length ? (
+        <section className="space-y-2 rounded-2xl border border-amber-300 bg-amber-50 p-4" aria-labelledby="etat">
+          <h2 id="etat" className="font-bold text-amber-950">État des services aujourd&apos;hui</h2>
+          <ul className="space-y-1 text-sm">{serviceStatus.map((x) => (
+            <li key={x.id}><strong>{x.service}</strong> : <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${SERVICE_STATUS[x.status]?.tone}`}>{SERVICE_STATUS[x.status]?.label}</span>{x.message ? ` — ${x.message}` : ""}
+              <span className="block text-xs text-amber-900">Déclaré par l&apos;établissement le {formatDate(x.created_at)} · valable jusqu&apos;au {new Date(x.valid_until).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Africa/Bamako" })}</span></li>))}</ul>
+        </section>
+      ) : null}
+
+      <Section id="acces" title="Conditions d'accès">
+        {access.length === 0 ? <p className="text-sm text-muted-foreground">Information non renseignée. Appelez l&apos;établissement pour connaître les tarifs, la prise en charge AMO/CANAM et l&apos;accessibilité.</p> : (
+          <dl className="divide-y text-sm">{access.sort((a, b) => Object.keys(ACCESS_FIELDS).indexOf(a.field) - Object.keys(ACCESS_FIELDS).indexOf(b.field)).map((a) => (
+            <Row key={a.field} t={ACCESS_FIELDS[a.field]}>{a.value}<span className="block text-xs text-muted-foreground">{a.source_kind === "etablissement" ? "Indiqué par l'établissement" : a.source_kind === "source_publique" ? <>Source publique : <a href={a.source_url ?? "#"} target="_blank" rel="noopener noreferrer" className="underline">lien</a></> : "Confirmé par l'équipe SantéProxi"} le {formatDate(a.confirmed_at)}{a.field.startsWith("tarif") ? " — tarif indicatif, à confirmer sur place" : ""}</span></Row>))}</dl>
+        )}
+      </Section>
+
+      <section id="rdv" className="scroll-mt-24 space-y-2 rounded-2xl border bg-white p-4" aria-labelledby="rdv-t">
+        <h2 id="rdv-t" className="font-bold text-brand-deep">Demander un rendez-vous</h2>
+        {!isPartner ? <p className="text-sm text-muted-foreground">Cet établissement ne reçoit pas encore de demandes par SantéProxi : appelez-le directement{f.phone ? "" : " (numéro non renseigné)"}.</p> : !session ? (
+          <p className="text-sm"><span className="mr-2 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-900">Partenaire SantéProxi</span><Link prefetch={false} href={`/connexion?suite=${encodeURIComponent(`/etablissements/${f.id}#rdv`)}`} className="font-semibold text-primary underline">Connectez-vous</Link> pour envoyer une demande.</p>
+        ) : (
+          <ActionForm action={requestFacilityAppointment} className="grid gap-2 text-sm sm:grid-cols-2" resetOnSuccess><input type="hidden" name="id" value={f.id} />
+            <label>Service ou consultation<Input name="service" required minLength={2} maxLength={80} className="mt-1 h-11" placeholder="ex. Consultation prénatale" /></label>
+            <label>Vos disponibilités<Input name="preferred" required minLength={3} maxLength={200} className="mt-1 h-11" placeholder="ex. lundi ou mardi matin" /></label>
+            <label className="sm:col-span-2">Motif en quelques mots (facultatif, sans détail médical)<Input name="reason" maxLength={300} className="mt-1 h-11" /></label>
+            <label className="flex items-start gap-2 text-xs sm:col-span-2"><input type="checkbox" name="share_phone" className="mt-0.5 size-4" /> J&apos;accepte que l&apos;établissement voie mon numéro de téléphone pour m&apos;appeler.</label>
+            <p className="text-xs text-muted-foreground sm:col-span-2">L&apos;établissement vous propose un créneau dans l&apos;application ; le rendez-vous n&apos;est fixé qu&apos;après votre confirmation. En cas d&apos;urgence, ne passez pas par ce formulaire.</p>
+            <div className="sm:col-span-2"><SubmitButton size="sm">Envoyer la demande</SubmitButton></div>
+          </ActionForm>
+        )}
+      </section>
+
       <section id="signaler" className="scroll-mt-24 space-y-2 rounded-2xl border bg-white p-4">
         <h2 className="flex items-center gap-2 font-bold text-brand-deep"><Flag className="size-5" aria-hidden /> Signaler une information incorrecte ou demander une correction</h2>
         {!session ? <p className="text-sm"><Link prefetch={false} href={`/connexion?suite=${encodeURIComponent(`/etablissements/${f.id}#signaler`)}`} className="font-semibold text-primary underline">Connectez-vous</Link> pour signaler une erreur (pour éviter les signalements abusifs).</p> : (
@@ -222,6 +264,14 @@ async function AdminPanel({ f }: { f: F }) {
         <label>Autres appellations (séparées par ;)<Input name="alt_names" defaultValue={f.alt_names.join("; ")} className="mt-1 h-10" /></label>
         <input type="hidden" name="commune_id" value={f.commune_id ?? ""} />
         <label className="flex items-center gap-2"><input type="checkbox" name="is_published" defaultChecked={f.is_published} className="size-4" /> Fiche publiée</label>
+        <div><SubmitButton size="sm">Enregistrer</SubmitButton></div>
+      </ActionForm>
+      <ActionForm action={designatePartner} className="grid gap-2 rounded-xl bg-muted/40 p-3 sm:grid-cols-2"><input type="hidden" name="id" value={f.id} />
+        <h3 className="font-semibold sm:col-span-2">Membre partenaire (espace établissement)</h3>
+        <Input name="email" type="email" required placeholder="Adresse du compte SantéProxi" className="h-10" />
+        <Input name="role" maxLength={80} placeholder="Fonction, ex. Major, Secrétariat" className="h-10" />
+        <Input name="note" required minLength={5} maxLength={250} placeholder="Vérification faite, ex. appel au standard et ordre de mission" className="h-10 sm:col-span-2" />
+        <label className="flex items-center gap-2"><input type="checkbox" name="remove" value="1" className="size-4" /> Retirer l&apos;accès</label>
         <div><SubmitButton size="sm">Enregistrer</SubmitButton></div>
       </ActionForm>
       <p className="text-xs text-muted-foreground">Identifiant de cette fiche : <code>{f.id}</code></p>

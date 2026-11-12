@@ -34,6 +34,7 @@ export async function SiteHeader({ session }: { session: SessionInfo | null }) {
       { href: "/ma-sante/famille", label: t("link.famille"), hint: t("link.famille.hint") },
       { href: "/sos", label: t("nav.sos"), hint: t("link.sos.hint"), tone: "red" },
       { href: "/etablissements", label: t("link.etab"), hint: t("link.etab.hint") },
+      { href: "/orientation", label: t("link.orientation"), hint: t("link.orientation.hint") },
       { href: "/centres-specialises", label: t("link.centres"), hint: t("link.centres.hint") },
       { href: "/sante-mentale", label: t("link.mentale"), hint: t("link.mentale.hint") },
       { href: "/scanner", label: t("link.scanner"), hint: t("link.scanner.hint") },
