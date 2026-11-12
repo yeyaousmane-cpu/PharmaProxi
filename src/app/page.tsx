@@ -3,7 +3,7 @@ import { getT } from "@/lib/i18n";
 import { AudioGuide } from "@/components/audio/audio-guide";
 import Link from "next/link";
 import { ProOnly } from "@/components/pro/pro-only";
-import { Bot, BookOpenCheck, Flower2, CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
+import { Bot, Building2, BookOpenCheck, Flower2, CalendarCheck, FlaskConical, Moon, ShieldCheck, Siren, Stethoscope, Store } from "lucide-react";
 import { RecentList } from "@/components/recent/recent-list";
 import { SearchBar } from "@/components/search-bar";
 import { HowItWorks } from "@/components/home/how-it-works";
@@ -102,6 +102,7 @@ export default async function Home() {
             <div className="mt-4 flex flex-wrap gap-2">
               <Link prefetch={false} href="/rendez-vous" className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-blue px-4 text-sm font-semibold text-white hover:bg-brand-blue/90"><CalendarCheck className="size-4" aria-hidden /> Prendre rendez-vous</Link>
               <Link prefetch={false} href="/medecins" className="inline-flex h-11 items-center gap-2 rounded-lg border bg-white px-4 text-sm font-semibold hover:bg-muted"><Stethoscope className="size-4" aria-hidden /> Trouver un spécialiste</Link>
+              <Link prefetch={false} href="/etablissements" className="inline-flex h-11 items-center gap-2 rounded-lg border bg-white px-4 text-sm font-semibold hover:bg-muted"><Building2 className="size-4" aria-hidden /> Trouver un établissement</Link>
             </div>
           </div>
           <ul className="flex flex-wrap gap-2" aria-label="Spécialités fréquentes">

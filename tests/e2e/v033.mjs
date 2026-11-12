@@ -48,7 +48,7 @@ ok(await wait(p.locator("main li span", { hasText: "Information incomplète" }))
 // Fiche détaillée
 await p.getByRole("link", { name: "Hôpital Fousseyni Daou" }).first().click(); await p.waitForLoadState("networkidle");
 ok(await wait(p.getByText("Information non renseignée").first()), "fiche : champs inconnus « Information non renseignée »");
-ok(await wait(p.getByText(/Aucune spécialité n'est encore confirmée/)), "fiche : aucune spécialité attribuée sans confirmation");
+ok(await wait(p.getByText(/Aucun service, aucune spécialité|Un service n'est affiché « confirmé » que s'il figure dans une source officielle/)), "fiche : aucune spécialité attribuée sans confirmation (0.36 : offre sourcée)");
 await p.goto(`${BASE}/centres-specialises?q=Golden`, NI);
 await p.getByRole("link", { name: "Golden Life American Hospital" }).first().click(); await p.waitForLoadState("networkidle");
 ok(await wait(p.getByRole("link", { name: /glahospital\.com/ })) && await wait(p.getByText("Hémodialyse ; disponibilité 24 h/24 en cas de besoin urgent selon l'établissement")), "fiche : site officiel et service avec sa source");

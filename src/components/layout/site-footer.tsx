@@ -35,6 +35,7 @@ export async function SiteFooter({ simple = false }: { simple?: boolean }) {
           <Link prefetch={false} href="/ma-sante" className="hover:underline">{t("link.ma_sante")}</Link>
           <Link prefetch={false} href="/ma-sante/dossier" className="hover:underline">{t("link.dossier")}</Link>
           <Link prefetch={false} href="/sos" className="hover:underline">{t("nav.sos")}</Link>
+          <Link prefetch={false} href="/etablissements" className="hover:underline">{t("link.etab")}</Link>
           <Link prefetch={false} href="/centres-specialises" className="hover:underline">{t("link.centres")}</Link>
           <Link prefetch={false} href="/sante-mentale" className="hover:underline">{t("link.mentale")}</Link>
           <Link prefetch={false} href="/laboratoires/lexique" className="hover:underline">{t("link.lexique")}</Link>
