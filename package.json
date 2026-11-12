@@ -1,6 +1,6 @@
 {
   "name": "pharmaproxi",
-  "version": "0.37.0",
+  "version": "0.38.0",
   "private": true,
   "description": "SantéProxi — toute la santé, près de chez vous (Mali)",
   "scripts": {
@@ -23,6 +23,7 @@
     "@types/qrcode": "^1.5.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dicom-parser": "^1.8.21",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.55.0",
     "next": "^16.3.8",

@@ -11,6 +11,7 @@ export const metadata = { title: "Mes documents de santé" };
 export const dynamic = "force-dynamic";
 
 const KIND: Record<string, string> = { ordonnance: "Ordonnance", resultat: "Résultat d'analyse", compte_rendu: "Compte rendu", certificat: "Certificat", vaccination: "Vaccination", autre: "Autre" };
+const LABEL: Record<string, string> = { ...KIND, imagerie: "Imagerie médicale" };
 
 export default async function Documents({ searchParams }: { searchParams: Promise<{ p?: string }> }) {
   const sp = await searchParams;
@@ -30,7 +31,7 @@ export default async function Documents({ searchParams }: { searchParams: Promis
             <Field label="Titre" htmlFor="ti" required><Input id="ti" name="title" maxLength={120} required placeholder="ex. Ordonnance du Dr Traoré" /></Field>
             <Field label="Type" htmlFor="ki"><Select id="ki" name="doc_kind" defaultValue="ordonnance">{Object.entries(KIND).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</Select></Field>
             <Field label="Date du document" htmlFor="da"><Input id="da" name="doc_date" type="date" /></Field>
-            <Field label="Fichier (PDF ou photo, 10 Mo max.)" htmlFor="fi" required><input id="fi" name="file" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" capture="environment" required className="block w-full text-sm" /></Field>
+            <Field label="Fichier (PDF ou photo, 4 Mo max.)" htmlFor="fi" required><input id="fi" name="file" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" capture="environment" required className="block w-full text-sm" /></Field>
             <div className="sm:col-span-2"><SubmitButton>Ranger dans mon dossier</SubmitButton></div>
           </ActionForm>
         ) : <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-950">Le rangement de documents sera ouvert dès que le chiffrement sera configuré sur le serveur.</p>}
@@ -40,8 +41,8 @@ export default async function Documents({ searchParams }: { searchParams: Promis
         {(docs ?? []).length === 0 ? <p className="rounded-xl border bg-white p-4 text-sm text-muted-foreground">Aucun document.</p> : (
           <ul className="divide-y rounded-2xl border bg-white text-sm">{(docs ?? []).map((d) => (
             <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
-              <span><a href={`/ma-sante/dossier/documents/${d.id}`} target="_blank" rel="noopener" className="font-semibold text-primary underline">{d.title}</a>
-                <span className="block text-xs text-muted-foreground">{KIND[d.doc_kind]}{d.doc_date ? ` · ${formatDate(d.doc_date)}` : ""} · {Math.max(1, Math.round(d.size_bytes / 1024))} Ko</span></span>
+              <span><a href={d.mime === "application/dicom" ? `/ma-sante/dossier/imagerie/${d.id}` : `/ma-sante/dossier/documents/${d.id}`} target="_blank" rel="noopener" className="font-semibold text-primary underline">{d.title}</a>
+                <span className="block text-xs text-muted-foreground">{LABEL[d.doc_kind]}{d.doc_date ? ` · ${formatDate(d.doc_date)}` : ""} · {Math.max(1, Math.round(d.size_bytes / 1024))} Ko</span></span>
               <ActionForm action={deleteRecordDocument}><input type="hidden" name="id" value={d.id} /><SubmitButton size="sm" variant="ghost" confirm="Supprimer définitivement ce document ?">Supprimer</SubmitButton></ActionForm>
             </li>))}</ul>
         )}

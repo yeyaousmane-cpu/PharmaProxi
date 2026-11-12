@@ -70,6 +70,7 @@ export default async function DoctorSpace({ searchParams }: { searchParams: Prom
           <Link prefetch={false} href="/medecin/rendez-vous" className={cn(buttonVariants())}><CalendarClock aria-hidden /> Demandes de rendez-vous</Link>
           <Link prefetch={false} href="/medecin/suivis" className={cn(buttonVariants({ variant: "outline" }))}>Patients suivis</Link>
           <Link prefetch={false} href="/medecin/patients" className={cn(buttonVariants({ variant: "outline" }))}>Mes patients (médecin traitant)</Link>
+          <Link prefetch={false} href="/medecin/imagerie" className={cn(buttonVariants({ variant: "outline" }))}>Examens partagés avec moi</Link>
           <Link prefetch={false} href={`/medecins/${d.id}`} className={cn(buttonVariants({ variant: "outline" }))}><Eye aria-hidden /> Voir ma fiche publique</Link>
         </div>
       </header>

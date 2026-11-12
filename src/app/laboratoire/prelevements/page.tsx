@@ -50,7 +50,7 @@ export default async function LabRequests({ searchParams }: { searchParams: Prom
             {svc?.results_enabled && r.results_consent && ["acceptee", "planifiee", "prelevee", "terminee"].includes(r.status) && (
               <ActionForm action={uploadLabResult} className="flex flex-wrap items-end gap-2 rounded-xl bg-muted/40 p-3">
                 <input type="hidden" name="request_id" value={r.id} /><input type="hidden" name="facility_id" value={ctx.current!.facility_id} />
-                <label className="text-xs">Résultat (PDF ou photo, 10 Mo max.)<input name="file" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required className="mt-1 block text-sm" /></label>
+                <label className="text-xs">Résultat (PDF ou photo, 4 Mo max.)<input name="file" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required className="mt-1 block text-sm" /></label>
                 <label className="min-w-[180px] flex-1 text-xs">Message (facultatif)<Input name="note" maxLength={500} placeholder="ex. à montrer à votre médecin" className="mt-1 h-9" /></label>
                 <SubmitButton size="sm">Envoyer le résultat chiffré</SubmitButton>
               </ActionForm>

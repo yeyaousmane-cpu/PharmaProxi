@@ -34,7 +34,12 @@ export function openFile(stored: Buffer): Buffer {
 }
 
 export const ALLOWED_MIME = ["application/pdf", "image/jpeg", "image/png", "image/webp"] as const;
-export const MAX_FILE = 10 * 1024 * 1024;
+/** L'hébergement (Vercel) refuse les requêtes de plus de 4,5 Mo : la limite affichée est la limite réelle. */
+export const MAX_FILE = 4 * 1024 * 1024;
+export const MAX_FILE_LABEL = "4 Mo";
+
+/** Fichier DICOM : préambule de 128 octets puis « DICM ». */
+export const isDicom = (b: Buffer) => b.length > 132 && b.subarray(128, 132).toString("latin1") === "DICM";
 
 /** Vérifie le type réel du fichier d'après ses premiers octets (et pas seulement son extension). */
 export function sniffMime(b: Buffer): (typeof ALLOWED_MIME)[number] | null {
