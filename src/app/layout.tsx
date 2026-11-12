@@ -13,11 +13,12 @@ import { readFlash } from "@/lib/flash";
 import { isSimpleMode } from "@/lib/simple-mode";
 import { getMessages, getT, htmlLangDir } from "@/lib/i18n";
 import { I18nProvider } from "@/i18n/client";
+import { POSITIONING } from "@/lib/brand";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: "SantéProxi — La santé, plus proche de vous", template: "%s · SantéProxi" },
-  description: "Le point d'accès numérique à la santé au Mali : pharmacies et médicaments, médecins et rendez-vous, laboratoires et prix des analyses, urgences, dossier santé personnel.",
+  description: POSITIONING,
   applicationName: "SantéProxi",
   manifest: "/manifest.webmanifest",
   icons: { apple: "/icons/apple-touch-icon.png" },

@@ -14,7 +14,7 @@ export const metadata = { title: "Annonces — administration" };
 export const maxDuration = 60;
 
 const AUDIENCES: Record<string, string> = {
-  tous: "Tous les inscrits", clients: "Clients", pharmaciens: "Pharmaciens", medecins: "Médecins", etablissements: "Cliniques et établissements", livreurs: "Livreurs",
+  tous: "Tous les inscrits", clients: "Clients", pharmaciens: "Pharmaciens", medecins: "Médecins", etablissements: "Cliniques et établissements",
 };
 
 export default async function AdminAnnouncements({ searchParams }: { searchParams: Promise<{ modele?: string }> }) {

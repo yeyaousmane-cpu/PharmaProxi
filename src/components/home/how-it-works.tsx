@@ -4,7 +4,7 @@ const steps = [
   { Icon: Search, title: "Recherchez", text: "Tapez le nom commercial ou le principe actif du médicament." },
   { Icon: MapPin, title: "Comparez", text: "Voyez les pharmacies qui le déclarent, leur distance, leur prix et la date de mise à jour du stock." },
   { Icon: PhoneCall, title: "Faites confirmer", text: "Appelez la pharmacie ou envoyez une demande : elle confirme la disponibilité réelle." },
-  { Icon: CalendarCheck, title: "Retirez", text: "Une fois confirmé, le produit vous est réservé. Retirez-le en pharmacie (livraison selon autorisation)." },
+  { Icon: CalendarCheck, title: "Retirez", text: "Une fois confirmé, le produit vous est réservé. Retirez-le en pharmacie et payez sur place." },
 ];
 
 export function HowItWorks() {

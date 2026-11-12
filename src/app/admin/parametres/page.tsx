@@ -8,17 +8,20 @@ import { formatDateTime } from "@/lib/format";
 
 export const metadata = { title: "Paramètres — administration" };
 
+/** Réglages du module de livraison retiré (v052) : conservés en base, plus modifiables ici. */
+const HIDDEN = new Set(["demo_enabled_delivery", "delivery_enabled", "default_delivery_fee_xof"]);
+
 export default async function AdminSettings() {
   const supabase = await createClient();
   const { data } = await supabase.from("platform_settings").select("key, value, description, updated_at").order("key");
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Paramètres de la plateforme</h1>
-      <Alert tone="warning" title="Livraison">N&apos;activez la livraison qu&apos;après vérification des règles applicables au Mali (catégories autorisées, conditions de transport, responsabilités). Activez ensuite les catégories concernées dans « Catalogue ».</Alert>
+      <Alert tone="info" title="Livraison retirée">SantéProxi ne propose plus de livraison : les réglages correspondants sont masqués et la base refuse toute commande à livrer.</Alert>
       <Card><CardHeader><CardTitle>Paramètres</CardTitle></CardHeader>
         <CardContent>
           <ul className="divide-y">
-            {(data ?? []).filter((s) => s.key !== "demo_enabled_delivery").map((s) => {
+            {(data ?? []).filter((s) => !HIDDEN.has(s.key)).map((s) => {
               const type = typeof s.value === "boolean" ? "boolean" : typeof s.value === "number" ? "number" : "string";
               return (
                 <li key={s.key} className="py-3">
@@ -31,7 +34,6 @@ export default async function AdminSettings() {
                       ) : (
                         <Input name="value" type={type === "number" ? "number" : "text"} defaultValue={String(s.value)} maxLength={200} className={type === "number" ? "h-9 w-32" : "h-9 w-72"} aria-label={s.key} />
                       )}
-                      {s.key === "delivery_enabled" && <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="ack" className="size-4" /> Vérification réglementaire effectuée</label>}
                       <SubmitButton size="sm" variant="outline">Enregistrer</SubmitButton>
                     </div>
                   </ActionForm>

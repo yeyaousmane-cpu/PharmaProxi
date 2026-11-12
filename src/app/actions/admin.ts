@@ -42,20 +42,6 @@ export async function setRole(_: ActionState, fd: FormData): Promise<ActionState
   return rpc("admin_set_role", { p_user: id.data, p_role: role.data, p_grant: fd.get("grant") === "true" }, "Rôle mis à jour.");
 }
 
-export async function reviewCourier(_: ActionState, fd: FormData): Promise<ActionState> {
-  const id = uuid.safeParse(fd.get("user_id"));
-  const st = z.enum(["verified", "rejected", "suspended", "pending"]).safeParse(fd.get("status"));
-  if (!id.success || !st.success) return { error: "Requête invalide" };
-  return rpc("admin_review_courier", { p_user: id.data, p_status: st.data, p_reason: s(fd, "reason") || null, p_document_ref: s(fd, "document_ref") || null }, "Livreur mis à jour.");
-}
-
-export async function assignCourier(_: ActionState, fd: FormData): Promise<ActionState> {
-  const o = uuid.safeParse(fd.get("order_id"));
-  const c = uuid.safeParse(fd.get("courier_id"));
-  if (!o.success || !c.success) return { error: "Choisissez un livreur." };
-  return rpc("assign_courier", { p_order: o.data, p_courier: c.data }, "Livreur affecté.");
-}
-
 export async function adminCancel(_: ActionState, fd: FormData): Promise<ActionState> {
   const o = uuid.safeParse(fd.get("order_id"));
   if (!o.success) return { error: "Requête invalide" };
@@ -103,8 +89,8 @@ export async function updateSetting(_: ActionState, fd: FormData): Promise<Actio
     value = Number(s(fd, "value"));
     if (!Number.isFinite(value as number) || !Number.isInteger(value)) return { error: "Nombre entier attendu" };
   } else value = s(fd, "value");
-  if (key === "delivery_enabled" && value === true && fd.get("ack") !== "on") {
-    return { error: "Confirmez que la vérification réglementaire de la livraison a été effectuée." };
+  if (key === "delivery_enabled" && value === true) {
+    return { error: "Le module de livraison a été retiré : ce réglage ne peut plus être activé." };
   }
   return rpc("admin_update_setting", { p_key: key, p_value: value }, "Paramètre enregistré.", ["/"]);
 }
@@ -138,7 +124,7 @@ export async function addCategory(_: ActionState, fd: FormData): Promise<ActionS
   const { error } = await supabase.from("product_categories").insert({ name, description: s(fd, "description") || null, requires_prescription: fd.get("requires_prescription") === "on" });
   if (error) return { error: humanizeError(error) };
   revalidatePath("/admin/catalogue");
-  return { ok: true, message: "Catégorie créée (livraison désactivée par défaut)." };
+  return { ok: true, message: "Catégorie créée." };
 }
 
 export async function addGeo(_: ActionState, fd: FormData): Promise<ActionState> {

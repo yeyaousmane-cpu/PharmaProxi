@@ -51,8 +51,7 @@ export default async function PharmacyOrderDetail({ params }: { params: Promise<
                 </>
               )}
               {status === "confirmed" && <AdvanceButton orderId={o.id} to="preparing" label="Commencer la préparation" />}
-              {status === "preparing" && o.fulfillment === "pickup" && <AdvanceButton orderId={o.id} to="ready_for_pickup" label="Marquer prête au retrait" />}
-              {status === "preparing" && o.fulfillment === "delivery" && <AdvanceButton orderId={o.id} to="awaiting_courier" label="Prête : demander un livreur" />}
+              {status === "preparing" && <AdvanceButton orderId={o.id} to="ready_for_pickup" label="Marquer prête au retrait" />}
               {status === "ready_for_pickup" && (
                 <>
                   {o.has_prescription_items && <Alert tone="warning" title="Vérifiez l'ordonnance originale avant la remise." />}
@@ -60,7 +59,7 @@ export default async function PharmacyOrderDetail({ params }: { params: Promise<
                 </>
               )}
               {(status === "ready_for_pickup" || status === "completed") && o.payment_status === "unpaid" && o.payment_method === "pay_at_pharmacy" && <PaymentButton orderId={o.id} />}
-              {["awaiting_courier", "courier_assigned", "in_delivery"].includes(status) && <p className="text-sm text-muted-foreground">La suite est gérée par l&apos;équipe de livraison.</p>}
+              {["awaiting_courier", "courier_assigned", "in_delivery"].includes(status) && <p className="text-sm text-muted-foreground">Commande de l&apos;ancien module de livraison (retiré) : contactez l&apos;administration pour la clôturer.</p>}
               {cancellable && <ReasonAction orderId={o.id} to="cancelled" label="Annuler la commande" placeholder="Motif (ex. rupture constatée, client injoignable)" />}
               {["completed", "delivered", "cancelled", "rejected", "expired", "delivery_failed"].includes(status) && <p className="text-sm text-muted-foreground">Commande clôturée.</p>}
             </CardContent>

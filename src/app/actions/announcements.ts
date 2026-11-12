@@ -10,7 +10,7 @@ const schema = z.object({
   title: z.string().trim().min(3, "Titre : 3 caractères minimum").max(120),
   body: z.string().trim().min(10, "Message : 10 caractères minimum").max(3000),
   link: z.string().trim().max(200).regex(/^(\/[A-Za-z0-9/_?=&#%.-]*)?$/, "Lien interne commençant par / (ex. /garde)").optional(),
-  audience: z.enum(["tous", "clients", "pharmaciens", "medecins", "etablissements", "livreurs"]),
+  audience: z.enum(["tous", "clients", "pharmaciens", "medecins", "etablissements"]),
   kind: z.enum(["announcement", "welcome"]),
 });
 type Recipient = { id: string; email: string; name: string | null };

@@ -8,7 +8,7 @@ import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Field, Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LocationPicker } from "@/components/location-picker";
-import { addAddress, deleteAccount, deleteAddress, updateProfile } from "@/app/actions/account";
+import { deleteAccount, deleteAddress, updateProfile } from "@/app/actions/account";
 import { signOut } from "@/app/actions/auth";
 import { formatPhone } from "@/lib/format";
 import { buttonVariants } from "@/components/ui/button";
@@ -61,10 +61,10 @@ export default async function AccountPage() {
         </CardContent>
       </Card>
 
+      {(addresses ?? []).length > 0 && (
       <Card id="adresses">
-        <CardHeader><CardTitle>Adresses de livraison</CardTitle><CardDescription>Utilisées uniquement si la livraison est disponible.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Mes adresses enregistrées</CardTitle><CardDescription>SantéProxi ne livre pas de médicaments. Les adresses enregistrées auparavant sont conservées ; vous pouvez les supprimer.</CardDescription></CardHeader>
         <CardContent className="space-y-4">
-          {(addresses ?? []).length === 0 ? <p className="text-sm text-muted-foreground">Aucune adresse enregistrée.</p> : (
             <ul className="divide-y rounded-lg border">
               {(addresses ?? []).map((a) => {
                 const c = Array.isArray(a.communes) ? a.communes[0] : a.communes;
@@ -82,26 +82,14 @@ export default async function AccountPage() {
                 );
               })}
             </ul>
-          )}
-          <details className="rounded-lg border p-3">
-            <summary className="cursor-pointer text-sm font-semibold">Ajouter une adresse</summary>
-            <ActionForm action={addAddress} resetOnSuccess className="mt-3 space-y-3" labels={{ label: "Libellé", region_id: "Région", address_line: "Adresse", contact_phone: "Téléphone" }}>
-              <Field label="Libellé" htmlFor="label" required><Input id="label" name="label" defaultValue="Domicile" required maxLength={40} /></Field>
-              <LocationPicker geo={geo} requiredRegion names={{ region: "region_id", commune: "commune_id", locality: "locality_id" }} />
-              <Field label="Adresse" htmlFor="address_line" required hint="Rue, porte, bâtiment"><Input id="address_line" name="address_line" required maxLength={300} /></Field>
-              <Field label="Point de repère" htmlFor="landmark"><Input id="landmark" name="landmark" maxLength={200} /></Field>
-              <Field label="Téléphone de contact" htmlFor="contact_phone" required><Input id="contact_phone" name="contact_phone" type="tel" required /></Field>
-              <SubmitButton size="sm">Ajouter</SubmitButton>
-            </ActionForm>
-          </details>
         </CardContent>
       </Card>
+      )}
 
       <Card>
         <CardHeader><CardTitle>Espaces professionnels</CardTitle></CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           <Link prefetch={false} href="/professionnels" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Vous êtes professionnel de santé ?</Link>
-          <Link prefetch={false} href="/livraison" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>Devenir livreur</Link>
         </CardContent>
       </Card>
 

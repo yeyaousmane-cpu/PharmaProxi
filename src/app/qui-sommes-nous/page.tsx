@@ -3,6 +3,7 @@ import {
   Accessibility, ArrowRight, BadgeCheck, BookOpenCheck, Briefcase, Building2, CalendarCheck, Compass, FlaskConical, Globe2, Handshake, HeartHandshake,
   HeartPulse, Languages, Lightbulb, LockKeyhole, MapPinned, Megaphone, Network, Pill, Scale, Search, ShieldCheck, Sparkles, Stethoscope, Users, WifiOff,
 } from "lucide-react";
+import { POSITIONING } from "@/lib/brand";
 
 export const metadata = {
   title: "Qui sommes-nous ?",
@@ -76,6 +77,7 @@ export default function AboutPage() {
             <h1 className="mt-3 text-4xl font-extrabold leading-tight md:text-5xl">{SIGNATURE}</h1>
             <div className="mt-6 space-y-3 text-lg text-white/85">
               <p>La santé est un droit fondamental et un enjeu collectif. Pourtant, accéder aux bons professionnels, trouver une information fiable ou identifier les services de santé adaptés reste un défi pour de nombreuses personnes.</p>
+              <p className="font-semibold text-white">{POSITIONING}</p>
               <p>Chez SantéProxi, nous croyons que le numérique peut contribuer à rapprocher les populations des services de santé et à faciliter le quotidien de celles et ceux qui prennent soin des autres.</p>
               <p>Notre ambition : construire, avec les acteurs de santé, un écosystème plus accessible, plus humain et mieux connecté.</p>
             </div>

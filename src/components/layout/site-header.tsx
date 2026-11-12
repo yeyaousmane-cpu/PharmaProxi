@@ -77,7 +77,6 @@ export async function SiteHeader({ session }: { session: SessionInfo | null }) {
         session.doctor && { href: "/medecin", label: t("acct.medecin") },
         session.clinics > 0 && { href: "/clinique", label: t("acct.clinique") },
         session.labs > 0 && { href: "/laboratoire", label: t("acct.labo") },
-        roles.includes("courier") && { href: "/livraison", label: t("acct.livraison") },
         roles.includes("admin") && { href: "/admin", label: t("acct.admin") },
       ].filter(Boolean) as NavLink[])
     : [{ href: "/connexion", label: t("nav.signin_long") }, { href: "/inscription", label: t("nav.signup") }];

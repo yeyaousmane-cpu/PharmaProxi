@@ -165,7 +165,7 @@ export default async function Home() {
             Elle est datée : vérifiez la date de mise à jour et faites confirmer avant de vous déplacer.
           </Alert>
           <Alert tone="warning" title="Ordonnance">
-            Les médicaments sur ordonnance sont délivrés en pharmacie, sur présentation de l&apos;ordonnance. Ils ne sont jamais livrés automatiquement.
+            Les médicaments sur ordonnance sont délivrés en pharmacie, sur présentation de l&apos;ordonnance. Les stupéfiants et produits hospitaliers ne se réservent pas en ligne.
           </Alert>
           <Alert tone="error" title="Pas d'automédication">
             SantéProxi ne pose aucun diagnostic et ne recommande aucun médicament. Demandez conseil à un professionnel de santé.

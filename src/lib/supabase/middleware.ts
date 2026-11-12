@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured, SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/env";
 import { fetchWithTimeout } from "@/lib/supabase/fetch";
 
-const PROTECTED = ["/compte", "/pharmacien", "/admin", "/livraison"];
+const PROTECTED = ["/compte", "/pharmacien", "/admin"];
 
 /** Rafraîchit la session et redirige les pages protégées vers la connexion. */
 export async function updateSession(request: NextRequest, headers: Headers = request.headers) {

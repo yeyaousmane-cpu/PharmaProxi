@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  async redirects() {
+    // Module de livraison retiré (v052) : les anciens liens renvoient vers l'explication du service.
+    return [
+      { source: "/livraison", destination: "/fonctionnement", permanent: true },
+      { source: "/livraison/:path*", destination: "/fonctionnement", permanent: true },
+      { source: "/admin/livreurs", destination: "/admin", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

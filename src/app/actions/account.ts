@@ -78,34 +78,3 @@ export async function deleteAccount(_: ActionState, fd: FormData): Promise<Actio
   revalidatePath("/", "layout");
   redirect("/?compte=supprime");
 }
-
-export async function applyAsCourier(_: ActionState, fd: FormData): Promise<ActionState> {
-  const { normalizePhone } = await import("@/lib/format");
-  const phone = normalizePhone(String(fd.get("phone") ?? ""));
-  if (!phone) return { error: "Numéro de téléphone invalide", fieldErrors: { phone: "Format attendu : +223 70 00 00 00" } };
-  const vehicle = String(fd.get("vehicle") ?? "moto");
-  const region = String(fd.get("region") ?? "") || null;
-  const commune = String(fd.get("commune") ?? "") || null;
-  const { supabase } = await uid();
-  const { error } = await supabase.rpc("courier_apply", { p_phone: phone, p_vehicle: vehicle, p_region: region, p_commune: commune });
-  if (error) return { error: humanizeError(error) };
-  revalidatePath("/livraison");
-  return { ok: true, message: "Candidature envoyée. L'équipe vérifiera votre identité avant activation." };
-}
-
-export async function setCourierAvailability(fd: FormData) {
-  const { supabase, id } = await uid();
-  await supabase.from("couriers").update({ is_available: fd.get("available") === "true" }).eq("user_id", id);
-  revalidatePath("/livraison");
-}
-
-export async function reportIncident(_: ActionState, fd: FormData): Promise<ActionState> {
-  const delivery = z.uuid().safeParse(fd.get("delivery_id"));
-  const kind = z.enum(["client_absent", "adresse_introuvable", "colis_endommage", "refus_client", "securite", "autre"]).safeParse(fd.get("kind"));
-  if (!delivery.success || !kind.success) return { error: "Requête invalide" };
-  const { supabase } = await uid();
-  const { error } = await supabase.rpc("report_delivery_incident", { p_delivery: delivery.data, p_kind: kind.data, p_description: String(fd.get("description") ?? "").slice(0, 500) });
-  if (error) return { error: humanizeError(error) };
-  revalidatePath("/livraison", "layout");
-  return { ok: true, message: "Incident signalé à l'équipe." };
-}

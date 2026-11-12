@@ -37,8 +37,7 @@ export function PharmacyFormFields({ geo, v = {} }: { geo: GeoData; v?: Values }
           <Field label="E-mail" htmlFor="email"><Input id="email" name="email" type="email" defaultValue={v.email ?? ""} /></Field>
         </div>
         <div className="flex flex-wrap gap-4 text-sm">
-          <label className="flex items-center gap-2"><input type="checkbox" name="offers_pickup" defaultChecked={v.offers_pickup ?? true} className="size-4" /> Retrait en pharmacie</label>
-          <label className="flex items-center gap-2"><input type="checkbox" name="offers_delivery" defaultChecked={v.offers_delivery ?? false} className="size-4" /> Livraison (si activée par la plateforme)</label>
+          <label className="flex items-center gap-2"><input type="checkbox" name="offers_pickup" defaultChecked={v.offers_pickup ?? true} className="size-4" /> Retrait des réservations en pharmacie</label>
         </div>
       </fieldset>
 

@@ -9,7 +9,7 @@ import { formatDate, formatPhone } from "@/lib/format";
 import { humanizeError } from "@/lib/errors";
 
 export const metadata = { title: "Utilisateurs — administration" };
-const ROLE_LABEL: Record<string, string> = { customer: "Client", pharmacist: "Pharmacien", courier: "Livreur", admin: "Administrateur" };
+const ROLE_LABEL: Record<string, string> = { customer: "Client", pharmacist: "Pharmacien", courier: "Livreur (module retiré)", admin: "Administrateur" };
 
 type U = { id: string; email: string; full_name: string | null; phone: string | null; roles: string[]; created_at: string; deleted_at: string | null };
 
@@ -22,7 +22,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Utilisateurs et rôles</h1>
-      <Alert tone="info" title="Principe du moindre privilège">Le rôle pharmacien est accordé automatiquement à l&apos;inscription d&apos;une pharmacie (sans la rendre vérifiée) ; le rôle livreur via la validation des livreurs. N&apos;accordez le rôle administrateur qu&apos;aux personnes habilitées.</Alert>
+      <Alert tone="info" title="Principe du moindre privilège">Le rôle pharmacien est accordé automatiquement à l&apos;inscription d&apos;une pharmacie (sans la rendre vérifiée). N&apos;accordez le rôle administrateur qu&apos;aux personnes habilitées.</Alert>
       <form method="get"><Input name="q" placeholder="E-mail, nom ou téléphone…" defaultValue={sp.q} aria-label="Rechercher un utilisateur" /></form>
       {error && <Alert tone="error" title={humanizeError(error)} />}
       <ul className="divide-y rounded-xl border bg-white">

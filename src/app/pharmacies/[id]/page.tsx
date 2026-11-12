@@ -3,7 +3,7 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { TrackClicks } from "@/components/stats/track";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, MapPin, MessageCircle, Navigation, Phone, ShieldCheck, ShieldPlus, Truck } from "lucide-react";
+import { BadgeCheck, MapPin, MessageCircle, Navigation, Phone, ShieldCheck, ShieldPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
@@ -63,14 +63,17 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
   const amo = (amoData as AmoResults | null) ?? emptyAmoResults();
   const amoStatus = amo.pharmacies[id];
   const insurers = ((await supabase.rpc("pharmacy_insurers", { p_pharmacy: id })).data as { name: string; slug: string }[] | null) ?? [];
-  const addresses = session
-    ? ((await supabase.from("customer_addresses").select("id, label, address_line").eq("user_id", session.userId)).data ?? [])
-    : [];
+  // Stupéfiants, psychotropes et produits hospitaliers : jamais réservables en ligne (refus également en base).
+  const restricted = new Set<string>();
+  if (items.length) {
+    const { data: regs } = await supabase.from("medicine_catalog").select("id").in("id", [...new Set(items.map((i) => i.catalog_id))]).in("regulatory_class", ["controle", "hospitalier"]);
+    for (const r of regs ?? []) restricted.add(r.id as string);
+  }
   const orderable: OrderableItem[] = items
-    .filter((i) => i.price_xof !== null && i.freshness !== "unavailable")
+    .filter((i) => i.price_xof !== null && i.freshness !== "unavailable" && i.freshness !== "non_declare" && !restricted.has(i.catalog_id))
     .map((i) => ({
       inventory_id: i.inventory_id, label: [i.brand_name, i.dosage, i.form].filter(Boolean).join(" "), price_xof: i.price_xof!,
-      freshness: i.freshness, requires_prescription: i.requires_prescription, delivery_allowed: i.delivery_allowed,
+      freshness: i.freshness, requires_prescription: i.requires_prescription,
     }));
   const one = <T,>(v: T | T[] | null) => (Array.isArray(v) ? v[0] : v);
   const place = [one(p.localities)?.name, one(p.communes)?.name, one(p.circles)?.name, one(p.regions)?.name].filter(Boolean).join(", ");
@@ -116,7 +119,6 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
           </div>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             {p.offers_pickup && <Badge className="bg-white">Retrait en pharmacie</Badge>}
-            {p.offers_delivery && settings.delivery_enabled && <Badge className="bg-white"><Truck className="size-3" aria-hidden /> Livraison (produits autorisés)</Badge>}
           </div>
         </header>
 
@@ -171,9 +173,8 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
             <Alert tone="info" title="Les demandes en ligne sont momentanément suspendues. Appelez la pharmacie." />
           ) : session ? (
             <OrderRequestForm
-              pharmacyId={p.id} items={orderable} preselected={sp.produit} addresses={addresses}
-              deliveryEnabled={settings.delivery_enabled} offersDelivery={p.offers_delivery} offersPickup={p.offers_pickup}
-              deliveryFee={settings.default_delivery_fee_xof} maxQty={settings.max_quantity_per_item}
+              pharmacyId={p.id} items={orderable} preselected={sp.produit}
+              offersPickup={p.offers_pickup} maxQty={settings.max_quantity_per_item}
             />
           ) : (
             <Link prefetch={false} href={`/connexion?suite=${encodeURIComponent(`/pharmacies/${p.id}${sp.produit ? `?produit=${sp.produit}` : ""}#demande`)}`} className={cn(buttonVariants(), "w-full")}>

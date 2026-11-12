@@ -3,12 +3,11 @@ import { Pagination, pageRange } from "@/components/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { OrderStatusBadge } from "@/components/orders/order-bits";
-import { Input, Select } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
-import { adminCancel, assignCourier, markRefunded, readOrderNote } from "@/app/actions/admin";
+import { adminCancel, markRefunded, readOrderNote } from "@/app/actions/admin";
 import { ORDER_STATUS_LABEL, PAYMENT_LABEL, TERMINAL, type OrderStatus } from "@/lib/order-status";
 import { formatDateTime, formatXof } from "@/lib/format";
-import { getSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Commandes — administration" };
@@ -18,17 +17,15 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
   const status = sp.statut && sp.statut in ORDER_STATUS_LABEL ? (sp.statut as OrderStatus) : null;
   const range = pageRange(sp.page);
   const supabase = await createClient();
-  const settings = await getSettings();
   let q = supabase.from("orders").select("id, reference, status, fulfillment, total_xof, payment_status, created_at, pharmacies(name), deliveries(id, delivery_incidents(kind, description, created_at))", { count: "exact" }).order("created_at", { ascending: false }).range(range.from, range.to);
   if (status) q = q.eq("status", status);
   if (sp.paiement === "remboursement") q = q.eq("payment_status", "refund_pending");
-  const [{ data: orders, count }, { data: couriers }] = await Promise.all([q, supabase.rpc("admin_couriers", { p_status: "verified" })]);
-  const avail = ((couriers as { user_id: string; full_name: string | null; email: string; is_available: boolean; active_deliveries: number; zone: string }[]) ?? []).filter((c) => c.is_available);
-  const filters: [string, string][] = [["", "Toutes"], ["pending_confirmation", "À confirmer"], ["awaiting_courier", "Attente livreur"], ["in_delivery", "En livraison"], ["delivery_failed", "Échecs"]];
+  const { data: orders, count } = await q;
+  const filters: [string, string][] = [["", "Toutes"], ["pending_confirmation", "À confirmer"], ["ready_for_pickup", "Prêtes au retrait"], ["expired", "Expirées"]];
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Supervision des commandes</h1>
-      {!settings.delivery_enabled && <Alert tone="info" title="Livraison désactivée sur la plateforme (Paramètres)." />}
+      <Alert tone="info" title="Retrait en pharmacie uniquement">Le module de livraison a été retiré. Les éventuelles commandes livrées passées restent consultables.</Alert>
       <div className="flex flex-wrap gap-1">
         {filters.map(([k, v]) => <Link prefetch={false} key={k} href={k ? `/admin/commandes?statut=${k}` : "/admin/commandes"} className={cn("rounded-full border px-3 py-1 text-sm", (status ?? "") === k && !sp.paiement ? "border-primary bg-primary text-white" : "bg-white")}>{v}</Link>)}
         <Link prefetch={false} href="/admin/commandes?paiement=remboursement" className={cn("rounded-full border px-3 py-1 text-sm", sp.paiement ? "border-primary bg-primary text-white" : "bg-white")}>Remboursements à traiter</Link>
@@ -47,16 +44,6 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
               </div>
               {incidents.length > 0 && <Alert tone="warning" title={`${incidents.length} incident(s) de livraison`}>{incidents.map((i, k) => <p key={k}>{formatDateTime(i.created_at)} — {i.kind}{i.description ? ` : ${i.description}` : ""}</p>)}</Alert>}
               <div className="grid gap-3 lg:grid-cols-2">
-                {(st === "awaiting_courier" || st === "courier_assigned") && (
-                  <ActionForm action={assignCourier} className="flex gap-2">
-                    <input type="hidden" name="order_id" value={o.id} />
-                    <Select name="courier_id" required aria-label="Livreur" className="h-9">
-                      <option value="">{avail.length ? "Choisir un livreur vérifié" : "Aucun livreur disponible"}</option>
-                      {avail.map((c) => <option key={c.user_id} value={c.user_id}>{c.full_name ?? c.email} · {c.zone || "—"} · {c.active_deliveries} en cours</option>)}
-                    </Select>
-                    <SubmitButton size="sm">{st === "courier_assigned" ? "Réaffecter" : "Affecter"}</SubmitButton>
-                  </ActionForm>
-                )}
                 {!TERMINAL.includes(st) && (
                   <ActionForm action={adminCancel} className="flex gap-2">
                     <input type="hidden" name="order_id" value={o.id} />

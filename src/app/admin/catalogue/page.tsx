@@ -42,7 +42,7 @@ export default async function AdminCatalog() {
             </li>))}</ul>)}
         </CardContent></Card>
 
-      <Card><CardHeader><CardTitle>Catégories de produits</CardTitle><CardDescription>N&apos;activez la livraison d&apos;une catégorie qu&apos;après vérification réglementaire. Les catégories sur ordonnance ne peuvent jamais être livrées.</CardDescription></CardHeader>
+      <Card><CardHeader><CardTitle>Catégories de produits</CardTitle><CardDescription>Une catégorie non autorisée n&apos;apparaît pas au public. « Ordonnance » impose la présentation de l&apos;ordonnance au retrait.</CardDescription></CardHeader>
         <CardContent className="space-y-4">
           <ul className="divide-y">{(cats ?? []).map((c) => (
             <li key={c.id} className="py-3">
@@ -52,7 +52,6 @@ export default async function AdminCatalog() {
                 <div className="flex flex-wrap items-center gap-3">
                   <label className="flex items-center gap-1"><input type="checkbox" name="is_authorized" defaultChecked={c.is_authorized} className="size-4" /> Autorisée</label>
                   <label className="flex items-center gap-1"><input type="checkbox" name="requires_prescription" defaultChecked={c.requires_prescription} className="size-4" /> Ordonnance</label>
-                  <label className="flex items-center gap-1"><input type="checkbox" name="delivery_allowed" defaultChecked={c.delivery_allowed} className="size-4" /> Livraison</label>
                   <SubmitButton size="sm" variant="outline">Enregistrer</SubmitButton>
                 </div>
               </ActionForm>
