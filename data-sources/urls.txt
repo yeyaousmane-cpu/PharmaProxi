@@ -1,2 +1,1 @@
-msds-carte-sanitaire.html|https://www.sante.gov.ml/index.php?Itemid=126%3Ffacility%3D55&id=33&option=com_content&view=category
-msds-carte-sanitaire-all.html|https://www.sante.gov.ml/index.php?option=com_content&view=category&id=33&Itemid=126&limit=0
+santeproxi-etablissements-production.csv|https://santeproxi.vercel.app/etablissements/export
