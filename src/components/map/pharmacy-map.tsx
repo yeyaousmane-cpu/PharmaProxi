@@ -3,7 +3,13 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer, CircleMarker } from "react-leaflet";
 
-export type MapPoint = { id: string; name: string; address: string; latitude: number; longitude: number; is_open: boolean | null; is_demo?: boolean; href?: string; kind?: "pharmacy" | "clinic" | "listing"; phone?: string | null };
+export type MapPoint = { id: string; name: string; address: string; latitude: number; longitude: number; is_open: boolean | null; is_demo?: boolean; href?: string; kind?: "pharmacy" | "clinic" | "listing"; phone?: string | null; precision?: "confirmee" | "a_confirmer" | "approximative" | "inconnue" | null };
+
+/** Une position partagée par plusieurs fiches n'est pas celle de l'établissement : on le dit. */
+const POSITION_NOTE: Record<string, string> = {
+  approximative: "Position approximative (secteur du quartier), pas l'adresse exacte.",
+  a_confirmer: "Position non vérifiée sur place.",
+};
 
 const clinicIcon = () =>
   L.divIcon({
@@ -58,7 +64,13 @@ export default function PharmacyMap({ points, center, me }: { points: MapPoint[]
                 {p.phone ? <><br /><a href={`tel:${p.phone}`}>Appeler</a></> : null}
               </>
             ) : (
-              <a href={p.href ?? `/pharmacies/${p.id}`}>Voir la fiche</a>
+              <>
+                {p.precision && POSITION_NOTE[p.precision] ? (
+                  <><em>{POSITION_NOTE[p.precision]}</em><br /></>
+                ) : null}
+                {p.phone ? <><a href={`tel:${p.phone}`}>Appeler</a><br /></> : null}
+                <a href={p.href ?? `/pharmacies/${p.id}`}>Voir la fiche</a>
+              </>
             )}
           </Popup>
         </Marker>

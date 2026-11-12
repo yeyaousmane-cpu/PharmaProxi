@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 type F = { id: string; name: string; kind: string; category_label: string | null; ownership: string | null; quarter: string | null; locality: string | null; health_district: string | null;
   city_label: string | null; address: string | null; phone: string | null; phone2: string | null; whatsapp: string | null; email: string | null; website: string | null; hours: string | null;
-  access_conditions: string | null; latitude: number | null; longitude: number | null; emergency_24h: boolean; reliability: string; verified_at: string | null; source: string;
+  access_conditions: string | null; latitude: number | null; longitude: number | null; position_precision: string; emergency_24h: boolean; reliability: string; verified_at: string | null; source: string;
   source_url: string | null; source_level: string; operating_status: string; contacts_status: string; official_code: string | null; alt_names: string[]; to_verify: string | null;
   is_reference: boolean; reference_source: string | null; updated_at: string; circle_id: string | null; commune_id: string | null; is_published: boolean;
   regions: { name: string } | null; circles: { name: string } | null; communes: { name: string; former_name: string | null } | null;
@@ -27,7 +27,7 @@ type Offer = { offer_type: string; code: string; label: string; status: string; 
 type Src = { id: number; source: string; source_url: string | null; source_level: string; document_date: string | null; page: number | null; collected_at: string };
 type Lk = { related_id: string; relation: string; source: string; source_url: string | null; facility_listings: { name: string; kind: string } | null };
 
-const SELECT = "id, name, kind, category_label, ownership, quarter, locality, health_district, city_label, address, phone, phone2, whatsapp, email, website, hours, access_conditions, latitude, longitude, emergency_24h, reliability, verified_at, source, source_url, source_level, operating_status, contacts_status, official_code, alt_names, to_verify, is_reference, reference_source, updated_at, circle_id, commune_id, is_published, regions(name), circles(name), communes(name, former_name), facility_focus(focus_code, status, detail, source, source_url, verified_at, care_focus(label, sort))";
+const SELECT = "id, name, kind, category_label, ownership, quarter, locality, health_district, city_label, address, phone, phone2, whatsapp, email, website, hours, access_conditions, latitude, longitude, position_precision, emergency_24h, reliability, verified_at, source, source_url, source_level, operating_status, contacts_status, official_code, alt_names, to_verify, is_reference, reference_source, updated_at, circle_id, commune_id, is_published, regions(name), circles(name), communes(name, former_name), facility_focus(focus_code, status, detail, source, source_url, verified_at, care_focus(label, sort))";
 
 async function load(fid: string) {
   if (!z.uuid().safeParse(fid).success) return null;
@@ -117,7 +117,20 @@ export default async function Facility({ params }: { params: Promise<{ id: strin
           <Row t="WhatsApp professionnel">{f.whatsapp ? <a href={waUrl(f.whatsapp)} target="_blank" rel="noopener noreferrer" className="text-primary">{formatPhone(f.whatsapp)}</a> : NA}</Row>
           <Row t="E-mail">{f.email ? <a href={`mailto:${f.email}`} className="inline-flex items-center gap-1 text-primary"><Mail className="size-4" aria-hidden />{f.email}</a> : NA}</Row>
           <Row t="Site officiel">{f.website ? <a href={f.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary"><Globe className="size-4" aria-hidden />{f.website.replace(/^https?:\/\//, "")}</a> : NA}</Row>
-          <Row t="Position GPS">{hasGps ? <>{f.latitude!.toFixed(5)}, {f.longitude!.toFixed(5)} · <a href={`https://www.openstreetmap.org/?mlat=${f.latitude}&mlon=${f.longitude}#map=16/${f.latitude}/${f.longitude}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">voir sur la carte</a></> : <>{NA} <span className="text-xs text-muted-foreground">— aucune position n&apos;est estimée par SantéProxi.</span></>}</Row>
+          <Row t="Position GPS">{hasGps ? (
+            <>
+              {f.latitude!.toFixed(5)}, {f.longitude!.toFixed(5)} · <a href={`https://www.openstreetmap.org/?mlat=${f.latitude}&mlon=${f.longitude}#map=16/${f.latitude}/${f.longitude}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">voir sur la carte</a>
+              {f.position_precision === "approximative" && (
+                <span className="block text-xs font-medium text-amber-800">Position approximative : elle situe le secteur du quartier, pas l&apos;adresse exacte. Plusieurs fiches partagent cette coordonnée. Faites confirmer l&apos;adresse avant de vous déplacer.</span>
+              )}
+              {f.position_precision === "a_confirmer" && (
+                <span className="block text-xs text-muted-foreground">Position non vérifiée sur place.</span>
+              )}
+              {f.position_precision === "confirmee" && (
+                <span className="block text-xs text-muted-foreground">Position relevée sur place.</span>
+              )}
+            </>
+          ) : <>{NA} <span className="text-xs text-muted-foreground">— aucune position n&apos;est estimée par SantéProxi.</span></>}</Row>
           {f.official_code && <Row t="Code de conventionnement CANAM">{f.official_code}</Row>}
         </dl>
       </Section>
