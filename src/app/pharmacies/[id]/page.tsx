@@ -181,6 +181,11 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
             </Link>
           )}
         </section>
+        <section className="space-y-2 rounded-2xl border bg-white p-4">
+          <h2 className="font-semibold">Envoyer une ordonnance</h2>
+          <p className="text-xs text-muted-foreground">La pharmacie vous répond dans l&apos;application (disponibilité datée), puis vous réservez. L&apos;ordonnance originale reste à présenter au comptoir.</p>
+          <Link prefetch={false} href={`/ma-sante/dossier/ordonnances?pharmacie=${p.id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full")}>Transmettre mon ordonnance</Link>
+        </section>
         {session && <ReportForm pharmacyId={p.id} />}
       </aside>
     </div>

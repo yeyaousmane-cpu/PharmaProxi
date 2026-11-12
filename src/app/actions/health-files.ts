@@ -144,3 +144,76 @@ export async function revokeImaging(_: ActionState, fd: FormData): Promise<Actio
   revalidatePath("/ma-sante/dossier/imagerie");
   return { ok: true, message: "Accès retiré. Le médecin ne peut plus ouvrir cet examen." };
 }
+
+/** Transmission d'une ordonnance à une pharmacie vérifiée (consentement explicite). Nouvelle photo : rangée d'abord dans le dossier. */
+export async function sendPrescription(_: ActionState, fd: FormData): Promise<ActionState> {
+  const s = await requireUser("/ma-sante/dossier/ordonnances");
+  const pharmacy = uuid.safeParse(fd.get("pharmacy_id"));
+  if (!pharmacy.success) return { error: "Choisissez une pharmacie.", fieldErrors: { pharmacy_id: "Obligatoire" } };
+  if (fd.get("consent") !== "on") return { error: "Cochez la case de consentement pour transmettre l'ordonnance.", fieldErrors: { consent: "Obligatoire" } };
+  const supabase = await createClient();
+  let docId = uuid.safeParse(fd.get("document_id")).data ?? null;
+  const f = fd.get("file");
+  if (f instanceof File && f.size > 0) {
+    const person = uuid.safeParse(fd.get("person_id"));
+    if (!person.success) return { error: "Dossier invalide" };
+    if (!filesEncryptionReady()) return { error: "L'envoi de photos est désactivé : le chiffrement n'est pas configuré sur le serveur." };
+    if (!(await allow(`doc-up:${s.userId}`, 30, 60 * 60_000))) return { error: "Trop d'envois, réessayez plus tard." };
+    const file = await readFile(fd);
+    if ("error" in file) return { error: file.error };
+    const path = `${s.userId}/${randomUUID()}.bin`;
+    const { error: upErr } = await supabase.storage.from("personal-documents").upload(path, sealFile(file.buf), { contentType: "application/octet-stream", upsert: false });
+    if (upErr) return { error: "Envoi impossible pour le moment. Réessayez." };
+    const { data: doc, error } = await supabase.from("record_documents").insert({ user_id: s.userId, person_id: person.data, title: (str(fd, "title") || `Ordonnance du ${new Date().toLocaleDateString("fr-FR")}`).slice(0, 120), doc_kind: "ordonnance", storage_path: path, mime: file.mime, size_bytes: file.buf.length }).select("id").single();
+    if (error || !doc) { await supabase.storage.from("personal-documents").remove([path]); return { error: humanizeError(error) }; }
+    docId = doc.id;
+  }
+  if (!docId) return { error: "Choisissez une ordonnance de votre dossier ou prenez-la en photo.", fieldErrors: { document_id: "Obligatoire" } };
+  const { data, error } = await supabase.rpc("rx_send", { p_document: docId, p_pharmacy: pharmacy.data, p_note: str(fd, "note").slice(0, 500) || null, p_consent: true });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/ma-sante/dossier/ordonnances");
+  return { ok: true, message: `Ordonnance transmise (référence ${data}). La pharmacie a 72 h pour répondre ; vous serez prévenu dans l'application.` };
+}
+
+export async function prescriptionPatientAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireUser("/ma-sante/dossier/ordonnances");
+  const id = uuid.safeParse(fd.get("id")); const action = str(fd, "action");
+  if (!id.success || !["reserver", "annuler"].includes(action)) return { error: "Action invalide" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rx_patient_action", { p_id: id.data, p_action: action });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/ma-sante/dossier/ordonnances");
+  return { ok: true, message: action === "reserver" ? "Réservation envoyée à la pharmacie (gardée 48 h). Présentez l'ordonnance originale au comptoir." : "Demande annulée." };
+}
+
+export async function prescriptionRespond(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireUser("/pharmacien/ordonnances");
+  const id = uuid.safeParse(fd.get("id"));
+  if (!id.success) return { error: "Demande invalide" };
+  const lines: Record<string, string>[] = [];
+  for (let i = 0; i < 12; i++) {
+    const label = str(fd, `label_${i}`);
+    if (!label) continue;
+    const availability = str(fd, `availability_${i}`);
+    if (!["disponible", "partiel", "a_commander", "indisponible"].includes(availability)) return { error: `Ligne ${i + 1} : indiquez la disponibilité.` };
+    const num = (k: string) => (/^\d+$/.test(str(fd, `${k}_${i}`)) ? str(fd, `${k}_${i}`) : "");
+    lines.push({ label: label.slice(0, 160), availability, quantity: num("quantity"), price: num("price"), delay: num("delay"), note: str(fd, `note_${i}`).slice(0, 300) });
+  }
+  if (!lines.length) return { error: "Saisissez au moins une ligne (produit de l'ordonnance)." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rx_respond", { p_id: id.data, p_lines: lines, p_valid_hours: Number(str(fd, "valid_hours")) || 24, p_message: str(fd, "message").slice(0, 500) || null });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath(`/pharmacien/ordonnances/${id.data}`); revalidatePath("/pharmacien/ordonnances");
+  return { ok: true, message: "Réponse envoyée au patient." };
+}
+
+export async function prescriptionPharmacyAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireUser("/pharmacien/ordonnances");
+  const id = uuid.safeParse(fd.get("id")); const action = str(fd, "action");
+  if (!id.success || !["prete", "retiree", "refusee"].includes(action)) return { error: "Action invalide" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rx_pharmacy_action", { p_id: id.data, p_action: action, p_note: str(fd, "note").slice(0, 300) || null });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath(`/pharmacien/ordonnances/${id.data}`); revalidatePath("/pharmacien/ordonnances");
+  return { ok: true, message: action === "prete" ? "Patient prévenu : commande prête." : action === "retiree" ? "Retrait enregistré." : "Refus envoyé au patient." };
+}

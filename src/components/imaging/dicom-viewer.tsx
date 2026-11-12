@@ -59,7 +59,7 @@ function parse(bytes: Uint8Array): { info: Info; frame: (i: number) => Frame; wc
   } };
 }
 
-export function ImagingViewer({ src, mime, title }: { src: string; mime: string; title: string }) {
+export function ImagingViewer({ src, mime, title, diagnosticNotice = true }: { src: string; mime: string; title: string; diagnosticNotice?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; parsed?: ReturnType<typeof parse>; objectUrl?: string }>({ status: "loading" });
   const [frameIdx, setFrameIdx] = useState(0);
@@ -158,7 +158,7 @@ export function ImagingViewer({ src, mime, title }: { src: string; mime: string;
           <div><dt className="text-muted-foreground">Codage</dt><dd className="font-semibold">{SYNTAX_LABEL[parsed.info.syntax] ?? parsed.info.syntax}</dd></div>
         </dl>
       ) : null}
-      <p className="text-xs text-muted-foreground">Visionneuse de consultation : elle ne remplace pas une console de diagnostic agréée. L&apos;interprétation appartient au radiologue ou au médecin.</p>
+      {diagnosticNotice ? <p className="text-xs text-muted-foreground">Visionneuse de consultation : elle ne remplace pas une console de diagnostic agréée. L&apos;interprétation appartient au radiologue ou au médecin.</p> : null}
     </div>
   );
 }

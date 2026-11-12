@@ -4,6 +4,12 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.39 — Transmission d'ordonnances à une pharmacie**
+- Dossier santé → « Ordonnances → pharmacie » (et bouton « Transmettre mon ordonnance » sur chaque fiche pharmacie) : le patient choisit une ordonnance déjà rangée ou la prend en photo (rangée chiffrée dans le dossier), cherche une pharmacie **vérifiée**, ajoute un message et coche le consentement. Référence ORD-xxxx ; 5 envois par jour au maximum ; pas de doublon en cours.
+- Pharmacie (/pharmacien/ordonnances) : seule la pharmacie destinataire voit l'ordonnance, le prénom et l'initiale du patient ; ouverture journalisée et signalée au patient ; fichier inaccessible dès que la demande est close (72 h sans réponse, annulation, refus motivé, retrait). Réponse ligne par ligne saisie par le pharmacien (disponible, partiel, à commander, indisponible ; boîtes, prix indiqué par la pharmacie, délai) avec une validité de 2 à 48 h.
+- Le patient ne peut réserver que si la réponse est encore valable ; réservation gardée 48 h ; « prête au comptoir » puis « retirée (ordonnance originale vérifiée) ». Aucun paiement en ligne, aucune disponibilité affichée sans réponse de la pharmacie, aucun SMS ni e-mail (notifications dans l'application). Toute substitution se décide au comptoir avec le pharmacien.
+- Non construit : livraison des médicaments sur ordonnance (réglementation à confirmer), transmission directe par le médecin prescripteur (e-prescription : nécessite un cadre réglementaire).
+
 **v0.38 — Imagerie médicale (DICOM)**
 - Dossier santé → « Imagerie 🔒 » : dépôt d'un fichier DICOM (radiographie, échographie, scanner, IRM, mammographie…), d'une photo de cliché ou du compte rendu PDF, avec type d'examen, région, date et centre. Type de fichier vérifié d'après son contenu (signature « DICM »), chiffrement AES-256-GCM sur le serveur avant stockage, visible par le seul titulaire (verrou du dossier respecté). Aucune IA ne lit les examens.
 - Visionneuse intégrée (sans service externe) : DICOM non compressé (8/16 bits, MONOCHROME1/2, couleur) et JPEG de base ; luminosité/contraste (fenêtre DICOM), zoom, inversion, images multiples, informations lues dans le fichier. Les compressions JPEG sans perte, JPEG 2000 et RLE ne sont pas décodées : la visionneuse le dit et propose le fichier d'origine. Mention : ne remplace pas une console de diagnostic agréée.
