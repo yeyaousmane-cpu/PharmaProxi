@@ -3,7 +3,7 @@
 Projet Supabase séparé : **santeproxi-demo** (`wamhqsxouqgesvsqpyzf`). Aucune donnée réelle.
 
 1. Dans l'éditeur SQL du projet **santeproxi-demo** (jamais celui de production), exécuter dans l'ordre
-   `installation-demo-partie-1-sur-5.sql` … `partie-5-sur-5.sql` (la dernière peut signaler pg_cron : sans conséquence), puis `installation-demo-complement-0.28.sql` `installation-demo-complement-0.31.sql` `installation-demo-complement-0.32.sql` `installation-demo-complement-0.33.sql` `installation-demo-complement-0.34.sql` `installation-demo-complement-0.35.sql` `installation-demo-complement-0.36.sql` (puis l'import du référentiel national) `installation-demo-complement-0.37.sql` `installation-demo-complement-0.38.sql` et `installation-demo-complement-0.39.sql`.
+   `installation-demo-partie-1-sur-5.sql` … `partie-5-sur-5.sql` (la dernière peut signaler pg_cron : sans conséquence), puis `installation-demo-complement-0.28.sql` `installation-demo-complement-0.31.sql` `installation-demo-complement-0.32.sql` `installation-demo-complement-0.33.sql` `installation-demo-complement-0.34.sql` `installation-demo-complement-0.35.sql` `installation-demo-complement-0.36.sql` (puis l'import du référentiel national) `installation-demo-complement-0.37.sql` `installation-demo-complement-0.38.sql` `installation-demo-complement-0.39.sql` et `installation-demo-complement-0.40.sql`.
 2. Installer les comptes : `seed-demo.sql` (remplacer `__MOT_DE_PASSE__`). Le script refuse de s'exécuter
    si la base contient un compte qui n'est pas en `@pharmaproxi.invalid`.
 3. Vercel : nouveau projet à partir du même dépôt, variables

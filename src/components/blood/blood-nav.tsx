@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const ITEMS = [["/don-de-sang", "Don de sang"], ["/don-de-sang/sos", "SOS Besoin de sang"], ["/don-de-sang/mon-espace", "Mon espace donneur"], ["/don-de-sang/rendez-vous", "Rendez-vous"],
+const ITEMS = [["/don-de-sang", "Don de sang"], ["/don-de-sang/sos", "SOS Besoin de sang"], ["/don-de-sang/collectes", "Collectes"], ["/don-de-sang/mon-espace", "Mon espace donneur"], ["/don-de-sang/rendez-vous", "Rendez-vous"],
   ["/don-de-sang/disponibilites", "Besoins des centres"], ["/don-de-sang/suis-je-apte", "Suis-je apte ?"],
-  ["/don-de-sang/apres-le-don", "Après le don"], ["/don-de-sang/passeport", "Mon passeport solidaire"], ["/don-de-sang/groupes-rares", "Groupes rares"]] as const;
+  ["/don-de-sang/apres-le-don", "Après le don"], ["/don-de-sang/passeport", "Mon passeport solidaire"], ["/don-de-sang/groupes-rares", "Groupes rares"], ["/don-de-sang/observatoire", "Observatoire"]] as const;
 
 /** Navigation de SantéProxi Solidaire (les espaces institutionnels n'apparaissent qu'aux personnes habilitées). */
 export function BloodNav({ current, validator = false }: { current: string; validator?: boolean }) {
