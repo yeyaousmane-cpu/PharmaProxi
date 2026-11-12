@@ -40,7 +40,7 @@ export default async function Home() {
         <div className="container-page grid items-center gap-8 py-8 md:grid-cols-[1fr_1.2fr] md:py-14">
           <div className="flex flex-col items-center text-center md:items-start md:text-start">
             <Image src="/logo-santeproxi-sans-slogan.webp" alt="SantéProxi" width={640} height={444} priority className="h-auto w-48 rounded-3xl bg-white p-2 shadow-sm md:w-72" />
-            <p className="mt-3 text-2xl font-extrabold text-[#068132] md:text-3xl">La santé, plus proche de vous.</p>
+            <p className="mt-3 text-2xl font-extrabold text-[#068132] md:text-3xl">La santé, plus proche de vous</p>
             <p className="mt-2 max-w-md text-muted-foreground">
               {t("home.intro")}
             </p>
