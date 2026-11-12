@@ -9,6 +9,7 @@ import {
   catalogItemSchema, fieldErrors, formObject, parseOpeningHours, pharmacyPrivateSchema, pharmacySchema, stockSchema,
 } from "@/lib/validation";
 import { parseInventoryCsv } from "@/lib/csv";
+import { xlsxToCsv } from "@/lib/xlsx";
 import { PHARMACY_COOKIE } from "@/lib/pharmacy";
 
 const uuid = z.uuid();
@@ -183,9 +184,16 @@ export async function importCsv(_: ActionState, fd: FormData): Promise<ActionSta
   const ph = uuid.safeParse(fd.get("pharmacy_id"));
   const file = fd.get("file");
   if (!ph.success) return { error: "Requête invalide" };
-  if (!(file instanceof File) || file.size === 0) return { error: "Choisissez un fichier CSV." };
+  if (!(file instanceof File) || file.size === 0) return { error: "Choisissez un fichier Excel (.xlsx) ou CSV." };
   if (file.size > 2 * 1024 * 1024) return { error: "Fichier trop volumineux (2 Mo maximum)." };
-  const parsed = parseInventoryCsv(await file.text());
+  const isXlsx = /\.xlsx$/i.test(file.name) || file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  let text: string;
+  try {
+    text = isXlsx ? await xlsxToCsv(await file.arrayBuffer()) : await file.text();
+  } catch {
+    return { error: "Fichier Excel illisible. Enregistrez-le au format .xlsx ou exportez-le en CSV." };
+  }
+  const parsed = parseInventoryCsv(text);
   if (parsed.missingColumns.length) return { error: `Colonnes obligatoires manquantes : ${parsed.missingColumns.join(", ")}` };
   if (!parsed.rows.length) return { error: "Aucune ligne valide.", data: { errors: parsed.errors } };
   const supabase = await createClient();
@@ -252,4 +260,33 @@ export async function removeTeamMember(_: ActionState, fd: FormData): Promise<Ac
   if (error) return { error: humanizeError(error) };
   revalidatePath("/pharmacien/ma-pharmacie");
   return { ok: true, message: "Collaborateur retiré." };
+}
+
+/** Ajout groupé depuis le catalogue national : lignes « à renseigner », invisibles du public. */
+export async function addFromCatalog(_: ActionState, fd: FormData): Promise<ActionState> {
+  const ph = uuid.safeParse(fd.get("pharmacy_id"));
+  const ids = fd.getAll("catalog_id").map(String).filter((v) => uuid.safeParse(v).success);
+  if (!ph.success) return { error: "Requête invalide" };
+  if (!ids.length) return { error: "Cochez au moins un produit." };
+  if (ids.length > 300) return { error: "300 produits maximum par ajout." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("add_catalog_to_inventory", { p_pharmacy: ph.data, p_catalog_ids: ids });
+  if (error) return { error: humanizeError(error) };
+  revalidatePath("/pharmacien", "layout");
+  const n = Number(data);
+  return {
+    ok: true,
+    message: n === 0
+      ? "Ces produits figuraient déjà dans votre inventaire."
+      : `${n} produit(s) ajouté(s). Renseignez quantité, prix et disponibilité : tant que ce n'est pas fait, ils restent invisibles du public.`,
+  };
+}
+
+/** « Disponible sur commande » pour une ligne en rupture. */
+export async function setOnOrder(fd: FormData): Promise<void> {
+  const inv = uuid.safeParse(fd.get("inventory_id"));
+  if (!inv.success) return;
+  const supabase = await createClient();
+  await supabase.rpc("set_inventory_on_order", { p_inventory_ids: [inv.data], p_on_order: fd.get("on_order") === "1" });
+  revalidatePath("/pharmacien", "layout");
 }

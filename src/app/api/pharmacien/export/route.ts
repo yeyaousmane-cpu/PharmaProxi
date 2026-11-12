@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { toCsv } from "@/lib/csv";
+import { rowsToXlsx } from "@/lib/xlsx";
 
 /** Export CSV du stock d'une pharmacie — la RLS garantit que seuls ses membres l'obtiennent. */
 export async function GET(req: NextRequest) {
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
   if (!auth.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   const { data, error } = await supabase
     .from("pharmacy_inventory")
-    .select("quantity, reserved_quantity, price_xof, is_available, stock_updated_at, medicine_catalog(brand_name, active_ingredient, generic_name, dosage, form, packaging, manufacturer)")
+    .select("quantity, reserved_quantity, price_xof, is_available, on_order, declared, stock_updated_at, medicine_catalog(brand_name, active_ingredient, generic_name, dosage, form, packaging, manufacturer)")
     .eq("pharmacy_id", id);
   if (error) return NextResponse.json({ error: "Export impossible" }, { status: 500 });
   if (!data?.length) {
@@ -23,14 +24,27 @@ export async function GET(req: NextRequest) {
     return {
       nom_commercial: c?.brand_name, principe_actif: c?.active_ingredient, nom_generique: c?.generic_name, dosage: c?.dosage, forme: c?.form,
       conditionnement: c?.packaging, fabricant: c?.manufacturer, quantite: r.quantity, quantite_reservee: r.reserved_quantity,
-      prix_fcfa: r.price_xof, disponible: r.is_available ? "oui" : "non", derniere_mise_a_jour: r.stock_updated_at,
+      prix_fcfa: r.price_xof, disponible: r.is_available ? "oui" : "non", sur_commande: r.on_order ? "oui" : "non",
+      renseigne: r.declared ? "oui" : "non", derniere_mise_a_jour: r.stock_updated_at,
     };
   });
-  const csv = toCsv(rows, ["nom_commercial", "principe_actif", "nom_generique", "dosage", "forme", "conditionnement", "fabricant", "quantite", "quantite_reservee", "prix_fcfa", "disponible", "derniere_mise_a_jour"]);
+  const columns = ["nom_commercial", "principe_actif", "nom_generique", "dosage", "forme", "conditionnement", "fabricant", "quantite", "quantite_reservee", "prix_fcfa", "disponible", "sur_commande", "renseigne", "derniere_mise_a_jour"];
+  const stamp = new Date().toISOString().slice(0, 10);
+  if (req.nextUrl.searchParams.get("format") === "xlsx") {
+    const buf = await rowsToXlsx("Stock", columns, rows);
+    return new NextResponse(buf, {
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": `attachment; filename="stock-santeproxi-${stamp}.xlsx"`,
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+  const csv = toCsv(rows, columns);
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="stock-santeproxi-${new Date().toISOString().slice(0, 10)}.csv"`,
+      "Content-Disposition": `attachment; filename="stock-santeproxi-${stamp}.csv"`,
       "Cache-Control": "no-store",
     },
   });

@@ -2,7 +2,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { updateStock } from "@/app/actions/pharmacy";
+import { setOnOrder, updateStock } from "@/app/actions/pharmacy";
 import { SubmitButton } from "@/components/ui/form-controls";
 import { Input } from "@/components/ui/input";
 import { FreshnessBadge } from "@/components/freshness-badge";
@@ -12,6 +12,7 @@ import type { ActionState } from "@/lib/errors";
 export type StockLine = {
   id: string; catalog_id: string; label: string; quantity: number; reserved_quantity: number; price_xof: number | null;
   is_available: boolean; low_stock_threshold: number; stock_updated_at: string; freshness: Freshness; pending_review: boolean; row_version: number;
+  on_order: boolean;
 };
 
 /** Ligne de stock éditable en place — pensée pour une mise à jour rapide sur téléphone. */
@@ -43,6 +44,15 @@ export function StockRow({ line, readOnly }: { line: StockLine; readOnly: boolea
           </label>
           <label className="flex h-9 items-center gap-1 text-xs"><input type="checkbox" name="is_available" defaultChecked={line.is_available} className="size-4" /> Dispo</label>
           <SubmitButton size="sm" pendingText="…" className="col-span-3 sm:col-span-1">{state.ok ? <><Check aria-hidden /> Enregistré</> : "Enregistrer"}</SubmitButton>
+        </form>
+      )}
+      {!readOnly && line.freshness !== "non_declare" && (
+        <form action={setOnOrder} className="mt-2 text-xs">
+          <input type="hidden" name="inventory_id" value={line.id} />
+          <input type="hidden" name="on_order" value={line.on_order ? "0" : "1"} />
+          <button type="submit" className="font-medium text-primary underline">
+            {line.on_order ? "Ne plus proposer sur commande" : "Proposer ce produit sur commande quand il est en rupture"}
+          </button>
         </form>
       )}
       {state.error && (

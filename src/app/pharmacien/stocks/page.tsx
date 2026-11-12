@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 export const metadata = { title: "Gestion des stocks" };
 
 const STOCK_PAGE = 100;
-const VIEWS = { tous: "Tous", disponibles: "Disponibles", indisponibles: "Indisponibles", faibles: "Stock faible", anciens: "À actualiser" } as const;
+const VIEWS = { tous: "Tous", a_renseigner: "À renseigner", disponibles: "Disponibles", faibles: "Stock faible", indisponibles: "Rupture", sur_commande: "Sur commande", anciens: "À actualiser" } as const;
 
 export default async function StocksPage({ searchParams }: { searchParams: Promise<{ vue?: string; q?: string; page?: string }> }) {
   const sp = await searchParams;
@@ -38,6 +38,11 @@ export default async function StocksPage({ searchParams }: { searchParams: Promi
     low_stock_threshold: number; stock_updated_at: string; row_version: number; brand_name: string; dosage: string | null; form: string | null;
     packaging: string | null; review_status: string; freshness: Freshness; total_count: number };
   const rows = (data as Row[]) ?? [];
+  const onOrder = new Set<string>();
+  if (rows.length) {
+    const { data: oo } = await supabase.from("pharmacy_inventory").select("id").in("id", rows.map((r) => r.id)).eq("on_order", true);
+    for (const o of oo ?? []) onOrder.add(o.id as string);
+  }
   const total = Number(rows[0]?.total_count ?? 0);
   const filtered: StockLine[] = rows.map((r) => ({
     id: r.id, catalog_id: r.catalog_id, quantity: r.quantity, reserved_quantity: r.reserved_quantity, price_xof: r.price_xof,
@@ -45,6 +50,7 @@ export default async function StocksPage({ searchParams }: { searchParams: Promi
     label: [r.brand_name, r.dosage, r.form, r.packaging].filter(Boolean).join(" · "),
     pending_review: r.review_status === "pending",
     freshness: r.freshness,
+    on_order: onOrder.has(r.id),
   }));
   const lines = { length: totalAll ?? 0 };
 
@@ -75,7 +81,7 @@ export default async function StocksPage({ searchParams }: { searchParams: Promi
             )}
             {error && <Alert tone="error" title={humanizeError(error)} className="mb-2" />}
             {filtered.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{lines.length === 0 ? "Aucun produit. Ajoutez-en ou importez un fichier CSV." : "Aucun produit dans cette vue."}</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">{lines.length === 0 ? "Aucun produit. Ajoutez-en depuis le catalogue national ou importez un fichier Excel." : "Aucun produit dans cette vue."}</p>
             ) : (
               <ul className="divide-y">{filtered.map((l) => <StockRow key={`${l.id}-${l.row_version}`} line={l} readOnly={readOnly} />)}</ul>
             )}
@@ -85,11 +91,22 @@ export default async function StocksPage({ searchParams }: { searchParams: Promi
         <div className="space-y-6">
           {!readOnly && (
             <>
+              <Card>
+                <CardHeader><CardTitle>Depuis le catalogue national</CardTitle></CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <p className="text-muted-foreground">Parcourez les présentations par famille et ajoutez-en plusieurs d&apos;un coup, puis renseignez quantité et prix.</p>
+                  <Link prefetch={false} href="/pharmacien/stocks/catalogue" className={cn(buttonVariants({ variant: "secondary" }), "w-full")}>Parcourir le catalogue</Link>
+                </CardContent>
+              </Card>
               <Card><CardHeader><CardTitle>Ajouter un produit</CardTitle></CardHeader><CardContent><AddProductForm pharmacyId={ph.id} categories={categories ?? []} /></CardContent></Card>
               <Card><CardHeader><CardTitle>Importer un catalogue</CardTitle></CardHeader><CardContent><ImportForm pharmacyId={ph.id} /></CardContent></Card>
             </>
           )}
-          <a href={`/api/pharmacien/export?pharmacy=${ph.id}`} className={cn(buttonVariants({ variant: "outline" }), "w-full")}><Download aria-hidden /> Exporter mon stock (CSV)</a>
+          <div className="grid grid-cols-2 gap-2">
+            <a href={`/api/pharmacien/export?pharmacy=${ph.id}&format=xlsx`} className={cn(buttonVariants({ variant: "outline" }), "w-full")}><Download aria-hidden /> Excel</a>
+            <a href={`/api/pharmacien/export?pharmacy=${ph.id}`} className={cn(buttonVariants({ variant: "outline" }), "w-full")}><Download aria-hidden /> CSV</a>
+          </div>
+          <Link prefetch={false} href="/pharmacien/mouvements" className="block text-center text-sm underline">Historique des modifications</Link>
         </div>
       </div>
     </>

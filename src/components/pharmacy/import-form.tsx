@@ -14,10 +14,10 @@ export function ImportForm({ pharmacyId }: { pharmacyId: string }) {
     <form action={action} className="space-y-3">
       <input type="hidden" name="pharmacy_id" value={pharmacyId} />
       <p className="text-sm text-muted-foreground">
-        Fichier CSV (séparateur « ; » ou « , », encodage UTF-8). Colonnes : <code className="text-xs">{CSV_COLUMNS.join(" ; ")}</code>.
+        Fichier Excel (.xlsx, première feuille) ou CSV (séparateur « ; » ou « , », UTF-8). Colonnes : <code className="text-xs">{CSV_COLUMNS.join(" ; ")}</code>.
         Obligatoires : nom_commercial, quantite. <a href="/modele-import-stock.csv" className="text-primary underline" download>Télécharger le modèle</a>.
       </p>
-      <Input type="file" name="file" accept=".csv,text/csv" required aria-label="Fichier CSV" />
+      <Input type="file" name="file" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required aria-label="Fichier Excel ou CSV" />
       <SubmitButton variant="secondary" pendingText="Import en cours…">Importer</SubmitButton>
       {state.error && <Alert tone="error" title={state.error} />}
       {state.ok && <Alert tone={errors.length ? "warning" : "success"} title={state.message ?? "Import terminé"} />}

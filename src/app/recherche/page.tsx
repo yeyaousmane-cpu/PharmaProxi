@@ -13,6 +13,8 @@ import { allow } from "@/lib/limiter";
 import { clientIp } from "@/lib/request";
 import { cn } from "@/lib/utils";
 import { emptyAmoResults, type AmoResults } from "@/lib/amo";
+import { CatalogCard } from "@/components/catalog-card";
+import type { CatalogRow } from "@/lib/catalog";
 
 export const metadata = { title: "Recherche de médicaments" };
 
@@ -32,6 +34,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const lng = numOrNull(sp.lng);
 
   let rows: SearchRow[] = [];
+  let catalog: CatalogRow[] = [];
   let amo: AmoResults = emptyAmoResults();
   let error: string | null = null;
   if (q.length >= 2) {
@@ -39,7 +42,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       error = "Trop de recherches en peu de temps. Patientez une minute.";
     } else {
       const supabase = await createClient();
-      const { data, error: e } = await supabase.rpc("search_inventory", {
+      const catalogQuery = page === 1
+        ? supabase.rpc("catalog_search", { p_query: q, p_limit: 6 })
+        : Promise.resolve({ data: [] as CatalogRow[] });
+      const [{ data, error: e }, { data: cat }] = await Promise.all([supabase.rpc("search_inventory", {
         p_query: q,
         p_region: uuidOrNull(sp.region),
         p_commune: uuidOrNull(sp.commune),
@@ -53,7 +59,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         p_sort: sort === "distance" && lat === null ? "relevance" : sort,
         p_limit: PAGE_SIZE,
         p_offset: (page - 1) * PAGE_SIZE,
-      });
+      }), catalogQuery]);
+      catalog = (cat as CatalogRow[] | null) ?? [];
       if (e) error = humanizeError(e);
       rows = (data as SearchRow[]) ?? [];
       if (rows.length) {
@@ -123,6 +130,21 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         {!error && q.length < 2 && (
           <p className="text-center text-muted-foreground">Saisissez au moins 2 caractères pour lancer la recherche.</p>
         )}
+        {!error && catalog.length > 0 && (
+          <div className="mb-6">
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-lg font-bold">Dans le catalogue national</h2>
+              {Number(catalog[0].total_count) > catalog.length && (
+                <Link prefetch={false} href={`/produits?q=${encodeURIComponent(q)}`} className="text-sm font-semibold text-primary underline">
+                  Voir les {catalog[0].total_count} présentations
+                </Link>
+              )}
+            </div>
+            <p className="mb-3 text-sm text-muted-foreground">Dosages et formes de « {q} ». Ouvrez une fiche pour voir les pharmacies qui le déclarent.</p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{catalog.map((c) => <CatalogCard key={c.catalog_id} c={c} />)}</div>
+          </div>
+        )}
+        {!error && q.length >= 2 && rows.length > 0 && <h2 className="mb-2 text-lg font-bold">Dans les pharmacies</h2>}
         {!error && q.length >= 2 && rows.length === 0 && (
           <div className="rounded-xl border border-dashed bg-white p-8 text-center">
             <SearchX className="mx-auto size-8 text-muted-foreground" aria-hidden />
