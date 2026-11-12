@@ -1,6 +1,8 @@
 import { CalendarDays } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { savePreventionEvent } from "@/app/actions/v027";
+import { saveProgramNational, linkToProgram } from "@/app/actions/v042";
+import type { Program } from "@/lib/prevention-programs";
 import { ActionForm, SubmitButton } from "@/components/ui/form-controls";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
 import { formatDate } from "@/lib/format";
@@ -34,8 +36,22 @@ function EventForm({ e, regions }: { e?: PreventionEvent; regions: { id: string;
   );
 }
 
+function LinkForm({ kind, id, current, programs }: { kind: "event" | "article"; id: string; current: string | null; programs: Program[] }) {
+  return (
+    <ActionForm action={linkToProgram} className="mt-2 flex flex-wrap items-end gap-2"><input type="hidden" name="kind" value={kind} /><input type="hidden" name="id" value={id} />
+      <Select name="program" defaultValue={current ?? ""} aria-label="Programme de prévention" className="h-9"><option value="">Aucun programme</option>{programs.map((p) => <option key={p.slug} value={p.slug}>{p.title}</option>)}</Select>
+      <SubmitButton size="sm" variant="ghost">Rattacher</SubmitButton>
+    </ActionForm>
+  );
+}
+
 export default async function AdminPrevention() {
   const supabase = await createClient();
+  const [{ data: progs }, { data: arts }] = await Promise.all([
+    supabase.from("prevention_programs").select("*").order("sort_order"),
+    supabase.from("health_articles").select("id, title, status, program_slug").eq("kind", "prevention").order("title").limit(100),
+  ]);
+  const programs = (progs ?? []) as Program[];
   const [{ data: ev }, { data: regions }] = await Promise.all([
     supabase.from("prevention_events").select("*, regions(name)").order("starts_on", { ascending: false }).limit(200),
     supabase.from("regions").select("id, name").order("name"),
@@ -54,8 +70,22 @@ export default async function AdminPrevention() {
           <li key={e.id}><details className="rounded-2xl border bg-white p-4">
             <summary className="cursor-pointer"><span className="font-semibold">{e.title}</span> <span className="text-sm text-muted-foreground">· {KIND[e.kind]} · {formatDate(e.starts_on)} · {STATUS[e.status]}</span></summary>
             <div className="mt-3"><EventForm e={e} regions={regions ?? []} /></div>
+            <LinkForm kind="event" id={e.id} current={(e as PreventionEvent & { program_slug?: string | null }).program_slug ?? null} programs={programs} />
           </details></li>))}</ul>
       )}
+      <section className="space-y-3 rounded-2xl border bg-white p-4" aria-labelledby="prog">
+        <h2 id="prog" className="font-semibold">Les 8 programmes de prévention</h2>
+        <p className="text-xs text-muted-foreground">Le nom du programme national n&apos;est affiché qu&apos;avec le lien vers sa source officielle. Les fiches se rédigent et se valident dans la <a href="/redaction-sante" className="underline">rédaction santé</a> ; seules les fiches publiées apparaissent.</p>
+        <ul className="space-y-2">{programs.map((p) => (
+          <li key={p.slug}><ActionForm action={saveProgramNational} className="grid gap-2 rounded-xl bg-muted/40 p-3 sm:grid-cols-[10rem_1fr_1fr_auto] sm:items-end"><input type="hidden" name="slug" value={p.slug} />
+            <a href={`/prevention/programmes/${p.slug}`} className="font-semibold underline">{p.title}</a>
+            <Input name="national" defaultValue={p.national_program ?? ""} maxLength={200} placeholder="Nom du programme national" aria-label={`Programme national — ${p.title}`} />
+            <Input name="url" type="url" defaultValue={p.national_program_url ?? ""} placeholder="https://… (source officielle)" aria-label={`Source — ${p.title}`} />
+            <SubmitButton size="sm" variant="outline">Enregistrer</SubmitButton></ActionForm></li>))}</ul>
+        <h3 className="pt-2 text-sm font-semibold">Fiches de prévention et programme</h3>
+        <ul className="space-y-1 text-sm">{((arts ?? []) as { id: string; title: string; status: string; program_slug: string | null }[]).map((a) => (
+          <li key={a.id} className="flex flex-wrap items-center gap-2"><span>{a.title} <span className="text-xs text-muted-foreground">({a.status})</span></span><LinkForm kind="article" id={a.id} current={a.program_slug} programs={programs} /></li>))}</ul>
+      </section>
     </div>
   );
 }

@@ -1,0 +1,2 @@
+export type Program = { slug: string; title: string; audience: string; icon: string; sort_order: number; category_slug: string; focus_code: string | null; national_program: string | null; national_program_url: string | null; reference_title: string; reference_url: string; reference_date: string | null };
+export const PROGRAM_EMOJI: Record<string, string> = { paludisme: "🦟", vaccination: "💉", "grossesse-nouveau-ne": "🤰", "nutrition-enfant": "🥣", "hypertension-diabete": "❤️", "vih-ist-hepatites": "🎗️", tuberculose: "🫁", "eau-hygiene-cholera": "💧" };

@@ -63,6 +63,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
         <p className="mt-2 flex items-start gap-2 rounded-xl bg-[#EAF6EE] p-3 text-sm text-[#052D1E]"><ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />{t("prev.rule")}</p>
       </header>
       <ListenButton targetId="prev-texte" lang={lang} />
+      <Link prefetch={false} href="/prevention/programmes" className="block rounded-2xl border-2 border-[#068132] bg-white p-4 hover:bg-[#EAF6EE]" data-no-listen>
+        <span className="block text-lg font-bold text-[#052D1E]">Les 8 programmes de prévention</span>
+        <span className="block text-sm text-muted-foreground">Paludisme, vaccination, grossesse et nouveau-né, nutrition de l&apos;enfant, hypertension et diabète, VIH et hépatites, tuberculose, eau et hygiène.</span>
+      </Link>
       <form method="get" className="flex flex-wrap items-end gap-2" data-no-listen>
         <select name="type" defaultValue={kind ?? ""} aria-label={t("prev.all_kinds")} className="h-11 rounded-lg border bg-white px-2 text-sm">
           <option value="">{t("prev.all_kinds")}</option>{PREVENTION_KINDS.map((k) => <option key={k} value={k}>{t(`prev.kind.${k}`)}</option>)}

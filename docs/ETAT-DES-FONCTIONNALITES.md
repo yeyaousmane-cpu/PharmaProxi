@@ -4,6 +4,12 @@ Bilan honnête au 27 octobre 2026. « Vérifié » signifie couvert par les test
 
 ## ✅ Terminé et vérifié
 
+**v0.42 — Les 8 programmes de prévention**
+- /prevention/programmes : paludisme ; vaccination ; grossesse et nouveau-né ; nutrition de l'enfant ; hypertension et diabète ; VIH, IST et hépatites ; tuberculose ; eau, hygiène et choléra. La liste d'origine n'ayant pas pu être retrouvée, ces 8 thèmes ont été retenus d'après les priorités de santé publique du Mali ; la liste est modifiable.
+- Chaque programme rassemble : les fiches **publiées après validation** par un professionnel de santé (circuit existant de la rédaction santé, nom et date du validateur affichés), les campagnes et dépistages publiés avec leur source, et les liens « Où me faire soigner ? », centres spécialisés et urgences. Sans fiche validée, la page le dit et renvoie vers un soignant.
+- 8 fiches de départ créées **en relecture** (invisibles du public, y compris par lien direct), rédigées d'après les aide-mémoire de l'OMS cités (dates de mise à jour reprises), à adapter au protocole national et à valider par un professionnel avant publication.
+- Administration (/admin/prevention) : nom du programme national affiché seulement avec le lien vers sa source officielle ; rattachement des campagnes et des fiches à un programme.
+
 **v0.41 — SantéProxi Orientation, phases 2 à 4**
 - Phase 2, établissements partenaires : un compte devient « membre partenaire » d'un établissement uniquement par désignation de l'administration, avec la description de la vérification faite (appel au standard, document de la direction). Badge « Partenaire SantéProxi » seulement dans ce cas. Espace établissement (/etablissements/espace) : conditions d'accès (tarifs indicatifs, AMO/CANAM, autres assurances, accès en fauteuil, langues, horaires, conditions d'accès), chacune affichée « indiquée par l'établissement » et datée ; état temporaire d'un service (fonctionne, perturbé, fermé temporairement, saturé) qui disparaît automatiquement à l'échéance (72 h au plus).
 - Demandes de rendez-vous auprès des seuls établissements partenaires (fiche → « Demander un rendez-vous ») : l'établissement voit le prénom et l'initiale du patient, son téléphone seulement s'il l'a accepté, propose un créneau ou refuse avec une raison ; le rendez-vous n'est fixé qu'après confirmation du patient (/compte/rendez-vous-etablissements) ; présence ou absence notée. Notifications dans l'application uniquement.

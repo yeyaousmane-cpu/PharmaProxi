@@ -1,0 +1,35 @@
+// 0.42 : 8 programmes de prévention ; aucune fiche publiée sans validation ; administration du programme national sourcé.
+import { chromium, devices } from "playwright";
+const BASE = process.env.BASE_URL ?? "http://localhost:3000";
+const PW = process.env.DEMO_PASSWORD;
+let fails = 0;
+const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fails++; };
+const wait = (loc, t = 10000) => loc.first().waitFor({ timeout: t }).then(() => true, () => false);
+const NI = { waitUntil: "networkidle" };
+const b = await chromium.launch();
+const p = await (await b.newContext({ ...devices["Pixel 7"], locale: "fr-FR" })).newPage();
+await p.goto(`${BASE}/prevention`, NI);
+ok(await wait(p.getByRole("link", { name: /Les 8 programmes de prévention/ })), "prévention : accès aux programmes");
+await p.goto(`${BASE}/prevention/programmes`, NI);
+ok((await p.locator("a[href^='/prevention/programmes/']").count()) === 8, "8 programmes listés");
+for (const t of ["Paludisme", "Vaccination", "Grossesse et nouveau-né", "Nutrition de l'enfant", "Hypertension et diabète", "VIH, IST et hépatites", "Tuberculose", "Eau, hygiène et choléra"]) ok(await p.getByText(t, { exact: true }).isVisible(), `programme ${t}`);
+ok(await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 2), "mobile : pas de débordement");
+await p.goto(`${BASE}/prevention/programmes/paludisme`, NI);
+ok(await wait(p.getByText(/attendent la relecture et la validation d'un professionnel de santé/)), "aucune fiche publiée sans validation");
+ok(!(await p.getByText(/moustiquaire imprégnée/).count()), "le brouillon n'est pas visible du public");
+ok(await p.getByRole("link", { name: /OMS — Paludisme/ }).isVisible(), "référence OMS citée");
+ok(await p.getByRole("link", { name: /Où me faire soigner/ }).isVisible(), "lien vers l'orientation");
+const r = await p.request.get(`${BASE}/sante/fiche/prevention-paludisme`);
+ok(r.status() === 404 || !(await r.text()).includes("moustiquaire imprégnée"), "fiche en relecture inaccessible par lien direct");
+
+const a = await (await b.newContext({ viewport: { width: 1280, height: 900 }, locale: "fr-FR" })).newPage();
+await a.goto(`${BASE}/connexion`); await a.fill("#email", "demo.admin@pharmaproxi.invalid"); await a.fill("#password", PW); await a.click("button[type=submit]");
+await a.waitForURL((u) => !u.pathname.startsWith("/connexion"), { timeout: 20000 });
+await a.goto(`${BASE}/admin/prevention`, NI);
+const f = a.locator("form", { has: a.getByRole("link", { name: "Tuberculose" }) }).first();
+await f.locator("input[name=national]").fill("Programme test e2e");
+await f.getByRole("button", { name: "Enregistrer" }).click();
+ok(await wait(a.getByText(/lien vers sa source officielle/)), "nom national refusé sans source");
+await b.close();
+console.log(fails ? `\n${fails} échec(s)` : "\nTout est passé");
+process.exit(fails ? 1 : 0);
