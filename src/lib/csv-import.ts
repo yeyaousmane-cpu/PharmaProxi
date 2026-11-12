@@ -1,3 +1,4 @@
+import { xlsxToCsv } from "@/lib/xlsx";
 import "server-only";
 import Papa from "papaparse";
 
@@ -12,14 +13,23 @@ export type CsvResult = { rows: Record<string, string>[]; fields: string[] } | {
  * détecté automatiquement, en-têtes ramenés à des noms canoniques via `aliases`.
  */
 export async function readCsv(file: FormDataEntryValue | null, aliases: Record<string, string>, maxBytes = 3 * 1024 * 1024): Promise<CsvResult> {
-  if (!(file instanceof File) || file.size === 0) return { error: "Choisissez un fichier CSV." };
+  if (!(file instanceof File) || file.size === 0) return { error: "Choisissez un fichier Excel (.xlsx) ou CSV." };
   if (file.size > maxBytes) return { error: `${Math.round(maxBytes / 1024 / 1024)} Mo maximum.` };
-  if (/\.xlsx?$/i.test(file.name)) {
-    return { error: "Ce fichier est au format Excel. Dans Excel : Fichier › Enregistrer sous › « CSV UTF-8 (délimité par des virgules) », puis importez le fichier .csv." };
+  if (/\.xls$/i.test(file.name)) {
+    return { error: "Ancien format Excel (.xls) : dans Excel, enregistrez le fichier au format .xlsx ou « CSV UTF-8 », puis importez-le." };
   }
-  const buf = new Uint8Array(await file.arrayBuffer());
-  let text = new TextDecoder("utf-8").decode(buf);
-  if (text.includes("�")) text = new TextDecoder("windows-1252").decode(buf);
+  let text: string;
+  if (/\.xlsx$/i.test(file.name)) {
+    try {
+      text = await xlsxToCsv(await file.arrayBuffer());
+    } catch {
+      return { error: "Fichier Excel illisible. Enregistrez-le de nouveau au format .xlsx ou exportez-le en CSV." };
+    }
+  } else {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    text = new TextDecoder("utf-8").decode(buf);
+    if (text.includes("�")) text = new TextDecoder("windows-1252").decode(buf);
+  }
   const parsed = Papa.parse<Record<string, string>>(text.replace(/^﻿/, ""), {
     header: true, skipEmptyLines: "greedy", transformHeader: (h) => aliases[normHeader(h)] ?? normHeader(h),
   });

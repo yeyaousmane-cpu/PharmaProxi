@@ -1,3 +1,5 @@
+import { BadgeRow } from "@/components/insurance/insurance-badges";
+import type { InsuranceBadge } from "@/lib/insurance";
 import Link from "next/link";
 import { BadgeCheck, FileText, MapPin, MessageCircle, Navigation, Phone, ShieldPlus, Store } from "lucide-react";
 import { FreshnessBadge } from "@/components/freshness-badge";
@@ -22,7 +24,7 @@ export function directionsUrl(lat: number, lng: number) {
   return `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=%3B${lat}%2C${lng}`;
 }
 
-export function ResultCard({ r, amo, pharmacyAmo }: { r: SearchRow; amo?: AmoProduct; pharmacyAmo?: AmoPharmacyStatus }) {
+export function ResultCard({ r, amo, pharmacyAmo, insurance }: { r: SearchRow; amo?: AmoProduct; pharmacyAmo?: AmoPharmacyStatus; insurance?: InsuranceBadge[] }) {
   const label = [r.brand_name, r.dosage, r.form].filter(Boolean).join(" · ");
   const place = [r.locality_name, r.commune_name, r.region_name].filter(Boolean).join(", ");
   const dist = formatDistance(r.distance_km);
@@ -43,6 +45,7 @@ export function ResultCard({ r, amo, pharmacyAmo }: { r: SearchRow; amo?: AmoPro
             <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />
             <span>{r.address} — {place}{dist ? ` · ${dist}` : ""}</span>
           </p>
+          {insurance?.length ? <div className="mt-1.5"><BadgeRow badges={insurance} href={`/pharmacies/${r.pharmacy_id}#assurances-title`} /></div> : null}
         </div>
         <div className="shrink-0 text-start sm:text-end">
           <p className="text-lg font-bold">{formatXof(r.price_xof)}</p>

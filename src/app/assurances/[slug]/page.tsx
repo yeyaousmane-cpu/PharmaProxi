@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Phone, Search, ShieldCheck, Store } from "lucide-react";
+import { Building2, MapPin, Phone, Search, ShieldCheck, Store } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,16 @@ import { Pagination, pageRange } from "@/components/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { getGeo } from "@/lib/geo";
 import { formatDate, formatPhone } from "@/lib/format";
-import { PROVIDER_CATEGORIES, PROVIDER_SINGULAR, isProviderCategory, type ProviderCategory } from "@/lib/insurance";
+import { CONFIRM_BEFORE_VISIT, ORG_TYPE, PROVIDER_CATEGORIES, PROVIDER_SINGULAR, isProviderCategory, type ProviderCategory } from "@/lib/insurance";
+import { ConventionBadge } from "@/components/insurance/insurance-badges";
 import { cn } from "@/lib/utils";
 
 export const revalidate = 0;
-type Row = { id: string; category: ProviderCategory; name: string; area: string | null; region_name: string | null; address: string | null; phones: string[]; pharmacy_id: string | null; total_count: number };
+type Row = {
+  id: string; category: ProviderCategory; name: string; area: string | null; region_name: string | null; commune_name: string | null; address: string | null;
+  phones: string[]; pharmacy_id: string | null; listing_id: string | null; facility_id: string | null; public_status: string; tiers_payant: boolean | null;
+  services_covered: string | null; conditions: string | null; verified_at: string | null; source_label: string | null; source_date: string | null; total_count: number;
+};
 const SIZE = 30;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -27,21 +32,23 @@ export default async function InsurerPage({ params, searchParams }: { params: Pr
   const sp = await searchParams;
   if (!/^[a-z0-9-]{2,80}$/.test(slug)) notFound();
   const supabase = await createClient();
-  const { data: ins } = await supabase.from("insurers").select("id, name, phone, website, network_date, network_source, notes").eq("slug", slug).maybeSingle();
+  const { data: ins } = await supabase.from("insurers").select("id, name, phone, website, network_date, network_source, notes, org_type, health_offer, documents_required, tiers_payant_terms, reimbursement_terms, description").eq("slug", slug).maybeSingle();
   if (!ins) notFound();
   const cat = isProviderCategory(sp.type) ? sp.type : null;
   const region = sp.region && /^[0-9a-f-]{36}$/i.test(sp.region) ? sp.region : null;
   const q = (sp.q ?? "").trim().slice(0, 80);
+  const commune = sp.commune && /^[0-9a-f-]{36}$/i.test(sp.commune) ? sp.commune : null;
+  const confirmedOnly = sp.tp === "1";
   const range = pageRange(sp.page, SIZE);
   const [{ data }, geo] = await Promise.all([
-    supabase.rpc("search_insurer_network", { p_insurer: ins.id, p_query: q || null, p_category: cat, p_region: region, p_limit: SIZE, p_offset: range.from }),
+    supabase.rpc("insurer_network", { p_insurer: ins.id, p_query: q || null, p_category: cat, p_region: region, p_commune: commune, p_confirmed_only: confirmedOnly, p_limit: SIZE, p_offset: range.from }),
     getGeo(),
   ]);
   const rows = (data as Row[] | null) ?? [];
   const total = rows[0]?.total_count ?? 0;
   const href = (patch: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    for (const [k, v] of Object.entries({ q: q || undefined, region: region ?? undefined, type: cat ?? undefined, ...patch })) if (v) p.set(k, v);
+    for (const [k, v] of Object.entries({ q: q || undefined, region: region ?? undefined, commune: commune ?? undefined, tp: confirmedOnly ? "1" : undefined, type: cat ?? undefined, ...patch })) if (v) p.set(k, v);
     const s = p.toString();
     return s ? `/assurances/${slug}?${s}` : `/assurances/${slug}`;
   };
@@ -51,7 +58,8 @@ export default async function InsurerPage({ params, searchParams }: { params: Pr
       <p className="text-sm"><Link prefetch={false} href="/assurances" className="text-primary underline">Assurances santé</Link> › {ins.name}</p>
       <header className="space-y-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold text-brand-deep"><ShieldCheck className="size-7 text-primary" aria-hidden /> {ins.name} : où aller avec ma carte ?</h1>
-        <p className="text-muted-foreground">Pharmacies, cliniques, laboratoires et opticiens partenaires en tiers payant.</p>
+        <p className="text-muted-foreground">{ORG_TYPE[ins.org_type] ?? "Organisme"} · pharmacies, cliniques, laboratoires et centres d&apos;imagerie de son réseau.</p>
+        {ins.description && <p className="max-w-3xl text-sm">{ins.description}</p>}
         {(ins.phone || ins.website) && (
           <p className="flex flex-wrap gap-3 text-sm">
             {ins.phone && <a href={`tel:${ins.phone}`} className="inline-flex items-center gap-1.5 font-semibold text-primary"><Phone className="size-4" aria-hidden />{formatPhone(ins.phone)}</a>}
@@ -59,11 +67,24 @@ export default async function InsurerPage({ params, searchParams }: { params: Pr
           </p>
         )}
       </header>
-      <Alert tone="info" title={ins.network_date ? `Liste des partenaires du ${formatDate(ins.network_date)}` : "Liste des partenaires"}>
-        {ins.network_source ? `${ins.network_source}. ` : ""}{ins.notes ?? "La prise en charge dépend de votre contrat : en cas de doute, appelez votre assureur avant les soins."}
+      {ins.health_offer !== "confirmee" && (
+        <Alert tone="info" title="Offre santé et réseau à confirmer">
+          Cet organisme est référencé à titre d&apos;information. Son offre d&apos;assurance santé et son réseau de soins n&apos;ont pas encore été vérifiés : renseignez-vous directement auprès de lui.
+        </Alert>
+      )}
+      <Alert tone="warning" title={ins.network_date ? `Liste des partenaires du ${formatDate(ins.network_date)}` : "Liste des partenaires"}>
+        {ins.network_source ? `${ins.network_source}. ` : ""}{ins.notes ?? "La prise en charge dépend de votre contrat : en cas de doute, appelez votre assureur avant les soins."}{" "}
+        Les conventions marquées « à vérifier » n&apos;ont pas encore été confirmées. {CONFIRM_BEFORE_VISIT}
       </Alert>
+      {(ins.documents_required || ins.tiers_payant_terms || ins.reimbursement_terms) && (
+        <dl className="grid gap-x-4 gap-y-1 rounded-2xl border bg-white p-4 text-sm sm:grid-cols-[auto_1fr]">
+          {ins.documents_required && <><dt className="text-muted-foreground">Documents à présenter</dt><dd>{ins.documents_required}</dd></>}
+          {ins.tiers_payant_terms && <><dt className="text-muted-foreground">Tiers payant</dt><dd>{ins.tiers_payant_terms}</dd></>}
+          {ins.reimbursement_terms && <><dt className="text-muted-foreground">Remboursement</dt><dd>{ins.reimbursement_terms}</dd></>}
+        </dl>
+      )}
 
-      <form method="get" className="grid gap-2 rounded-2xl border bg-white p-3 sm:grid-cols-[1fr_220px_auto]" role="search">
+      <form method="get" className="grid gap-2 rounded-2xl border bg-white p-3 sm:grid-cols-[1fr_220px_auto] sm:items-center" role="search">
         {cat && <input type="hidden" name="type" value={cat} />}
         <label htmlFor="q" className="sr-only">Nom ou quartier</label>
         <Input id="q" name="q" defaultValue={q} placeholder="Nom, quartier (ex. Hamdallaye)" />
@@ -73,6 +94,7 @@ export default async function InsurerPage({ params, searchParams }: { params: Pr
           {geo.regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </Select>
         <Button type="submit"><Search aria-hidden /> Chercher</Button>
+        <label className="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" name="tp" value="1" defaultChecked={confirmedOnly} className="size-4" /> Tiers payant confirmé uniquement</label>
       </form>
 
       <nav aria-label="Type de partenaire" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
@@ -95,7 +117,13 @@ export default async function InsurerPage({ params, searchParams }: { params: Pr
                 <p className="font-semibold text-brand-deep">{r.name}</p>
                 <Badge className="bg-brand-mint text-brand-deep">{PROVIDER_SINGULAR[r.category]}</Badge>
               </div>
-              <p className="mt-1 flex items-start gap-1.5 text-muted-foreground"><MapPin className="mt-0.5 size-3.5 shrink-0" aria-hidden />{[r.address, r.area, r.region_name && r.region_name !== r.area ? r.region_name : null].filter(Boolean).join(" — ")}</p>
+              <div className="mt-1.5"><ConventionBadge name={ins.name} status={r.public_status} /></div>
+              <p className="mt-1.5 flex items-start gap-1.5 text-muted-foreground"><MapPin className="mt-0.5 size-3.5 shrink-0" aria-hidden />{[r.address, r.area, r.commune_name, r.region_name && r.region_name !== r.area ? r.region_name : null].filter(Boolean).join(" — ")}</p>
+              {(r.services_covered || r.conditions) && <p className="mt-1 text-xs">{[r.services_covered, r.conditions].filter(Boolean).join(" · ")}</p>}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {r.source_label ? `Source : ${r.source_label}${r.source_date ? ` (${formatDate(r.source_date)})` : ""}. ` : ""}
+                {r.verified_at ? `Vérifié le ${formatDate(r.verified_at)}.` : "Pas encore vérifié par SantéProxi."}
+              </p>
               {r.phones.length > 0 && (
                 <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                   {r.phones.map((p) => <a key={p} href={`tel:${p}`} className="inline-flex items-center gap-1.5 font-medium text-primary"><Phone className="size-3.5" aria-hidden />{formatPhone(p)}</a>)}
@@ -104,11 +132,14 @@ export default async function InsurerPage({ params, searchParams }: { params: Pr
               {r.pharmacy_id && (
                 <Link prefetch={false} href={`/pharmacies/${r.pharmacy_id}`} className="mt-2 inline-flex items-center gap-1.5 font-semibold text-primary underline"><Store className="size-3.5" aria-hidden />Voir ses produits sur SantéProxi</Link>
               )}
+              {r.facility_id && (
+                <Link prefetch={false} href={`/etablissements/${r.facility_id}`} className="mt-2 inline-flex items-center gap-1.5 font-semibold text-primary underline"><Building2 className="size-3.5" aria-hidden />Fiche de l&apos;établissement</Link>
+              )}
             </li>
           ))}
         </ul>
       )}
-      <Pagination basePath={`/assurances/${slug}`} params={{ q: q || undefined, region: region ?? undefined, type: cat ?? undefined }} page={range.page} total={Number(total)} size={SIZE} />
+      <Pagination basePath={`/assurances/${slug}`} params={{ q: q || undefined, region: region ?? undefined, commune: commune ?? undefined, tp: confirmedOnly ? "1" : undefined, type: cat ?? undefined }} page={range.page} total={Number(total)} size={SIZE} />
     </div>
   );
 }

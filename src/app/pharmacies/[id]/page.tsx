@@ -1,3 +1,5 @@
+import { ConventionBadge, InsuranceSection } from "@/components/insurance/insurance-badges";
+import type { EstablishmentInsurance } from "@/lib/insurance";
 import { trackView } from "@/lib/listing-stats";
 import { FavoriteButton } from "@/components/favorite-button";
 import { TrackClicks } from "@/components/stats/track";
@@ -62,7 +64,7 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
   const { data: amoData } = await supabase.rpc("amo_for_results", { p_catalog: [...new Set(items.map((i) => i.catalog_id))], p_pharmacies: [id] });
   const amo = (amoData as AmoResults | null) ?? emptyAmoResults();
   const amoStatus = amo.pharmacies[id];
-  const insurers = ((await supabase.rpc("pharmacy_insurers", { p_pharmacy: id })).data as { name: string; slug: string }[] | null) ?? [];
+  const insurance = ((await supabase.rpc("establishment_insurance", { p_kind: "pharmacy", p_id: id })).data as EstablishmentInsurance[] | null) ?? [];
   // Stupéfiants, psychotropes et produits hospitaliers : jamais réservables en ligne (refus également en base).
   const restricted = new Set<string>();
   if (items.length) {
@@ -95,9 +97,9 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
             {amoStatus && <Badge className="border-blue-200 bg-blue-50 text-brand-blue"><BadgeCheck className="size-3" aria-hidden /> {AMO_STATUS_LABEL[amoStatus]}</Badge>}
             {p.is_demo && <DemoBadge />}
           </div>
-          {insurers.length > 0 && (
-            <p className="mt-2 flex flex-wrap items-center gap-2 text-sm"><span className="text-muted-foreground">Tiers payant :</span>
-              {insurers.map((i) => <Link key={i.slug} prefetch={false} href={`/assurances/${i.slug}`}><Badge className="border-blue-200 bg-blue-50 text-brand-blue">{i.name}</Badge></Link>)}
+          {insurance.length > 0 && (
+            <p className="mt-2 flex flex-wrap items-center gap-1.5">
+              {insurance.map((i) => <a key={i.insurer_slug} href="#assurances-title"><ConventionBadge name={i.insurer_name} status={i.public_status} /></a>)}
             </p>
           )}
           {amoStatus === "declared" && <p className="text-xs text-muted-foreground">Convention AMO déclarée par la pharmacie, pas encore vérifiée par SantéProxi : confirmez avec elle avant de vous déplacer.</p>}
@@ -121,6 +123,8 @@ export default async function PharmacyPage({ params, searchParams }: { params: P
             {p.offers_pickup && <Badge className="bg-white">Retrait en pharmacie</Badge>}
           </div>
         </header>
+
+        <InsuranceSection rows={insurance} phone={p.phone} />
 
         <section aria-labelledby="stock-title" className="rounded-2xl border bg-white p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

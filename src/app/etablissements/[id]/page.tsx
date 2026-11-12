@@ -1,3 +1,5 @@
+import { InsuranceSection } from "@/components/insurance/insurance-badges";
+import type { EstablishmentInsurance } from "@/lib/insurance";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, BadgeCheck, ExternalLink, Flag, Globe, Mail, MapPin, MessageCircle, Navigation, Phone, ShieldCheck } from "lucide-react";
@@ -58,11 +60,13 @@ export default async function Facility({ params }: { params: Promise<{ id: strin
     supabase.from("facility_links").select("related_id, relation, source, source_url, facility_listings!facility_links_related_id_fkey(name, kind)").eq("facility_id", f.id),
     session ? supabase.rpc("is_admin").then((r) => !!r.data) : Promise.resolve(false),
   ]);
-  const [accessR, statusR, partnerR] = await Promise.all([
+  const [accessR, statusR, partnerR, insuranceR] = await Promise.all([
     supabase.from("facility_access_info").select("field, value, source_kind, source_url, confirmed_at").eq("facility_id", f.id),
     supabase.from("facility_service_status").select("id, service, status, message, valid_until, created_at").eq("facility_id", f.id).gt("valid_until", new Date().toISOString()).order("created_at", { ascending: false }),
     supabase.rpc("facility_is_partner", { p_facility: f.id }),
+    supabase.rpc("establishment_insurance", { p_kind: "facility", p_id: f.id }),
   ]);
+  const insurance = (insuranceR.data ?? []) as EstablishmentInsurance[];
   const access = (accessR.data ?? []) as { field: string; value: string; source_kind: string; source_url: string | null; confirmed_at: string }[];
   const serviceStatus = (statusR.data ?? []) as { id: string; service: string; status: string; message: string | null; valid_until: string; created_at: string }[];
   const isPartner = !!partnerR.data;
@@ -201,6 +205,8 @@ export default async function Facility({ params }: { params: Promise<{ id: strin
             <Row key={a.field} t={ACCESS_FIELDS[a.field]}>{a.value}<span className="block text-xs text-muted-foreground">{a.source_kind === "etablissement" ? "Indiqué par l'établissement" : a.source_kind === "source_publique" ? <>Source publique : <a href={a.source_url ?? "#"} target="_blank" rel="noopener noreferrer" className="underline">lien</a></> : "Confirmé par l'équipe SantéProxi"} le {formatDate(a.confirmed_at)}{a.field.startsWith("tarif") ? " — tarif indicatif, à confirmer sur place" : ""}</span></Row>))}</dl>
         )}
       </Section>
+
+      <InsuranceSection rows={insurance} phone={f.phone} />
 
       <section id="rdv" className="scroll-mt-24 space-y-2 rounded-2xl border bg-white p-4" aria-labelledby="rdv-t">
         <h2 id="rdv-t" className="font-bold text-brand-deep">Demander un rendez-vous</h2>

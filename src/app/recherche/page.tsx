@@ -1,3 +1,4 @@
+import { groupBadges, type InsuranceBadge } from "@/lib/insurance";
 import Link from "next/link";
 import { AudioGuide } from "@/components/audio/audio-guide";
 import { SearchX, SlidersHorizontal } from "lucide-react";
@@ -35,6 +36,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   let rows: SearchRow[] = [];
   let catalog: CatalogRow[] = [];
+  let insurance = new Map<string, InsuranceBadge[]>();
   let amo: AmoResults = emptyAmoResults();
   let error: string | null = null;
   if (q.length >= 2) {
@@ -69,6 +71,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           p_pharmacies: [...new Set(rows.map((r) => r.pharmacy_id))],
         });
         if (a) amo = a as AmoResults;
+        const { data: b } = await supabase.rpc("insurance_badges", { p_kind: "pharmacy", p_ids: [...new Set(rows.map((r) => r.pharmacy_id))] });
+        insurance = groupBadges(b as InsuranceBadge[] | null);
       }
     }
   }
@@ -161,7 +165,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               {total} résultat{Number(total) > 1 ? "s" : ""} pour « {q} ». Les disponibilités sont déclarées par les pharmacies : faites-les confirmer.
               {Object.values(amo.products).some((p) => p.amo) && <> Montants AMO : estimation, à confirmer en pharmacie (<Link prefetch={false} href="/amo" className="underline">comment c&apos;est calculé</Link>).</>}
             </p>
-            <div className="grid gap-3">{rows.map((r) => <ResultCard key={r.inventory_id} r={r} amo={amo.products[r.catalog_id]} pharmacyAmo={amo.pharmacies[r.pharmacy_id]} />)}</div>
+            <div className="grid gap-3">{rows.map((r) => <ResultCard key={r.inventory_id} r={r} amo={amo.products[r.catalog_id]} pharmacyAmo={amo.pharmacies[r.pharmacy_id]} insurance={insurance.get(r.pharmacy_id)} />)}</div>
             {pages > 1 && (
               <nav aria-label="Pagination" className="mt-6 flex items-center justify-center gap-2">
                 {page > 1 && <Link prefetch={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }))} href={link({ page: String(page - 1) })}>Précédent</Link>}

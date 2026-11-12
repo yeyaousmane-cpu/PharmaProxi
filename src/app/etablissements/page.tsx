@@ -1,3 +1,5 @@
+import { BadgeRow } from "@/components/insurance/insurance-badges";
+import { groupBadges, type InsuranceBadge } from "@/lib/insurance";
 import Link from "next/link";
 import { Building2, ChevronLeft, ChevronRight, Download, Info, MapPinned, Phone } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -22,6 +24,7 @@ export default async function Etablissements({ searchParams }: { searchParams: P
   const kind = sp.type && sp.type in DIRECTORY_KINDS ? sp.type : null;
   const service = sp.service && sp.service in DIRECTORY_SERVICES ? sp.service : null;
   const level = ["verifie", "officielle", "a_confirmer"].includes(sp.fiabilite ?? "") ? sp.fiabilite! : null;
+  let badges = new Map<string, InsuranceBadge[]>();
   let rows: DirectoryRow[] = []; let places: Place[] = []; let stats = null as { total: number; geolocalises: number; par_type: Record<string, number> } | null;
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
@@ -31,6 +34,7 @@ export default async function Etablissements({ searchParams }: { searchParams: P
       supabase.rpc("directory_places"), supabase.rpc("directory_stats"),
     ]);
     rows = (r.data ?? []) as DirectoryRow[]; places = (p.data ?? []) as Place[]; stats = s.data as typeof stats;
+    if (rows.length) badges = groupBadges((await supabase.rpc("insurance_badges", { p_kind: "facility", p_ids: rows.map((x) => x.id) })).data as InsuranceBadge[] | null);
   }
   const total = rows[0]?.total ?? 0;
   const pages = Math.ceil(total / PAGE);
@@ -85,7 +89,7 @@ export default async function Etablissements({ searchParams }: { searchParams: P
             <p className="text-xs text-muted-foreground">Seuls les établissements dont la position a été publiée par une source officielle apparaissent sur la carte ({geo.length} sur {rows.length} dans cette page). Aucune position n&apos;est estimée.</p></div>
         )}
         {rows.length === 0 ? <p className="rounded-2xl border border-dashed p-5 text-sm text-muted-foreground">Aucun établissement ne correspond. Essayez un autre nom ou retirez un filtre. L&apos;absence d&apos;une structure dans SantéProxi ne signifie pas qu&apos;elle n&apos;existe pas : le référentiel est en cours de constitution.</p> : (
-          <ul className="grid gap-3 md:grid-cols-2">{rows.map((x) => <Card key={x.id} x={x} />)}</ul>
+          <ul className="grid gap-3 md:grid-cols-2">{rows.map((x) => <Card key={x.id} x={x} insurance={badges.get(x.id)} />)}</ul>
         )}
         {pages > 1 && (
           <nav aria-label="Pages de résultats" className="flex items-center justify-center gap-3 text-sm">
@@ -99,7 +103,7 @@ export default async function Etablissements({ searchParams }: { searchParams: P
   );
 }
 
-function Card({ x }: { x: DirectoryRow }) {
+function Card({ x, insurance }: { x: DirectoryRow; insurance?: InsuranceBadge[] }) {
   const t = trustLabel(x.reliability, x.source_level);
   const place = [x.locality, x.quarter, x.commune, x.circle ? `cercle de ${x.circle}` : null, x.region].filter(Boolean).join(" · ");
   const kindLabel = x.category_label === "Polyclinique" ? "Polyclinique" : DIRECTORY_KINDS[x.kind === "chu" ? "hopital" : x.kind] ?? x.kind;
@@ -112,6 +116,7 @@ function Card({ x }: { x: DirectoryRow }) {
       </div>
       <h3 className="text-base font-bold leading-snug"><Link prefetch={false} href={`/etablissements/${x.id}`} className="hover:underline">{x.name}</Link></h3>
       <p className="text-muted-foreground">{place || "Localisation non renseignée"}</p>
+      <BadgeRow badges={insurance} href={`/etablissements/${x.id}#assurances-title`} />
       {x.offers.length > 0 && <p className="text-xs">{x.offers.slice(0, 5).map((o) => o.label).join(" · ")}{x.offers.length > 5 ? ` · +${x.offers.length - 5}` : ""}</p>}
       <div className="mt-auto flex flex-wrap gap-2 pt-1">
         {x.phone && <a href={`tel:${x.phone}`} className="inline-flex min-h-10 items-center gap-1 rounded-lg bg-[#052D1E] px-3 font-semibold text-white"><Phone className="size-4" aria-hidden />{formatPhone(x.phone)}</a>}

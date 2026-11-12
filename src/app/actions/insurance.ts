@@ -85,3 +85,64 @@ export async function toggleProvider(_: ActionState, fd: FormData): Promise<Acti
   refresh();
   return { ok: true, message: "Partenaire mis à jour." };
 }
+
+const CONVENTION_STATUSES = ["tiers_payant_confirme", "remboursement", "a_verifier", "en_attente", "non_confirmee", "expiree", "suspendue"] as const;
+const isoDate = (v: string) => (/^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "");
+
+/**
+ * Mise à jour groupée de conventions (statut, source, dates, conditions).
+ * « Tiers payant confirmé » et « Remboursement » exigent une source et une date de vérification :
+ * contrôlé ici, puis par la base (contrainte et fonction admin_update_conventions).
+ */
+export async function updateConventions(_: ActionState, fd: FormData): Promise<ActionState> {
+  const ids = fd.getAll("convention_id").map(String).filter((v) => uuid.safeParse(v).success);
+  if (!ids.length) return { error: "Cochez au moins une convention." };
+  if (ids.length > 500) return { error: "500 conventions maximum par opération." };
+  const status = str(fd, "convention_status");
+  if (status && !(CONVENTION_STATUSES as readonly string[]).includes(status)) return { error: "Statut inconnu." };
+  const p: Record<string, unknown> = {};
+  if (status) p.convention_status = status;
+  for (const k of ["source_label", "source_url", "services_covered", "conditions", "documents_required", "admin_note"]) {
+    const v = str(fd, k);
+    if (v) p[k] = v;
+  }
+  for (const k of ["verified_at", "starts_on", "ends_on"]) {
+    const v = isoDate(str(fd, k));
+    if (v) p[k] = v;
+  }
+  if (p.source_url && !/^https?:\/\//.test(String(p.source_url))) return { error: "Le lien de la source doit commencer par http:// ou https://." };
+  if ((status === "tiers_payant_confirme" || status === "remboursement") && (!p.verified_at || !p.source_label)) {
+    return { error: "Pour confirmer, indiquez la source (document, courrier ou page de l'organisme) et la date de vérification." };
+  }
+  if (fd.get("unpublish") === "on") p.is_published = false;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_update_conventions", { p_ids: ids, p });
+  if (error) return { error: humanizeError(error) };
+  refresh();
+  return { ok: true, message: `${data} convention(s) mise(s) à jour.` };
+}
+
+export async function linkConvention(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid.safeParse(fd.get("convention_id"));
+  const [kind, target] = str(fd, "target").split(":");
+  if (!id.success) return { error: "Requête invalide" };
+  if (kind !== "none" && (!["pharmacy", "listing", "facility"].includes(kind) || !uuid.safeParse(target).success)) return { error: "Choisissez une fiche." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_link_convention", { p_id: id.data, p_kind: kind, p_target: kind === "none" ? null : target });
+  if (error) return { error: humanizeError(error) };
+  refresh();
+  return { ok: true, message: kind === "none" ? "Lien retiré." : "Convention reliée à la fiche." };
+}
+
+export async function saveInsurerDetails(_: ActionState, fd: FormData): Promise<ActionState> {
+  const id = uuid.safeParse(fd.get("id"));
+  if (!id.success) return { error: "Requête invalide" };
+  const p: Record<string, string> = {};
+  for (const k of ["org_type", "status", "health_offer", "description", "email", "address", "logo_url", "documents_required", "tiers_payant_terms", "reimbursement_terms"]) p[k] = str(fd, k);
+  p.verified_at = isoDate(str(fd, "verified_at"));
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_save_insurer_details", { p_id: id.data, p });
+  if (error) return { error: humanizeError(error) };
+  refresh();
+  return { ok: true, message: "Fiche de l'organisme enregistrée." };
+}
