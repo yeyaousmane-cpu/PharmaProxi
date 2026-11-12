@@ -7,12 +7,14 @@
  * droits, don de sang, guide AMO) sont gardées pour être lisibles sans réseau. Elles sont
  * enregistrées dans leur version anonyme (sans cookie de connexion).
  */
-const VERSION = "sp-v7";
+const VERSION = "sp-v8";
 const STATIC = ["/offline", "/logo-santeproxi.webp", "/emblem.webp", "/icons/icon-192.png"];
 const OFFLINE_PAGES = ["/sos", "/premiers-secours", "/urgences", "/droits", "/don-de-sang", "/don-de-sang/suis-je-apte", "/don-de-sang/apres-le-don", "/don-de-sang/groupes-rares", "/amo/guide", "/sante-mentale", "/laboratoires/lexique", "/prevention", "/langues"];
 const OFFLINE_PREFIXES = ["/premiers-secours", "/sante/fiche/", "/droits/", "/sante/urgences"];
 
-const offlineAllowed = (path) => OFFLINE_PAGES.includes(path) || OFFLINE_PREFIXES.some((p) => path.startsWith(p));
+// Pages personnelles jamais mises en cache (badge, demandes, espace formateur), même sous un préfixe autorisé
+const NEVER_CACHE = ["/premiers-secours/badge", "/premiers-secours/espace-formateur", "/premiers-secours/formations"];
+const offlineAllowed = (path) => !NEVER_CACHE.some((p) => path.startsWith(p)) && (OFFLINE_PAGES.includes(path) || OFFLINE_PREFIXES.some((p) => path.startsWith(p)));
 
 async function storeAnonymous(path) {
   try {
